@@ -4,11 +4,13 @@ pub mod ecc;
 pub mod analysis;
 pub mod spi_nand;
 pub mod emmc;
+pub mod ai;
 
 pub use onfi::*;
 pub use protocol::*;
 pub use ecc::*;
 pub use analysis::*;
+pub use ai::*;
 
 // Re-export chip info types (avoid glob conflicts)
 pub use spi_nand::{

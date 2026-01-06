@@ -5,7 +5,7 @@
     ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██╔══╝  ██║     ██╔══██║╚════██║██╔══██║
     ╚██████╔╝██║     ███████╗██║ ╚████║██║     ███████╗██║  ██║███████║██║  ██║
      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-                                                                       v1.25.0
+                                                                        v1.3.0
 ```
 
 <div align="center">
@@ -211,6 +211,34 @@ Auto-detect:
 └── Entropy map    Spot encrypted/compressed regions
 ```
 
+### AI Analysis (v1.3+)
+
+```
+🤖 AI-Powered Features:
+├── Pattern Recognition
+│   ├── Encrypted regions (high entropy detection)
+│   ├── Compressed data (gzip, LZMA, XZ, zstd)
+│   ├── Executable code (ELF, U-Boot)
+│   ├── Text/ASCII content
+│   └── Repeating patterns
+│
+├── Anomaly Detection
+│   ├── Bad block markers
+│   ├── Bit rot / ECC errors
+│   ├── Truncated dumps
+│   └── Corrupted headers
+│
+├── Recovery Suggestions
+│   ├── ECC correction recommendations
+│   ├── Re-dump suggestions
+│   └── Success probability estimates
+│
+└── Chip Recommendations
+    ├── Optimal page size detection
+    ├── ECC configuration tips
+    └── Read timing adjustments
+```
+
 ### Shows you everything
 
 ```
@@ -348,10 +376,16 @@ v1.2  ✅  eMMC support (RP2040)
           ├── Block read/write operations
           └── Boot partition access
 
-v1.25 ✅  STM32F1 SPI NAND & eMMC ← YOU ARE HERE
+v1.25 ✅  STM32F1 SPI NAND & eMMC
           ├── SPI NAND support for Blue Pill
           ├── eMMC support for Blue Pill
           └── Full feature parity with RP2040
+
+v1.3  ✅  AI-Powered Analysis ← YOU ARE HERE
+          ├── Intelligent pattern recognition
+          ├── Anomaly detection & recovery suggestions
+          ├── Encryption/compression detection
+          └── Chip-specific recommendations
 
 v2.0  🚀  Multi-device parallel dumping
 ```

@@ -44,6 +44,10 @@ pub fn run() {
             command::set_interface,
             command::get_interface,
             command::read_spi_nand_id,
+            // AI commands (v1.3)
+            command::ai_analyze_dump,
+            command::ai_detect_patterns,
+            command::ai_get_recommendations,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

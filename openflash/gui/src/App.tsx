@@ -4,9 +4,11 @@ import { save, open } from "@tauri-apps/plugin-dialog";
 import { writeFile, readFile } from "@tauri-apps/plugin-fs";
 import { HexViewer } from "./components/HexViewer";
 import { BitmapView } from "./components/BitmapView";
+import { AiAnalysis } from "./components/AiAnalysis";
 import "./styles.css";
 import "./components/HexViewer.css";
 import "./components/BitmapView.css";
+import "./components/AiAnalysis.css";
 
 interface DeviceInfo {
   id: string;
@@ -35,7 +37,7 @@ interface AnalysisResult {
   data_pages: number;
 }
 
-type Tab = "operations" | "hexview" | "bitmap" | "analysis";
+type Tab = "operations" | "hexview" | "bitmap" | "analysis" | "ai";
 
 function App() {
   const [devices, setDevices] = useState<DeviceInfo[]>([]);
@@ -421,6 +423,13 @@ function App() {
             >
               🔬 Analysis
             </button>
+            <button 
+              className={activeTab === "ai" ? "active" : ""} 
+              onClick={() => setActiveTab("ai")}
+              disabled={!dumpData}
+            >
+              🤖 AI
+            </button>
           </div>
 
           {/* Tab Content */}
@@ -537,6 +546,20 @@ function App() {
                     </div>
                   )}
                 </div>
+              </section>
+            )}
+
+            {activeTab === "ai" && (
+              <section className="panel ai-panel">
+                <AiAnalysis 
+                  data={dumpData}
+                  pageSize={chipInfo?.page_size || 2048}
+                  pagesPerBlock={chipInfo?.block_size || 64}
+                  onPatternSelect={(offset) => {
+                    console.log(`Navigate to offset 0x${offset.toString(16)}`);
+                    setActiveTab("hexview");
+                  }}
+                />
               </section>
             )}
           </div>

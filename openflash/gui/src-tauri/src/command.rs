@@ -308,6 +308,143 @@ pub struct SignatureInfo {
 }
 
 // ============================================================================
+// AI Analysis commands (v1.3)
+// ============================================================================
+
+#[derive(Serialize, Deserialize)]
+pub struct AiAnalysisResponse {
+    pub patterns: Vec<PatternInfo>,
+    pub anomalies: Vec<AnomalyInfo>,
+    pub recovery_suggestions: Vec<RecoverySuggestionInfo>,
+    pub chip_recommendations: Vec<ChipRecommendationInfo>,
+    pub data_quality_score: f32,
+    pub encryption_probability: f32,
+    pub compression_probability: f32,
+    pub summary: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct PatternInfo {
+    pub pattern_type: String,
+    pub start_offset: usize,
+    pub end_offset: usize,
+    pub confidence: String,
+    pub description: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct AnomalyInfo {
+    pub severity: String,
+    pub location: Option<usize>,
+    pub description: String,
+    pub recommendation: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RecoverySuggestionInfo {
+    pub priority: u8,
+    pub action: String,
+    pub description: String,
+    pub estimated_success: f32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ChipRecommendationInfo {
+    pub category: String,
+    pub title: String,
+    pub description: String,
+    pub importance: u8,
+}
+
+/// AI-powered analysis of dump data
+#[tauri::command]
+pub fn ai_analyze_dump(
+    data: Vec<u8>,
+    page_size: u32,
+    pages_per_block: u32,
+) -> Result<AiAnalysisResponse, String> {
+    let analyzer = openflash_core::ai::AiAnalyzer::new(
+        page_size as usize,
+        pages_per_block as usize,
+    );
+    
+    let result = analyzer.analyze(&data);
+    
+    Ok(AiAnalysisResponse {
+        patterns: result.patterns.into_iter().map(|p| PatternInfo {
+            pattern_type: format!("{:?}", p.pattern_type),
+            start_offset: p.start_offset,
+            end_offset: p.end_offset,
+            confidence: format!("{:?}", p.confidence),
+            description: p.description,
+        }).collect(),
+        anomalies: result.anomalies.into_iter().map(|a| AnomalyInfo {
+            severity: format!("{:?}", a.severity),
+            location: a.location,
+            description: a.description,
+            recommendation: a.recommendation,
+        }).collect(),
+        recovery_suggestions: result.recovery_suggestions.into_iter().map(|s| RecoverySuggestionInfo {
+            priority: s.priority,
+            action: s.action,
+            description: s.description,
+            estimated_success: s.estimated_success,
+        }).collect(),
+        chip_recommendations: result.chip_recommendations.into_iter().map(|r| ChipRecommendationInfo {
+            category: r.category,
+            title: r.title,
+            description: r.description,
+            importance: r.importance,
+        }).collect(),
+        data_quality_score: result.data_quality_score,
+        encryption_probability: result.encryption_probability,
+        compression_probability: result.compression_probability,
+        summary: result.summary,
+    })
+}
+
+/// Quick AI pattern detection (lighter analysis)
+#[tauri::command]
+pub fn ai_detect_patterns(
+    data: Vec<u8>,
+    page_size: u32,
+) -> Result<Vec<PatternInfo>, String> {
+    let analyzer = openflash_core::ai::AiAnalyzer::new(page_size as usize, 64);
+    let patterns = analyzer.detect_patterns(&data);
+    
+    Ok(patterns.into_iter().map(|p| PatternInfo {
+        pattern_type: format!("{:?}", p.pattern_type),
+        start_offset: p.start_offset,
+        end_offset: p.end_offset,
+        confidence: format!("{:?}", p.confidence),
+        description: p.description,
+    }).collect())
+}
+
+/// Get AI-powered chip recommendations
+#[tauri::command]
+pub fn ai_get_recommendations(
+    data: Vec<u8>,
+    page_size: u32,
+    pages_per_block: u32,
+) -> Result<Vec<ChipRecommendationInfo>, String> {
+    let analyzer = openflash_core::ai::AiAnalyzer::new(
+        page_size as usize,
+        pages_per_block as usize,
+    );
+    
+    let patterns = analyzer.detect_patterns(&data);
+    let recommendations = analyzer.generate_chip_recommendations(&data, &patterns);
+    
+    Ok(recommendations.into_iter().map(|r| ChipRecommendationInfo {
+        category: r.category,
+        title: r.title,
+        description: r.description,
+        importance: r.importance,
+    }).collect())
+}
+
+// ============================================================================
 // Progress-enabled dump command
 // ============================================================================
 

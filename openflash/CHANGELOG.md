@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-01-XX
+
+### Added
+- **AI-Powered Analysis Engine**
+  - New `ai` module in core library with intelligent data analysis
+  - Pattern recognition: encrypted, compressed, executable, text, empty, repeating data
+  - Anomaly detection: bad blocks, bit rot, truncation, header corruption
+  - Data recovery suggestions with success probability estimates
+  - Chip-specific recommendations (ECC, timing, page size)
+  - Data quality scoring and encryption/compression probability
+  - Automatic summary generation
+
+- **AI Analysis GUI**
+  - New "🤖 AI" tab in desktop application
+  - Interactive pattern visualization with click-to-navigate
+  - Severity-coded anomaly display (Critical/Warning/Info)
+  - Recovery action prioritization
+  - Real-time analysis metrics (quality, encryption, compression)
+  - Tabbed interface: Patterns, Issues, Recovery, Tips
+
+- **New Tauri Commands**
+  - `ai_analyze_dump` - Full AI analysis of dump data
+  - `ai_detect_patterns` - Quick pattern detection
+  - `ai_get_recommendations` - Chip-specific recommendations
+
+### Changed
+- GUI version updated to 1.3.0
+- Core library version updated to 1.3.0
+
 ## [1.25.0] - 2026-01-XX
 
 ### Added
@@ -118,10 +147,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.3.0** - AI-powered analysis features
+- **1.25.0** - STM32F1 SPI NAND & eMMC support
+- **1.2.0** - eMMC support
+- **1.1.0** - SPI NAND support
 - **1.0.0** - Initial public release
 - **0.x.x** - Development versions (not released)
 
-[Unreleased]: https://github.com/openflash/openflash/compare/v1.25.0...HEAD
+[Unreleased]: https://github.com/openflash/openflash/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/openflash/openflash/compare/v1.25.0...v1.3.0
 [1.25.0]: https://github.com/openflash/openflash/compare/v1.2.0...v1.25.0
 [1.2.0]: https://github.com/openflash/openflash/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/openflash/openflash/compare/v1.0.0...v1.1.0
