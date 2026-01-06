@@ -3,7 +3,9 @@ pub mod protocol;
 pub mod ecc;
 pub mod analysis;
 pub mod spi_nand;
+pub mod spi_nor;
 pub mod emmc;
+pub mod ufs;
 pub mod ai;
 
 pub use onfi::*;
@@ -23,5 +25,16 @@ pub use emmc::{
     get_emmc_chip_info, get_emmc_manufacturer_name,
     parse_capacity_from_ext_csd, parse_boot_size_from_ext_csd,
     crc7, crc16,
+};
+pub use spi_nor::{
+    SpiNorChipInfo, SpiNorError, ProtectionStatus, SfdpInfo, SfdpParser,
+    QuadEnableMethod, FastReadSupport,
+    get_spi_nor_chip_info, get_spi_nor_manufacturer_name,
+};
+pub use ufs::{
+    UfsDeviceInfo, UfsVersion, UfsLun, UfsError,
+    DeviceDescriptor, UnitDescriptor, GeometryDescriptor,
+    ScsiCdbBuilder, ReadCommandType, select_read_command,
+    get_ufs_manufacturer_name,
 };
 

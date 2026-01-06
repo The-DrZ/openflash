@@ -7,6 +7,76 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-01-XX
+
+### Added
+- **SPI NOR Flash Support**
+  - New `spi_nor` module in core library with chip database
+  - Support for 30+ SPI NOR chips: W25Q series (Winbond), MX25L series (Macronix), IS25LP series (ISSI)
+  - JEDEC ID auto-detection (command 0x9F)
+  - SFDP (Serial Flash Discoverable Parameters) parsing for extended chip info
+  - Standard read (0x03), fast read (0x0B), dual read (0x3B), quad read (0x6B)
+  - Page program (0x02), sector erase (0x20), block erase (0xD8), chip erase (0xC7)
+  - Status register read/write with protection bit decoding (BP0-BP4, TB, SEC, CMP)
+  - 3-byte and 4-byte addressing modes for chips > 16MB
+  - SPI NOR firmware for all platforms: RP2040, STM32F1, STM32F4, ESP32
+
+- **UFS (Universal Flash Storage) Support**
+  - New `ufs` module in core library
+  - UFS 2.0, 2.1, 3.0, 3.1, 4.0 version detection
+  - Device, Unit, and Geometry descriptor parsing
+  - SCSI command builders: READ(10), READ(16) for addresses beyond 2TB
+  - LUN (Logical Unit) support: UserData, BootA, BootB, RPMB
+  - Sense data decoding for error handling
+  - Manufacturer database (Samsung, SK Hynix, Micron, Toshiba/Kioxia, Western Digital)
+
+- **ONFI 5.0 Support**
+  - Extended ONFI module for version 5.0 compliance
+  - NV-DDR3 timing parameters (up to 1.6GT/s)
+  - Extended ECC information parsing
+  - ZQ calibration and DCC training feature flags
+  - Multi-plane operation support
+
+- **16-bit Parallel NAND Bus Support**
+  - NandBusWidth enum (X8, X16)
+  - Bus width auto-detection
+  - 16-bit byte swapping functions with endianness support
+  - x16 chip variants in database (Samsung, Micron, Hynix)
+
+- **New GUI Components**
+  - SPI NOR operations panel with protection status display
+  - Sector/block/chip erase buttons with address input
+  - UFS LUN selector for choosing target logical unit
+  - Updated interface selector (Parallel NAND, SPI NAND, SPI NOR, eMMC, UFS)
+
+- **Protocol Extensions**
+  - SPI NOR commands (0x60-0x7F range)
+  - UFS commands (0x80-0x9F range)
+  - FlashInterface::SpiNor, FlashInterface::Ufs, FlashInterface::ParallelNand16 variants
+
+- **Property-Based Tests**
+  - 10 new property tests with proptest crate (100+ iterations each)
+  - JEDEC ID lookup consistency
+  - SFDP parsing round-trip
+  - Status register bit decoding
+  - UFS descriptor parsing
+  - SCSI command building
+  - Sense data decoding
+  - ONFI version detection
+  - ONFI 5.0 ECC parsing
+  - 16-bit byte swapping correctness
+
+### Changed
+- Protocol version updated to 0x16
+- Core library version updated to 1.6.0
+- GUI version updated to 1.6.0
+- Total test count: 131 tests in core library
+
+### Documentation
+- Updated Supported-Chips wiki with SPI NOR chips
+- Updated ROADMAP with v1.6 completion
+- Added SPI NOR and UFS sections to documentation
+
 ## [1.5.0] - 2026-01-XX
 
 ### Added
@@ -219,6 +289,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.6.0** - SPI NOR flash, UFS, ONFI 5.0, 16-bit NAND support
 - **1.5.0** - ESP32 support, STM32F4 support, WiFi connectivity
 - **1.4.0** - AI v1.4: Filesystem detection, OOB analysis, key search, wear analysis, memory map
 - **1.3.0** - AI-powered analysis features
@@ -228,7 +299,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **1.0.0** - Initial public release
 - **0.x.x** - Development versions (not released)
 
-[Unreleased]: https://github.com/openflash/openflash/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/openflash/openflash/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/openflash/openflash/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/openflash/openflash/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/openflash/openflash/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/openflash/openflash/compare/v1.25.0...v1.3.0

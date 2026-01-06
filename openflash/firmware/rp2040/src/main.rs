@@ -18,11 +18,13 @@ use {defmt_rtt as _, panic_probe as _};
 
 mod pio_nand;
 mod spi_nand;
+mod spi_nor;
 mod emmc;
 mod usb_handler;
 
 use pio_nand::{NandController, NandPins};
 use spi_nand::SpiNandController;
+use spi_nor::SpiNorController;
 use emmc::EmmcController;
 use usb_handler::UsbHandler;
 
@@ -122,8 +124,17 @@ async fn main(spawner: Spawner) {
         spi_config,
     );
     let spi_cs = Output::new(p.PIN_17, Level::High); // CS# idle high
-    let spi_nand = SpiNandController::new(spi, spi_cs);
-    info!("SPI NAND controller initialized");
+    
+    // SPI NOR uses same SPI0 bus as SPI NAND (shared hardware)
+    // The controller can be used for both SPI NAND and SPI NOR
+    // depending on the chip connected
+    let spi_nor = SpiNorController::new(spi, spi_cs);
+    info!("SPI NOR controller initialized (SPI0)");
+
+    // Note: SPI NAND would use the same SPI0 bus with different CS
+    // For now, we use SPI0 for SPI NOR operations
+    // let spi_nand = SpiNandController::new(spi, spi_cs);
+    // info!("SPI NAND controller initialized");
 
     // Initialize eMMC controller (shares SPI1 for separate CS)
     // Note: eMMC uses same SPI bus but different CS pin (GP20)
@@ -186,8 +197,10 @@ async fn main(spawner: Spawner) {
     info!("USB initialized, waiting for connection...");
     led.set_low(); // LED off, ready
 
-    // Create command handler with NAND controller
+    // Create command handler with NAND and SPI NOR controllers
     let mut handler = UsbHandler::new(class, nand);
+    handler.set_spi_nor(spi_nor);
+    info!("Command handler initialized with SPI NOR support");
 
     // Main loop
     loop {

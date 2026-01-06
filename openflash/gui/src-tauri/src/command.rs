@@ -5,7 +5,7 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, State};
 
 use crate::config::AppConfig;
-use crate::device::{ChipInfo, DeviceInfo, DeviceManager, FlashInterface};
+use crate::device::{ChipInfo, DeviceInfo, DeviceManager, FlashInterface, UfsLunInfo};
 use crate::mock;
 
 #[tauri::command]
@@ -124,8 +124,6 @@ pub async fn get_chip_info(
         return Ok(mock::get_mock_chip_info());
     }
     
-    let chip_id = read_nand_id(device_manager.clone()).await?;
-    
     // Check current interface mode
     let interface = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
@@ -134,6 +132,7 @@ pub async fn get_chip_info(
     
     match interface {
         FlashInterface::ParallelNand => {
+            let chip_id = read_nand_id(device_manager.clone()).await?;
             if let Some(info) = openflash_core::onfi::get_chip_info(&chip_id) {
                 Ok(ChipInfo {
                     manufacturer: info.manufacturer,
@@ -143,6 +142,17 @@ pub async fn get_chip_info(
                     page_size: info.page_size,
                     block_size: info.block_size,
                     interface: FlashInterface::ParallelNand,
+                    sector_size: None,
+                    jedec_id: None,
+                    has_qspi: None,
+                    has_dual: None,
+                    voltage: None,
+                    max_clock_mhz: None,
+                    protected: None,
+                    luns: None,
+                    ufs_version: None,
+                    serial_number: None,
+                    boot_lun_enabled: None,
                 })
             } else {
                 Ok(ChipInfo {
@@ -153,10 +163,22 @@ pub async fn get_chip_info(
                     page_size: 2048,
                     block_size: 64,
                     interface: FlashInterface::ParallelNand,
+                    sector_size: None,
+                    jedec_id: None,
+                    has_qspi: None,
+                    has_dual: None,
+                    voltage: None,
+                    max_clock_mhz: None,
+                    protected: None,
+                    luns: None,
+                    ufs_version: None,
+                    serial_number: None,
+                    boot_lun_enabled: None,
                 })
             }
         }
         FlashInterface::SpiNand => {
+            let chip_id = read_spi_nand_id(device_manager.clone()).await?;
             if let Some(info) = openflash_core::spi_nand::get_spi_nand_chip_info(&chip_id) {
                 Ok(ChipInfo {
                     manufacturer: info.manufacturer,
@@ -166,6 +188,17 @@ pub async fn get_chip_info(
                     page_size: info.page_size,
                     block_size: info.block_size,
                     interface: FlashInterface::SpiNand,
+                    sector_size: None,
+                    jedec_id: None,
+                    has_qspi: None,
+                    has_dual: None,
+                    voltage: None,
+                    max_clock_mhz: None,
+                    protected: None,
+                    luns: None,
+                    ufs_version: None,
+                    serial_number: None,
+                    boot_lun_enabled: None,
                 })
             } else {
                 Ok(ChipInfo {
@@ -176,8 +209,100 @@ pub async fn get_chip_info(
                     page_size: 2048,
                     block_size: 64,
                     interface: FlashInterface::SpiNand,
+                    sector_size: None,
+                    jedec_id: None,
+                    has_qspi: None,
+                    has_dual: None,
+                    voltage: None,
+                    max_clock_mhz: None,
+                    protected: None,
+                    luns: None,
+                    ufs_version: None,
+                    serial_number: None,
+                    boot_lun_enabled: None,
                 })
             }
+        }
+        FlashInterface::SpiNor => {
+            let jedec_id = read_spi_nor_jedec_id(device_manager.clone()).await?;
+            let jedec_arr: [u8; 3] = [
+                jedec_id.first().copied().unwrap_or(0),
+                jedec_id.get(1).copied().unwrap_or(0),
+                jedec_id.get(2).copied().unwrap_or(0),
+            ];
+            
+            if let Some(info) = openflash_core::spi_nor::get_spi_nor_chip_info(&jedec_arr) {
+                Ok(ChipInfo {
+                    manufacturer: info.manufacturer.clone(),
+                    model: info.model.clone(),
+                    chip_id: jedec_id.clone(),
+                    size_mb: (info.size_bytes / (1024 * 1024)) as u32,
+                    page_size: info.page_size,
+                    block_size: info.block_size,
+                    interface: FlashInterface::SpiNor,
+                    sector_size: Some(info.sector_size),
+                    jedec_id: Some(jedec_id),
+                    has_qspi: Some(info.has_qspi),
+                    has_dual: Some(info.has_dual),
+                    voltage: Some(info.voltage.clone()),
+                    max_clock_mhz: Some(info.max_clock_mhz),
+                    protected: None, // Will be read separately
+                    luns: None,
+                    ufs_version: None,
+                    serial_number: None,
+                    boot_lun_enabled: None,
+                })
+            } else {
+                let mfr_name = openflash_core::spi_nor::get_spi_nor_manufacturer_name(jedec_arr[0]);
+                Ok(ChipInfo {
+                    manufacturer: mfr_name.to_string(),
+                    model: format!("Unknown SPI NOR 0x{:02X}{:02X}{:02X}", jedec_arr[0], jedec_arr[1], jedec_arr[2]),
+                    chip_id: jedec_id.clone(),
+                    size_mb: 0,
+                    page_size: 256,
+                    block_size: 65536,
+                    interface: FlashInterface::SpiNor,
+                    sector_size: Some(4096),
+                    jedec_id: Some(jedec_id),
+                    has_qspi: None,
+                    has_dual: None,
+                    voltage: None,
+                    max_clock_mhz: None,
+                    protected: None,
+                    luns: None,
+                    ufs_version: None,
+                    serial_number: None,
+                    boot_lun_enabled: None,
+                })
+            }
+        }
+        FlashInterface::Ufs => {
+            // For UFS, we need to read device descriptor
+            let ufs_info = read_ufs_device_info(device_manager.clone()).await?;
+            Ok(ufs_info)
+        }
+        FlashInterface::Emmc => {
+            // eMMC support - placeholder for now
+            Ok(ChipInfo {
+                manufacturer: "Unknown".to_string(),
+                model: "eMMC Device".to_string(),
+                chip_id: vec![],
+                size_mb: 0,
+                page_size: 512,
+                block_size: 512,
+                interface: FlashInterface::Emmc,
+                sector_size: None,
+                jedec_id: None,
+                has_qspi: None,
+                has_dual: None,
+                voltage: None,
+                max_clock_mhz: None,
+                protected: None,
+                luns: None,
+                ufs_version: None,
+                serial_number: None,
+                boot_lun_enabled: None,
+            })
         }
     }
 }
@@ -224,6 +349,278 @@ pub async fn read_spi_nand_id(
         Ok(response[2..5].to_vec())
     } else {
         Err("Failed to read SPI NAND chip ID".to_string())
+    }
+}
+
+// ============================================================================
+// SPI NOR Flash commands (v1.6)
+// ============================================================================
+
+/// Read SPI NOR JEDEC ID
+#[tauri::command]
+pub async fn read_spi_nor_jedec_id(
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<Vec<u8>, String> {
+    if mock::is_mock_connected() {
+        // Return mock SPI NOR ID (Winbond W25Q128JV)
+        return Ok(vec![0xEF, 0x40, 0x18]);
+    }
+    
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    let response = dev.send_command(openflash_core::protocol::Command::SpiNorReadJedecId, &[]).await?;
+
+    if response.len() >= 5 && response[1] == 0x00 {
+        Ok(response[2..5].to_vec())
+    } else {
+        Err("Failed to read SPI NOR JEDEC ID".to_string())
+    }
+}
+
+/// SPI NOR sector erase (4KB)
+#[tauri::command]
+pub async fn spi_nor_sector_erase(
+    address: u32,
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<(), String> {
+    if mock::is_mock_connected() {
+        return Ok(());
+    }
+    
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    let args = address.to_le_bytes();
+    let response = dev.send_command(openflash_core::protocol::Command::SpiNorSectorErase, &args).await?;
+
+    if response.len() >= 2 && response[1] == 0x00 {
+        Ok(())
+    } else {
+        Err("Sector erase failed".to_string())
+    }
+}
+
+/// SPI NOR block erase (64KB)
+#[tauri::command]
+pub async fn spi_nor_block_erase(
+    address: u32,
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<(), String> {
+    if mock::is_mock_connected() {
+        return Ok(());
+    }
+    
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    let args = address.to_le_bytes();
+    let response = dev.send_command(openflash_core::protocol::Command::SpiNorBlockErase64K, &args).await?;
+
+    if response.len() >= 2 && response[1] == 0x00 {
+        Ok(())
+    } else {
+        Err("Block erase failed".to_string())
+    }
+}
+
+/// SPI NOR chip erase
+#[tauri::command]
+pub async fn spi_nor_chip_erase(
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<(), String> {
+    if mock::is_mock_connected() {
+        return Ok(());
+    }
+    
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    let response = dev.send_command(openflash_core::protocol::Command::SpiNorChipErase, &[]).await?;
+
+    if response.len() >= 2 && response[1] == 0x00 {
+        Ok(())
+    } else {
+        Err("Chip erase failed".to_string())
+    }
+}
+
+/// SPI NOR unlock all protection
+#[tauri::command]
+pub async fn spi_nor_unlock_all(
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<(), String> {
+    if mock::is_mock_connected() {
+        return Ok(());
+    }
+    
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    // Write 0x00 to status register 1 to clear all protection bits
+    let response = dev.send_command(openflash_core::protocol::Command::SpiNorWriteStatus1, &[0x00]).await?;
+
+    if response.len() >= 2 && response[1] == 0x00 {
+        Ok(())
+    } else {
+        Err("Failed to unlock protection".to_string())
+    }
+}
+
+// ============================================================================
+// UFS commands (v1.6)
+// ============================================================================
+
+/// Read UFS device information
+#[tauri::command]
+pub async fn read_ufs_device_info(
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<ChipInfo, String> {
+    if mock::is_mock_connected() {
+        // Return mock UFS device info
+        return Ok(ChipInfo {
+            manufacturer: "Samsung".to_string(),
+            model: "KLUDG4U1EA-B0C1".to_string(),
+            chip_id: vec![0x01, 0xCE],
+            size_mb: 128 * 1024, // 128GB
+            page_size: 4096,
+            block_size: 4096,
+            interface: FlashInterface::Ufs,
+            sector_size: None,
+            jedec_id: None,
+            has_qspi: None,
+            has_dual: None,
+            voltage: None,
+            max_clock_mhz: None,
+            protected: None,
+            luns: Some(vec![
+                UfsLunInfo {
+                    lun_type: "UserData".to_string(),
+                    capacity_bytes: 128 * 1024 * 1024 * 1024,
+                    block_size: 4096,
+                    enabled: true,
+                    write_protected: false,
+                },
+                UfsLunInfo {
+                    lun_type: "BootA".to_string(),
+                    capacity_bytes: 4 * 1024 * 1024,
+                    block_size: 4096,
+                    enabled: true,
+                    write_protected: false,
+                },
+                UfsLunInfo {
+                    lun_type: "BootB".to_string(),
+                    capacity_bytes: 4 * 1024 * 1024,
+                    block_size: 4096,
+                    enabled: true,
+                    write_protected: false,
+                },
+                UfsLunInfo {
+                    lun_type: "Rpmb".to_string(),
+                    capacity_bytes: 512 * 1024,
+                    block_size: 256,
+                    enabled: true,
+                    write_protected: true,
+                },
+            ]),
+            ufs_version: Some("UFS 3.1".to_string()),
+            serial_number: Some("S4EVNX0M123456".to_string()),
+            boot_lun_enabled: Some(true),
+        });
+    }
+    
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    
+    // Read device descriptor
+    let response = dev.send_command(
+        openflash_core::protocol::Command::UfsReadDescriptor, 
+        &[openflash_core::ufs::descriptors::DEVICE]
+    ).await?;
+
+    if response.len() < 34 {
+        return Err("Failed to read UFS device descriptor".to_string());
+    }
+
+    // Parse device descriptor
+    if let Some(desc) = openflash_core::ufs::DeviceDescriptor::parse(&response[2..]) {
+        let version = desc.get_ufs_version();
+        let mfr_name = desc.get_manufacturer_name();
+        
+        Ok(ChipInfo {
+            manufacturer: mfr_name.to_string(),
+            model: format!("UFS Device 0x{:04X}", desc.manufacturer_id),
+            chip_id: vec![(desc.manufacturer_id >> 8) as u8, desc.manufacturer_id as u8],
+            size_mb: 0, // Will be calculated from LUNs
+            page_size: 4096,
+            block_size: 4096,
+            interface: FlashInterface::Ufs,
+            sector_size: None,
+            jedec_id: None,
+            has_qspi: None,
+            has_dual: None,
+            voltage: None,
+            max_clock_mhz: None,
+            protected: None,
+            luns: None, // Would need to enumerate LUNs
+            ufs_version: Some(version.as_str().to_string()),
+            serial_number: None,
+            boot_lun_enabled: Some(desc.boot_enable != 0),
+        })
+    } else {
+        Err("Failed to parse UFS device descriptor".to_string())
+    }
+}
+
+/// Select UFS LUN for operations
+#[tauri::command]
+pub async fn ufs_select_lun(
+    lun_type: String,
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<(), String> {
+    if mock::is_mock_connected() {
+        return Ok(());
+    }
+    
+    let lun_id = match lun_type.as_str() {
+        "UserData" => 0x00,
+        "BootA" => 0x01,
+        "BootB" => 0x02,
+        "Rpmb" => 0xC4,
+        _ => return Err(format!("Unknown LUN type: {}", lun_type)),
+    };
+    
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    let response = dev.send_command(openflash_core::protocol::Command::UfsSelectLun, &[lun_id]).await?;
+
+    if response.len() >= 2 && response[1] == 0x00 {
+        Ok(())
+    } else {
+        Err("Failed to select LUN".to_string())
     }
 }
 

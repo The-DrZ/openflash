@@ -1,7 +1,7 @@
 //! OpenFlash STM32F4 Firmware
 //! Firmware for NAND/eMMC flash operations via USB
-//! Supports: Parallel NAND, SPI NAND, eMMC
-//! 
+//! Supports: Parallel NAND, SPI NAND, SPI NOR, eMMC
+//!
 //! STM32F4 advantages over STM32F1:
 //! - Higher clock speed (up to 180MHz)
 //! - Native USB OTG FS/HS
@@ -15,17 +15,21 @@
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_stm32::bind_interrupts;
+use embassy_stm32::gpio::{Level, Output, Speed};
 use embassy_stm32::peripherals::USB_OTG_FS;
+use embassy_stm32::spi::{Config as SpiConfig, Spi};
 use embassy_stm32::usb_otg::{Driver, InterruptHandler};
 use embassy_usb::class::cdc_acm::{CdcAcmClass, State};
 use embassy_usb::{Builder, Config};
 use {defmt_rtt as _, panic_probe as _};
 
-mod usb_handler;
-mod spi_nand;
 mod emmc;
 mod nand_fsmc;
+mod spi_nand;
+mod spi_nor;
+mod usb_handler;
 
+use spi_nor::SpiNorController;
 use usb_handler::UsbHandler;
 
 bind_interrupts!(struct Irqs {
@@ -40,7 +44,7 @@ static mut STATE: Option<State> = None;
 static mut EP_OUT_BUFFER: [u8; 256] = [0; 256];
 
 /// Pin assignments for STM32F4
-/// 
+///
 /// === USB OTG FS ===
 ///   PA11 - USB_DM
 ///   PA12 - USB_DP
@@ -50,6 +54,12 @@ static mut EP_OUT_BUFFER: [u8; 256] = [0; 256];
 ///   PA6  - MISO
 ///   PA7  - MOSI
 ///   PA4  - CS#
+///
+/// === SPI NOR (SPI3) ===
+///   PC10 - SCK
+///   PC11 - MISO
+///   PC12 - MOSI
+///   PD2  - CS#
 ///
 /// === eMMC (SPI2) ===
 ///   PB13 - SCK
@@ -76,7 +86,14 @@ static mut EP_OUT_BUFFER: [u8; 256] = [0; 256];
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let p = embassy_stm32::init(Default::default());
-    info!("OpenFlash STM32F4 Firmware v1.5.0");
+    info!("OpenFlash STM32F4 Firmware v1.6.0");
+
+    // Initialize SPI3 for SPI NOR flash (with DMA support)
+    // STM32F4 SPI3 pins: PC10 (SCK), PC11 (MISO), PC12 (MOSI)
+    let spi_config = SpiConfig::default();
+    let spi = Spi::new_blocking(p.SPI3, p.PC10, p.PC12, p.PC11, spi_config);
+    let cs = Output::new(p.PD2, Level::High, Speed::VeryHigh);
+    let spi_nor = SpiNorController::new(spi, cs);
 
     // Create USB OTG FS driver
     let ep_out_buffer = unsafe { &mut EP_OUT_BUFFER };
@@ -118,6 +135,7 @@ async fn main(spawner: Spawner) {
     info!("USB OTG FS initialized");
 
     let mut handler = UsbHandler::new(class);
+    handler.set_spi_nor(spi_nor);
 
     loop {
         handler.class.wait_connection().await;

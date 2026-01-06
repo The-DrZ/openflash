@@ -44,6 +44,15 @@ pub fn run() {
             command::set_interface,
             command::get_interface,
             command::read_spi_nand_id,
+            // SPI NOR commands (v1.6)
+            command::read_spi_nor_jedec_id,
+            command::spi_nor_sector_erase,
+            command::spi_nor_block_erase,
+            command::spi_nor_chip_erase,
+            command::spi_nor_unlock_all,
+            // UFS commands (v1.6)
+            command::read_ufs_device_info,
+            command::ufs_select_lun,
             // AI commands (v1.3)
             command::ai_analyze_dump,
             command::ai_detect_patterns,

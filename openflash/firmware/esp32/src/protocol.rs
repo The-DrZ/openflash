@@ -1,9 +1,9 @@
 //! OpenFlash Protocol Definitions for ESP32
 //! 
-//! Protocol version 1.5 - ESP32 support
+//! Protocol version 1.6 - ESP32 support with SPI NOR
 
 /// Protocol version
-pub const PROTOCOL_VERSION: u8 = 0x15;
+pub const PROTOCOL_VERSION: u8 = 0x16;
 
 /// Command codes
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -44,13 +44,33 @@ pub enum Command {
     EmmcEraseBlocks = 0x45,
     EmmcReadExtCsd = 0x46,
     
-    // ESP32 specific commands (0x60-0x6F)
-    WifiScan = 0x60,
-    WifiConnect = 0x61,
-    WifiStatus = 0x62,
-    WifiDisconnect = 0x63,
-    StartWebServer = 0x64,
-    StopWebServer = 0x65,
+    // SPI NOR commands (0x70-0x8F)
+    SpiNorReadJedecId = 0x70,
+    SpiNorReadSfdp = 0x71,
+    SpiNorRead = 0x72,
+    SpiNorFastRead = 0x73,
+    SpiNorPageProgram = 0x74,
+    SpiNorSectorErase = 0x75,
+    SpiNorBlockErase32K = 0x76,
+    SpiNorBlockErase64K = 0x77,
+    SpiNorChipErase = 0x78,
+    SpiNorReadStatus1 = 0x79,
+    SpiNorReadStatus2 = 0x7A,
+    SpiNorReadStatus3 = 0x7B,
+    SpiNorWriteStatus1 = 0x7C,
+    SpiNorWriteStatus2 = 0x7D,
+    SpiNorWriteStatus3 = 0x7E,
+    SpiNorWriteEnable = 0x7F,
+    SpiNorWriteDisable = 0x80,
+    SpiNorReset = 0x81,
+    
+    // ESP32 specific commands (0xA0-0xAF)
+    WifiScan = 0xA0,
+    WifiConnect = 0xA1,
+    WifiStatus = 0xA2,
+    WifiDisconnect = 0xA3,
+    StartWebServer = 0xA4,
+    StopWebServer = 0xA5,
 }
 
 impl TryFrom<u8> for Command {
@@ -89,12 +109,32 @@ impl TryFrom<u8> for Command {
             0x45 => Ok(Command::EmmcEraseBlocks),
             0x46 => Ok(Command::EmmcReadExtCsd),
             
-            0x60 => Ok(Command::WifiScan),
-            0x61 => Ok(Command::WifiConnect),
-            0x62 => Ok(Command::WifiStatus),
-            0x63 => Ok(Command::WifiDisconnect),
-            0x64 => Ok(Command::StartWebServer),
-            0x65 => Ok(Command::StopWebServer),
+            // SPI NOR commands
+            0x70 => Ok(Command::SpiNorReadJedecId),
+            0x71 => Ok(Command::SpiNorReadSfdp),
+            0x72 => Ok(Command::SpiNorRead),
+            0x73 => Ok(Command::SpiNorFastRead),
+            0x74 => Ok(Command::SpiNorPageProgram),
+            0x75 => Ok(Command::SpiNorSectorErase),
+            0x76 => Ok(Command::SpiNorBlockErase32K),
+            0x77 => Ok(Command::SpiNorBlockErase64K),
+            0x78 => Ok(Command::SpiNorChipErase),
+            0x79 => Ok(Command::SpiNorReadStatus1),
+            0x7A => Ok(Command::SpiNorReadStatus2),
+            0x7B => Ok(Command::SpiNorReadStatus3),
+            0x7C => Ok(Command::SpiNorWriteStatus1),
+            0x7D => Ok(Command::SpiNorWriteStatus2),
+            0x7E => Ok(Command::SpiNorWriteStatus3),
+            0x7F => Ok(Command::SpiNorWriteEnable),
+            0x80 => Ok(Command::SpiNorWriteDisable),
+            0x81 => Ok(Command::SpiNorReset),
+            
+            0xA0 => Ok(Command::WifiScan),
+            0xA1 => Ok(Command::WifiConnect),
+            0xA2 => Ok(Command::WifiStatus),
+            0xA3 => Ok(Command::WifiDisconnect),
+            0xA4 => Ok(Command::StartWebServer),
+            0xA5 => Ok(Command::StopWebServer),
             
             _ => Err(()),
         }
@@ -124,4 +164,5 @@ pub enum Interface {
     ParallelNand = 0x00,
     SpiNand = 0x01,
     Emmc = 0x02,
+    SpiNor = 0x03,
 }

@@ -18,6 +18,9 @@ pub enum FlashInterface {
     #[default]
     ParallelNand,
     SpiNand,
+    SpiNor,
+    Ufs,
+    Emmc,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -37,6 +40,41 @@ pub struct ChipInfo {
     pub page_size: u32,
     pub block_size: u32,
     pub interface: FlashInterface,
+    // SPI NOR specific fields
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sector_size: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub jedec_id: Option<Vec<u8>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_qspi: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub has_dual: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub voltage: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max_clock_mhz: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub protected: Option<bool>,
+    // UFS specific fields
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub luns: Option<Vec<UfsLunInfo>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ufs_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub serial_number: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub boot_lun_enabled: Option<bool>,
+}
+
+/// UFS Logical Unit information
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UfsLunInfo {
+    #[serde(rename = "type")]
+    pub lun_type: String,
+    pub capacity_bytes: u64,
+    pub block_size: u32,
+    pub enabled: bool,
+    pub write_protected: bool,
 }
 
 pub struct UsbDevice {

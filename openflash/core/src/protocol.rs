@@ -10,6 +10,9 @@ pub enum FlashInterface {
     ParallelNand = 0x00,
     SpiNand = 0x01,
     Emmc = 0x02,
+    SpiNor = 0x03,          // NEW: SPI NOR Flash
+    Ufs = 0x04,             // NEW: Universal Flash Storage
+    ParallelNand16 = 0x05,  // NEW: 16-bit parallel NAND
 }
 
 /// USB Protocol Commands
@@ -58,6 +61,39 @@ pub enum Command {
     EmmcErase = 0x48,             // Erase blocks
     EmmcGetStatus = 0x49,         // Get card status
     EmmcSetPartition = 0x4A,      // Select partition (user/boot/rpmb)
+    
+    // SPI NOR commands (0x60-0x7F)
+    SpiNorReadJedecId = 0x60,     // Read JEDEC ID
+    SpiNorReadSfdp = 0x61,        // Read SFDP data
+    SpiNorRead = 0x62,            // Standard read
+    SpiNorFastRead = 0x63,        // Fast read with dummy cycle
+    SpiNorDualRead = 0x64,        // Dual SPI read
+    SpiNorQuadRead = 0x65,        // Quad SPI read
+    SpiNorPageProgram = 0x66,     // Page program (256 bytes)
+    SpiNorSectorErase = 0x67,     // Sector erase (4KB)
+    SpiNorBlockErase32K = 0x68,   // Block erase (32KB)
+    SpiNorBlockErase64K = 0x69,   // Block erase (64KB)
+    SpiNorChipErase = 0x6A,       // Chip erase
+    SpiNorReadStatus1 = 0x6B,     // Read status register 1
+    SpiNorReadStatus2 = 0x6C,     // Read status register 2
+    SpiNorReadStatus3 = 0x6D,     // Read status register 3
+    SpiNorWriteStatus1 = 0x6E,    // Write status register 1
+    SpiNorWriteStatus2 = 0x6F,    // Write status register 2
+    SpiNorWriteStatus3 = 0x70,    // Write status register 3
+    SpiNorWriteEnable = 0x71,     // Write enable
+    SpiNorWriteDisable = 0x72,    // Write disable
+    SpiNorReset = 0x73,           // Software reset
+    
+    // UFS commands (0x80-0x9F)
+    UfsInit = 0x80,               // Initialize UFS device
+    UfsReadDescriptor = 0x81,     // Read UFS descriptor
+    UfsReadCapacity = 0x82,       // Read device capacity
+    UfsRead10 = 0x83,             // SCSI READ(10) command
+    UfsRead16 = 0x84,             // SCSI READ(16) command
+    UfsWrite10 = 0x85,            // SCSI WRITE(10) command
+    UfsWrite16 = 0x86,            // SCSI WRITE(16) command
+    UfsSelectLun = 0x87,          // Select logical unit
+    UfsGetStatus = 0x88,          // Get device status
 }
 
 impl Command {
@@ -106,6 +142,39 @@ impl Command {
             0x49 => Some(Command::EmmcGetStatus),
             0x4A => Some(Command::EmmcSetPartition),
             
+            // SPI NOR
+            0x60 => Some(Command::SpiNorReadJedecId),
+            0x61 => Some(Command::SpiNorReadSfdp),
+            0x62 => Some(Command::SpiNorRead),
+            0x63 => Some(Command::SpiNorFastRead),
+            0x64 => Some(Command::SpiNorDualRead),
+            0x65 => Some(Command::SpiNorQuadRead),
+            0x66 => Some(Command::SpiNorPageProgram),
+            0x67 => Some(Command::SpiNorSectorErase),
+            0x68 => Some(Command::SpiNorBlockErase32K),
+            0x69 => Some(Command::SpiNorBlockErase64K),
+            0x6A => Some(Command::SpiNorChipErase),
+            0x6B => Some(Command::SpiNorReadStatus1),
+            0x6C => Some(Command::SpiNorReadStatus2),
+            0x6D => Some(Command::SpiNorReadStatus3),
+            0x6E => Some(Command::SpiNorWriteStatus1),
+            0x6F => Some(Command::SpiNorWriteStatus2),
+            0x70 => Some(Command::SpiNorWriteStatus3),
+            0x71 => Some(Command::SpiNorWriteEnable),
+            0x72 => Some(Command::SpiNorWriteDisable),
+            0x73 => Some(Command::SpiNorReset),
+            
+            // UFS
+            0x80 => Some(Command::UfsInit),
+            0x81 => Some(Command::UfsReadDescriptor),
+            0x82 => Some(Command::UfsReadCapacity),
+            0x83 => Some(Command::UfsRead10),
+            0x84 => Some(Command::UfsRead16),
+            0x85 => Some(Command::UfsWrite10),
+            0x86 => Some(Command::UfsWrite16),
+            0x87 => Some(Command::UfsSelectLun),
+            0x88 => Some(Command::UfsGetStatus),
+            
             _ => None,
         }
     }
@@ -143,6 +212,47 @@ impl Command {
             Command::EmmcErase |
             Command::EmmcGetStatus |
             Command::EmmcSetPartition
+        )
+    }
+    
+    /// Check if command is for SPI NOR interface
+    pub fn is_spi_nor(&self) -> bool {
+        matches!(self,
+            Command::SpiNorReadJedecId |
+            Command::SpiNorReadSfdp |
+            Command::SpiNorRead |
+            Command::SpiNorFastRead |
+            Command::SpiNorDualRead |
+            Command::SpiNorQuadRead |
+            Command::SpiNorPageProgram |
+            Command::SpiNorSectorErase |
+            Command::SpiNorBlockErase32K |
+            Command::SpiNorBlockErase64K |
+            Command::SpiNorChipErase |
+            Command::SpiNorReadStatus1 |
+            Command::SpiNorReadStatus2 |
+            Command::SpiNorReadStatus3 |
+            Command::SpiNorWriteStatus1 |
+            Command::SpiNorWriteStatus2 |
+            Command::SpiNorWriteStatus3 |
+            Command::SpiNorWriteEnable |
+            Command::SpiNorWriteDisable |
+            Command::SpiNorReset
+        )
+    }
+    
+    /// Check if command is for UFS interface
+    pub fn is_ufs(&self) -> bool {
+        matches!(self,
+            Command::UfsInit |
+            Command::UfsReadDescriptor |
+            Command::UfsReadCapacity |
+            Command::UfsRead10 |
+            Command::UfsRead16 |
+            Command::UfsWrite10 |
+            Command::UfsWrite16 |
+            Command::UfsSelectLun |
+            Command::UfsGetStatus
         )
     }
 }
@@ -207,6 +317,16 @@ pub mod spi_nand_commands {
 /// eMMC commands (re-exported from emmc module)
 pub mod emmc_commands {
     pub use crate::emmc::commands::*;
+}
+
+/// SPI NOR commands (re-exported from spi_nor module)
+pub mod spi_nor_commands {
+    pub use crate::spi_nor::commands::*;
+}
+
+/// UFS SCSI commands (re-exported from ufs module)
+pub mod ufs_commands {
+    pub use crate::ufs::scsi::*;
 }
 
 /// SPI configuration for SPI NAND
@@ -293,5 +413,55 @@ mod tests {
         assert_eq!(Command::from_u8(0x40), Some(Command::EmmcInit));
         assert_eq!(Command::from_u8(0x44), Some(Command::EmmcReadBlock));
         assert_eq!(Command::from_u8(0x48), Some(Command::EmmcErase));
+    }
+    
+    #[test]
+    fn test_spi_nor_command_from_u8() {
+        assert_eq!(Command::from_u8(0x60), Some(Command::SpiNorReadJedecId));
+        assert_eq!(Command::from_u8(0x62), Some(Command::SpiNorRead));
+        assert_eq!(Command::from_u8(0x66), Some(Command::SpiNorPageProgram));
+        assert_eq!(Command::from_u8(0x67), Some(Command::SpiNorSectorErase));
+        assert_eq!(Command::from_u8(0x6A), Some(Command::SpiNorChipErase));
+        assert_eq!(Command::from_u8(0x73), Some(Command::SpiNorReset));
+    }
+    
+    #[test]
+    fn test_spi_nor_command_detection() {
+        assert!(Command::SpiNorReadJedecId.is_spi_nor());
+        assert!(Command::SpiNorRead.is_spi_nor());
+        assert!(Command::SpiNorPageProgram.is_spi_nor());
+        assert!(!Command::SpiNandReadId.is_spi_nor());
+        assert!(!Command::EmmcInit.is_spi_nor());
+        assert!(!Command::Ping.is_spi_nor());
+    }
+    
+    #[test]
+    fn test_ufs_command_from_u8() {
+        assert_eq!(Command::from_u8(0x80), Some(Command::UfsInit));
+        assert_eq!(Command::from_u8(0x81), Some(Command::UfsReadDescriptor));
+        assert_eq!(Command::from_u8(0x83), Some(Command::UfsRead10));
+        assert_eq!(Command::from_u8(0x84), Some(Command::UfsRead16));
+        assert_eq!(Command::from_u8(0x87), Some(Command::UfsSelectLun));
+        assert_eq!(Command::from_u8(0x88), Some(Command::UfsGetStatus));
+    }
+    
+    #[test]
+    fn test_ufs_command_detection() {
+        assert!(Command::UfsInit.is_ufs());
+        assert!(Command::UfsRead10.is_ufs());
+        assert!(Command::UfsSelectLun.is_ufs());
+        assert!(!Command::SpiNorRead.is_ufs());
+        assert!(!Command::EmmcInit.is_ufs());
+        assert!(!Command::Ping.is_ufs());
+    }
+    
+    #[test]
+    fn test_flash_interface_values() {
+        assert_eq!(FlashInterface::ParallelNand as u8, 0x00);
+        assert_eq!(FlashInterface::SpiNand as u8, 0x01);
+        assert_eq!(FlashInterface::Emmc as u8, 0x02);
+        assert_eq!(FlashInterface::SpiNor as u8, 0x03);
+        assert_eq!(FlashInterface::Ufs as u8, 0x04);
+        assert_eq!(FlashInterface::ParallelNand16 as u8, 0x05);
     }
 }

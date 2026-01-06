@@ -5,10 +5,14 @@ import { writeFile, readFile } from "@tauri-apps/plugin-fs";
 import { HexViewer } from "./components/HexViewer";
 import { BitmapView } from "./components/BitmapView";
 import { AiAnalysis } from "./components/AiAnalysis";
+import { SpiNorOperations } from "./components/SpiNorOperations";
+import { UfsLunSelector } from "./components/UfsLunSelector";
 import "./styles.css";
 import "./components/HexViewer.css";
 import "./components/BitmapView.css";
 import "./components/AiAnalysis.css";
+import "./components/SpiNorOperations.css";
+import "./components/UfsLunSelector.css";
 
 interface DeviceInfo {
   id: string;
@@ -17,7 +21,18 @@ interface DeviceInfo {
   connected: boolean;
 }
 
-type FlashInterface = "ParallelNand" | "SpiNand";
+type FlashInterface = "ParallelNand" | "SpiNand" | "SpiNor" | "Ufs" | "Emmc";
+
+// UFS Logical Unit types
+type UfsLunType = "UserData" | "BootA" | "BootB" | "Rpmb";
+
+interface UfsLun {
+  type: UfsLunType;
+  capacity_bytes: number;
+  block_size: number;
+  enabled: boolean;
+  write_protected: boolean;
+}
 
 interface ChipInfo {
   manufacturer: string;
@@ -27,6 +42,28 @@ interface ChipInfo {
   page_size: number;
   block_size: number;
   interface: FlashInterface;
+  // SPI NOR specific fields
+  sector_size?: number;
+  jedec_id?: number[];
+  has_qspi?: boolean;
+  has_dual?: boolean;
+  voltage?: string;
+  max_clock_mhz?: number;
+  // Protection status for SPI NOR
+  protected?: boolean;
+  protection_bits?: {
+    bp0: boolean;
+    bp1: boolean;
+    bp2: boolean;
+    tb: boolean;
+    sec: boolean;
+    cmp: boolean;
+  };
+  // UFS specific fields
+  luns?: UfsLun[];
+  ufs_version?: string;
+  serial_number?: string;
+  boot_lun_enabled?: boolean;
 }
 
 interface AnalysisResult {
@@ -52,6 +89,7 @@ function App() {
   const [mockEnabled, setMockEnabled] = useState(false);
   const [hexHighlights, setHexHighlights] = useState<{ start: number; end: number; color: string; label?: string }[]>([]);
   const [flashInterface, setFlashInterface] = useState<FlashInterface>("ParallelNand");
+  const [selectedUfsLun, setSelectedUfsLun] = useState<UfsLunType | null>(null);
 
   useEffect(() => {
     scanDevices();
@@ -86,7 +124,15 @@ function App() {
       await invoke("set_interface", { interface: newInterface });
       setFlashInterface(newInterface);
       setChipInfo(null);
-      setStatus(`Switched to ${newInterface === "SpiNand" ? "SPI NAND" : "Parallel NAND"} mode`);
+      
+      const interfaceNames: Record<FlashInterface, string> = {
+        ParallelNand: "Parallel NAND",
+        SpiNand: "SPI NAND",
+        SpiNor: "SPI NOR",
+        Ufs: "UFS",
+        Emmc: "eMMC",
+      };
+      setStatus(`Switched to ${interfaceNames[newInterface]} mode`);
       
       // Re-read chip info if connected
       if (selectedDevice) {
@@ -280,6 +326,33 @@ function App() {
     return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
   }
 
+  // SPI NOR operation handler
+  async function handleSpiNorOperation(operation: string, address?: number) {
+    try {
+      setIsWorking(true);
+      switch (operation) {
+        case "sector_erase":
+          await invoke("spi_nor_sector_erase", { address });
+          break;
+        case "block_erase":
+          await invoke("spi_nor_block_erase", { address });
+          break;
+        case "chip_erase":
+          await invoke("spi_nor_chip_erase");
+          break;
+        case "unlock_all":
+          await invoke("spi_nor_unlock_all");
+          // Refresh chip info to update protection status
+          await readChipInfo();
+          break;
+        default:
+          throw new Error(`Unknown operation: ${operation}`);
+      }
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -338,6 +411,7 @@ function App() {
                   className={flashInterface === "ParallelNand" ? "active" : ""}
                   onClick={() => switchInterface("ParallelNand")}
                   disabled={isWorking}
+                  title="Parallel NAND Flash"
                 >
                   Parallel
                 </button>
@@ -345,8 +419,33 @@ function App() {
                   className={flashInterface === "SpiNand" ? "active" : ""}
                   onClick={() => switchInterface("SpiNand")}
                   disabled={isWorking}
+                  title="SPI NAND Flash"
                 >
-                  SPI
+                  SPI NAND
+                </button>
+                <button 
+                  className={flashInterface === "SpiNor" ? "active" : ""}
+                  onClick={() => switchInterface("SpiNor")}
+                  disabled={isWorking}
+                  title="SPI NOR Flash"
+                >
+                  SPI NOR
+                </button>
+                <button 
+                  className={flashInterface === "Emmc" ? "active" : ""}
+                  onClick={() => switchInterface("Emmc")}
+                  disabled={isWorking}
+                  title="eMMC Storage"
+                >
+                  eMMC
+                </button>
+                <button 
+                  className={flashInterface === "Ufs" ? "active" : ""}
+                  onClick={() => switchInterface("Ufs")}
+                  disabled={isWorking}
+                  title="Universal Flash Storage"
+                >
+                  UFS
                 </button>
               </div>
             </div>
@@ -376,7 +475,11 @@ function App() {
                 <div>
                   <label>Interface</label>
                   <span className="interface-badge">
-                    {chipInfo.interface === "SpiNand" ? "🔌 SPI" : "📊 Parallel"}
+                    {chipInfo.interface === "SpiNand" && "🔌 SPI NAND"}
+                    {chipInfo.interface === "ParallelNand" && "📊 Parallel"}
+                    {chipInfo.interface === "SpiNor" && "💾 SPI NOR"}
+                    {chipInfo.interface === "Emmc" && "📦 eMMC"}
+                    {chipInfo.interface === "Ufs" && "⚡ UFS"}
                   </span>
                 </div>
                 <div>
@@ -439,7 +542,7 @@ function App() {
                 <h2>Flash Operations</h2>
                 <div className="buttons">
                   <button onClick={startDump} disabled={!selectedDevice || isWorking}>
-                    {isWorking ? "⏳ Dumping..." : "📥 Dump NAND"}
+                    {isWorking ? "⏳ Dumping..." : "📥 Dump Flash"}
                   </button>
                   <button onClick={saveDump} disabled={!dumpData || isWorking} className="secondary">
                     💾 Save Dump
@@ -460,6 +563,28 @@ function App() {
                   <div className="dump-info">
                     <p>Dump size: {formatBytes(dumpData.length)}</p>
                   </div>
+                )}
+
+                {/* SPI NOR specific operations */}
+                {chipInfo && chipInfo.interface === "SpiNor" && (
+                  <SpiNorOperations
+                    chipInfo={chipInfo}
+                    onOperation={handleSpiNorOperation}
+                    disabled={!selectedDevice || isWorking}
+                    onStatusChange={setStatus}
+                  />
+                )}
+
+                {/* UFS LUN selector */}
+                {chipInfo && chipInfo.interface === "Ufs" && chipInfo.luns && (
+                  <UfsLunSelector
+                    luns={chipInfo.luns}
+                    selectedLun={selectedUfsLun}
+                    onLunSelect={setSelectedUfsLun}
+                    ufsVersion={chipInfo.ufs_version}
+                    disabled={!selectedDevice || isWorking}
+                    onStatusChange={setStatus}
+                  />
                 )}
 
                 {!selectedDevice && !dumpData && (

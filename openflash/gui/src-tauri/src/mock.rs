@@ -61,6 +61,17 @@ pub fn get_mock_chip_info() -> ChipInfo {
         page_size: 2048,
         block_size: 64,
         interface: FlashInterface::ParallelNand,
+        sector_size: None,
+        jedec_id: None,
+        has_qspi: None,
+        has_dual: None,
+        voltage: None,
+        max_clock_mhz: None,
+        protected: None,
+        luns: None,
+        ufs_version: None,
+        serial_number: None,
+        boot_lun_enabled: None,
     }
 }
 
@@ -78,6 +89,105 @@ pub fn process_mock_command(cmd: Command, args: &[u8]) -> Vec<u8> {
             // Return GigaDevice GD5F1GQ4 ID
             vec![0x20, 0x00, 0xC8, 0xD1, 0x00]
         }
+        
+        // SPI NOR commands
+        Command::SpiNorReadJedecId => {
+            // Return Winbond W25Q128JV JEDEC ID
+            vec![0x60, 0x00, 0xEF, 0x40, 0x18]
+        }
+        Command::SpiNorReadSfdp => {
+            // Return mock SFDP header
+            let mut data = vec![0x61, 0x00];
+            data.extend_from_slice(b"SFDP");
+            data.extend_from_slice(&[0x00; 60]); // Padding
+            data
+        }
+        Command::SpiNorRead | Command::SpiNorFastRead => {
+            // Generate mock SPI NOR data
+            if args.len() >= 4 {
+                let address = u32::from_le_bytes([args[0], args[1], args[2], args[3]]);
+                let size = if args.len() >= 6 {
+                    u16::from_le_bytes([args[4], args[5]]) as usize
+                } else {
+                    256
+                };
+                let mut data = vec![0x62, 0x00];
+                for i in 0..size {
+                    data.push(((address as usize + i) % 256) as u8);
+                }
+                data
+            } else {
+                vec![0x62, 0x01] // Error
+            }
+        }
+        Command::SpiNorPageProgram => vec![0x66, 0x00],
+        Command::SpiNorSectorErase => vec![0x67, 0x00],
+        Command::SpiNorBlockErase32K => vec![0x68, 0x00],
+        Command::SpiNorBlockErase64K => vec![0x69, 0x00],
+        Command::SpiNorChipErase => vec![0x6A, 0x00],
+        Command::SpiNorReadStatus1 => vec![0x6B, 0x00, 0x00], // Status = 0 (not busy, not protected)
+        Command::SpiNorReadStatus2 => vec![0x6C, 0x00, 0x02], // QE bit set
+        Command::SpiNorReadStatus3 => vec![0x6D, 0x00, 0x00],
+        Command::SpiNorWriteStatus1 => vec![0x6E, 0x00],
+        Command::SpiNorWriteStatus2 => vec![0x6F, 0x00],
+        Command::SpiNorWriteStatus3 => vec![0x70, 0x00],
+        Command::SpiNorWriteEnable => vec![0x71, 0x00],
+        Command::SpiNorWriteDisable => vec![0x72, 0x00],
+        Command::SpiNorReset => vec![0x73, 0x00],
+        
+        // UFS commands
+        Command::UfsInit => vec![0x80, 0x00],
+        Command::UfsReadDescriptor => {
+            // Return mock device descriptor
+            let mut data = vec![0x81, 0x00];
+            // Device descriptor (32 bytes minimum)
+            data.push(32); // length
+            data.push(0x00); // descriptor type (device)
+            data.push(0x00); // device type
+            data.push(0x00); // device class
+            data.push(0x00); // device sub-class
+            data.push(0x50); // protocol (UFS)
+            data.push(4); // num LUNs
+            data.push(1); // num WLUNs
+            data.push(1); // boot enable
+            data.push(1); // desc access enable
+            data.push(0); // init power mode
+            data.push(0); // high priority LUN
+            data.push(0); // secure removal type
+            data.push(0); // security LUN
+            data.push(0); // bkops term latency
+            data.push(0); // init active ICC level
+            data.extend_from_slice(&[0x03, 0x10]); // spec version (UFS 3.1)
+            data.extend_from_slice(&[0x01, 0x24]); // manufacture date
+            data.push(1); // manufacturer name idx
+            data.push(2); // product name idx
+            data.push(3); // serial number idx
+            data.push(4); // OEM ID idx
+            data.extend_from_slice(&[0x01, 0xCE]); // manufacturer ID (Samsung)
+            data.push(0); // UD0 base offset
+            data.push(0); // UD config P length
+            data.push(0); // device RTT cap
+            data.extend_from_slice(&[0x00, 0x00]); // periodic RTC update
+            data
+        }
+        Command::UfsReadCapacity => {
+            // Return mock capacity
+            let mut data = vec![0x82, 0x00];
+            data.extend_from_slice(&128u64.to_be_bytes()); // 128GB in blocks
+            data.extend_from_slice(&4096u32.to_be_bytes()); // block size
+            data
+        }
+        Command::UfsRead10 | Command::UfsRead16 => {
+            // Generate mock UFS data
+            let mut data = vec![0x83, 0x00];
+            for i in 0..4096 {
+                data.push((i % 256) as u8);
+            }
+            data
+        }
+        Command::UfsWrite10 | Command::UfsWrite16 => vec![0x85, 0x00],
+        Command::UfsSelectLun => vec![0x87, 0x00],
+        Command::UfsGetStatus => vec![0x88, 0x00, 0x00], // Status OK
         
         Command::Reset => vec![0x08, 0x00],
         

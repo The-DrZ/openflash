@@ -2,7 +2,7 @@
 
 Детальный план развития проекта OpenFlash.
 
-## Текущий статус: v1.5.0
+## Текущий статус: v1.6.0
 
 ---
 
@@ -46,32 +46,23 @@
 - Dump comparison
 - Report export
 
-### v1.5 — ESP32 & STM32F4 Support ← ТЕКУЩАЯ
+### v1.5 — ESP32 & STM32F4 Support
 - ESP32 firmware с WiFi/BLE
 - STM32F4 firmware (USB OTG, FSMC)
 - Web interface для ESP32
 - 4 платформы: RP2040, STM32F1, STM32F4, ESP32
 
+### v1.6 — NOR Flash & UFS Support ← ТЕКУЩАЯ
+- SPI NOR flash (W25Q, MX25L, IS25LP) — 30+ чипов
+- UFS (Universal Flash Storage) — версии 2.0-4.0
+- ONFI 5.0 support с NV-DDR3
+- 16-bit parallel NAND bus
+- 10 property-based тестов
+- GUI: SPI NOR operations panel, UFS LUN selector
+
 ---
 
 ## 🔜 Ближайшие планы
-
-### v1.6 — NOR Flash & UFS Support
-**Цель:** Расширение поддержки типов памяти
-
-| Фича | Приоритет | Сложность |
-|------|-----------|-----------|
-| SPI NOR flash (W25Q, MX25L, IS25LP) | 🔴 High | Medium |
-| UFS (Universal Flash Storage) | 🟡 Medium | High |
-| ONFI 5.0 support | 🟡 Medium | Medium |
-| 16-bit parallel NAND bus | 🟢 Low | Medium |
-
-**Детали:**
-- SPI NOR: W25Q серия (Winbond), MX25L (Macronix), IS25LP (ISSI)
-- UFS: UniPro протокол, MIPI M-PHY интерфейс
-- ONFI 5.0: NV-DDR3, 1.6GT/s
-
----
 
 ### v1.7 — Advanced Write Operations
 **Цель:** Полноценная запись и клонирование
@@ -240,12 +231,12 @@ analysis.export_report("report.md")
 | Версия | Ожидаемая дата | Статус |
 |--------|----------------|--------|
 | v1.5 | Q1 2026 | ✅ Released |
-| v1.6 | Q2 2026 | 📋 Planned |
-| v1.7 | Q3 2026 | 📋 Planned |
-| v1.8 | Q4 2026 | 📋 Planned |
-| v1.9 | Q1 2027 | 📋 Planned |
-| v2.0 | Q2 2027 | 📋 Planned |
-| v2.1 | Q3 2027 | 📋 Planned |
+| v1.6 | Q1 2026 | ✅ Released |
+| v1.7 | Q2 2026 | 📋 Planned |
+| v1.8 | Q3 2026 | 📋 Planned |
+| v1.9 | Q4 2026 | 📋 Planned |
+| v2.0 | Q1 2027 | 📋 Planned |
+| v2.1 | Q2 2027 | 📋 Planned |
 | v3.0 | 2028 | 🔮 Future |
 
 ---
