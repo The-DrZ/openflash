@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-01-XX
+
+### Added
+- **ESP32 Support**
+  - New `esp32` firmware module for ESP32 series microcontrollers
+  - Support for ESP32, ESP32-S2, ESP32-S3, ESP32-C3
+  - WiFi/BLE connectivity for wireless flash operations
+  - Web server mode for browser-based control
+  - UART and USB Serial/JTAG communication
+  - Full support for Parallel NAND, SPI NAND, and eMMC
+
+- **STM32F4 Support**
+  - New `stm32f4` firmware module for STM32F4 series
+  - Support for STM32F401, STM32F411, STM32F446
+  - Native USB OTG FS for faster transfers
+  - FSMC-based parallel NAND for high-speed operations
+  - DMA support for SPI NAND and eMMC
+  - Higher clock speeds (up to 180MHz)
+
+- **New ESP32 Commands**
+  - `wifi_scan` - Scan for available WiFi networks
+  - `wifi_connect` - Connect to WiFi network
+  - `wifi_status` - Get WiFi connection status
+  - `start_web_server` - Start web-based control interface
+  - `stop_web_server` - Stop web server
+
+### Changed
+- Protocol version updated to 0x15
+- Core library version updated to 1.5.0
+- GUI version updated to 1.5.0
+- Firmware versions updated to 1.5.0
+
+### Documentation
+- Added ESP32 wiring diagrams
+- Added STM32F4 wiring diagrams
+- Updated Supported-Chips wiki with new platforms
+- Updated Hardware-Setup wiki with ESP32/STM32F4 sections
+
 ## [1.4.0] - 2026-01-XX
 
 ### Added
@@ -181,6 +219,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **1.5.0** - ESP32 support, STM32F4 support, WiFi connectivity
 - **1.4.0** - AI v1.4: Filesystem detection, OOB analysis, key search, wear analysis, memory map
 - **1.3.0** - AI-powered analysis features
 - **1.25.0** - STM32F1 SPI NAND & eMMC support
@@ -189,7 +228,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **1.0.0** - Initial public release
 - **0.x.x** - Development versions (not released)
 
-[Unreleased]: https://github.com/openflash/openflash/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/openflash/openflash/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/openflash/openflash/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/openflash/openflash/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/openflash/openflash/compare/v1.25.0...v1.3.0
 [1.25.0]: https://github.com/openflash/openflash/compare/v1.2.0...v1.25.0

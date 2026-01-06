@@ -1,0 +1,261 @@
+# OpenFlash Roadmap
+
+Детальный план развития проекта OpenFlash.
+
+## Текущий статус: v1.5.0
+
+---
+
+## ✅ Завершённые версии
+
+### v1.0 — Initial Release
+- Parallel NAND read/write
+- 30+ чипов в базе данных
+- Hamming + BCH ECC
+- Детекция SquashFS/UBIFS/JFFS2
+
+### v1.1 — SPI NAND Support
+- 20+ SPI NAND чипов
+- Quad SPI (QSPI) поддержка
+- Internal ECC статус
+- Всего 4 провода!
+
+### v1.2 — eMMC Support
+- eMMC/MMC через SPI mode
+- CID/CSD/EXT_CSD регистры
+- Block read/write операции
+- Boot partition доступ
+
+### v1.25 — STM32F1 Expansion
+- SPI NAND для Blue Pill
+- eMMC для Blue Pill
+- Полный паритет с RP2040
+
+### v1.3 — AI-Powered Analysis
+- Pattern recognition
+- Anomaly detection
+- Recovery suggestions
+- Chip-specific recommendations
+
+### v1.4 — AI Analysis v1.4
+- Filesystem detection (YAFFS2, UBIFS, ext4, FAT...)
+- OOB/spare area analysis
+- Encryption key search (AES-128/192/256)
+- Wear leveling analysis
+- Memory map visualization
+- Dump comparison
+- Report export
+
+### v1.5 — ESP32 & STM32F4 Support ← ТЕКУЩАЯ
+- ESP32 firmware с WiFi/BLE
+- STM32F4 firmware (USB OTG, FSMC)
+- Web interface для ESP32
+- 4 платформы: RP2040, STM32F1, STM32F4, ESP32
+
+---
+
+## 🔜 Ближайшие планы
+
+### v1.6 — NOR Flash & UFS Support
+**Цель:** Расширение поддержки типов памяти
+
+| Фича | Приоритет | Сложность |
+|------|-----------|-----------|
+| SPI NOR flash (W25Q, MX25L, IS25LP) | 🔴 High | Medium |
+| UFS (Universal Flash Storage) | 🟡 Medium | High |
+| ONFI 5.0 support | 🟡 Medium | Medium |
+| 16-bit parallel NAND bus | 🟢 Low | Medium |
+
+**Детали:**
+- SPI NOR: W25Q серия (Winbond), MX25L (Macronix), IS25LP (ISSI)
+- UFS: UniPro протокол, MIPI M-PHY интерфейс
+- ONFI 5.0: NV-DDR3, 1.6GT/s
+
+---
+
+### v1.7 — Advanced Write Operations
+**Цель:** Полноценная запись и клонирование
+
+| Фича | Приоритет | Сложность |
+|------|-----------|-----------|
+| Full chip programming | 🔴 High | Medium |
+| Bad block management | 🔴 High | High |
+| Wear leveling write | 🟡 Medium | High |
+| Incremental backup/restore | 🟡 Medium | Medium |
+| Clone chip-to-chip | 🟢 Low | Medium |
+
+**Детали:**
+- Программирование с верификацией
+- Автоматическое управление bad blocks
+- Wear-aware запись для продления жизни чипа
+- Инкрементальный бэкап (только изменённые блоки)
+
+---
+
+### v1.8 — Scripting & Automation
+**Цель:** Автоматизация и интеграция
+
+| Фича | Приоритет | Сложность |
+|------|-----------|-----------|
+| Python API (pyopenflash) | 🔴 High | Medium |
+| CLI tool | 🔴 High | Low |
+| Batch processing | 🟡 Medium | Medium |
+| Custom analysis plugins | 🟡 Medium | High |
+| CI/CD integration | 🟢 Low | Low |
+
+**Детали:**
+```python
+# Пример pyopenflash API
+import openflash
+
+device = openflash.connect()
+dump = device.read_full()
+analysis = openflash.ai.analyze(dump)
+analysis.export_report("report.md")
+```
+
+---
+
+### v1.9 — Advanced AI Features
+**Цель:** ML и глубокий анализ
+
+| Фича | Приоритет | Сложность |
+|------|-----------|-----------|
+| ML-based chip identification | 🟡 Medium | High |
+| Firmware unpacking (binwalk) | 🔴 High | Medium |
+| Automatic rootfs extraction | 🔴 High | High |
+| Vulnerability scanning | 🟡 Medium | High |
+| Custom signature database | 🟢 Low | Medium |
+
+**Детали:**
+- Интеграция с binwalk для распаковки
+- Автоматическое извлечение файловых систем
+- База сигнатур уязвимостей (CVE)
+- Пользовательские сигнатуры для поиска
+
+---
+
+## 🚀 Мажорные релизы
+
+### v2.0 — Multi-device & Enterprise
+**Цель:** Масштабирование и профессиональное использование
+
+| Фича | Приоритет | Сложность |
+|------|-----------|-----------|
+| Multi-device parallel dumping | 🔴 High | High |
+| Device farm management | 🟡 Medium | High |
+| Remote operation (server mode) | 🟡 Medium | Medium |
+| Production line integration | 🟢 Low | High |
+| REST API | 🔴 High | Medium |
+
+**Архитектура:**
+```
+┌─────────────────────────────────────────────────────────┐
+│  OpenFlash Server                                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │  REST API   │  │  WebSocket  │  │  gRPC       │     │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
+│         └────────────────┼────────────────┘            │
+│                          ▼                              │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Device Manager                                  │   │
+│  │  ├── Device Pool                                │   │
+│  │  ├── Job Queue                                  │   │
+│  │  └── Result Aggregator                          │   │
+│  └─────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+         │              │              │
+    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
+    │ Device 1│    │ Device 2│    │ Device N│
+    │ (RP2040)│    │ (ESP32) │    │(STM32F4)│
+    └─────────┘    └─────────┘    └─────────┘
+```
+
+---
+
+### v2.1 — Hardware Expansion
+**Цель:** Официальное железо
+
+| Фича | Приоритет | Сложность |
+|------|-----------|-----------|
+| Official OpenFlash PCB | 🔴 High | High |
+| TSOP-48 ZIF adapter board | 🔴 High | Medium |
+| BGA rework station integration | 🟢 Low | High |
+| Logic analyzer mode | 🟡 Medium | Medium |
+| JTAG/SWD passthrough | 🟢 Low | Medium |
+
+**OpenFlash PCB v1:**
+- RP2040 + ESP32 combo
+- TSOP-48 ZIF socket
+- SPI NAND/NOR socket
+- eMMC socket
+- USB-C + WiFi
+- OLED display
+- ~$25 BOM
+
+---
+
+### v3.0 — OpenFlash Pro
+**Цель:** Коммерческая версия
+
+| Фича | Приоритет | Сложность |
+|------|-----------|-----------|
+| Cloud sync & backup | 🟡 Medium | High |
+| Team collaboration | 🟡 Medium | High |
+| Chip database crowdsourcing | 🔴 High | Medium |
+| AI model updates OTA | 🟡 Medium | Medium |
+| Enterprise support | 🟢 Low | Low |
+
+---
+
+## 📊 Приоритеты по категориям
+
+### Hardware Support
+1. SPI NOR flash (v1.6)
+2. 16-bit NAND (v1.6)
+3. UFS (v1.6)
+4. Official PCB (v2.1)
+
+### Software Features
+1. Python API (v1.8)
+2. CLI tool (v1.8)
+3. Firmware unpacking (v1.9)
+4. REST API (v2.0)
+
+### AI/Analysis
+1. Rootfs extraction (v1.9)
+2. Vulnerability scanning (v1.9)
+3. ML chip identification (v1.9)
+4. Cloud AI updates (v3.0)
+
+### Enterprise
+1. Multi-device (v2.0)
+2. Server mode (v2.0)
+3. Team features (v3.0)
+
+---
+
+## 🗓️ Примерный таймлайн
+
+| Версия | Ожидаемая дата | Статус |
+|--------|----------------|--------|
+| v1.5 | Q1 2026 | ✅ Released |
+| v1.6 | Q2 2026 | 📋 Planned |
+| v1.7 | Q3 2026 | 📋 Planned |
+| v1.8 | Q4 2026 | 📋 Planned |
+| v1.9 | Q1 2027 | 📋 Planned |
+| v2.0 | Q2 2027 | 📋 Planned |
+| v2.1 | Q3 2027 | 📋 Planned |
+| v3.0 | 2028 | 🔮 Future |
+
+---
+
+## 💡 Хотите предложить фичу?
+
+1. Проверьте [Issues](https://github.com/openflash/openflash/issues)
+2. Создайте Feature Request
+3. Обсудите в [Discussions](https://github.com/openflash/openflash/discussions)
+
+---
+
+*Последнее обновление: Январь 2026*

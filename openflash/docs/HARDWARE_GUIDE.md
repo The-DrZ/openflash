@@ -366,3 +366,185 @@ st-flash write target/thumbv7m-none-eabi/release/openflash-firmware-stm32f1.bin 
 # Using serial bootloader (connect BOOT0 to 3.3V, reset, then flash)
 stm32flash -w firmware.bin /dev/ttyUSB0
 ```
+
+
+---
+
+## ESP32 Wiring (v1.5+)
+
+The ESP32 series provides WiFi/BLE connectivity for wireless flash operations.
+
+### Supported ESP32 Variants
+
+| Variant | USB | WiFi | BLE | Notes |
+|---------|-----|------|-----|-------|
+| ESP32 | ❌ | ✅ | ✅ | Use UART, most GPIO |
+| ESP32-S2 | ✅ | ✅ | ❌ | Native USB, good GPIO |
+| ESP32-S3 | ✅ | ✅ | ✅ | Best choice, USB + BLE |
+| ESP32-C3 | ✅ | ✅ | ✅ | Budget option, fewer GPIO |
+
+### ESP32 SPI NAND Wiring
+
+Uses VSPI peripheral:
+
+| ESP32 Pin | GPIO | SPI NAND Signal | Description |
+|-----------|------|-----------------|-------------|
+| VSPI CLK | GPIO18 | CLK | Clock |
+| VSPI MISO | GPIO19 | DO | Data Out |
+| VSPI MOSI | GPIO23 | DI | Data In |
+| GPIO5 | GPIO5 | CS# | Chip Select |
+| 3.3V | - | VCC | Power |
+| GND | - | GND | Ground |
+
+```
+ESP32         SPI NAND
+─────         ────────
+GPIO18 ───►   CLK
+GPIO19 ◄───   DO (MISO)
+GPIO23 ───►   DI (MOSI)
+GPIO5  ───►   CS#
+3.3V   ───►   VCC   ⚠️  3.3V ONLY
+GND    ───►   GND
+```
+
+### ESP32 eMMC Wiring
+
+Uses same VSPI with different CS:
+
+| ESP32 Pin | GPIO | eMMC Signal | Description |
+|-----------|------|-------------|-------------|
+| VSPI CLK | GPIO18 | CLK | Clock |
+| VSPI MISO | GPIO19 | DAT0 | Data Out |
+| VSPI MOSI | GPIO23 | CMD | Command/Data In |
+| GPIO4 | GPIO4 | CS# | Chip Select |
+| 3.3V | - | VCC | Power (check voltage!) |
+| GND | - | GND | Ground |
+
+### ESP32 Parallel NAND Wiring
+
+| ESP32 Pin | GPIO | NAND Signal | Description |
+|-----------|------|-------------|-------------|
+| GPIO4 | GPIO4 | CLE | Command Latch Enable |
+| GPIO5 | GPIO5 | ALE | Address Latch Enable |
+| GPIO12 | GPIO12 | WE# | Write Enable |
+| GPIO13 | GPIO13 | RE# | Read Enable |
+| GPIO14 | GPIO14 | CE# | Chip Enable |
+| GPIO15 | GPIO15 | R/B# | Ready/Busy |
+| GPIO16 | GPIO16 | D0 | Data bit 0 |
+| GPIO17 | GPIO17 | D1 | Data bit 1 |
+| GPIO18 | GPIO18 | D2 | Data bit 2 |
+| GPIO19 | GPIO19 | D3 | Data bit 3 |
+| GPIO21 | GPIO21 | D4 | Data bit 4 |
+| GPIO22 | GPIO22 | D5 | Data bit 5 |
+| GPIO23 | GPIO23 | D6 | Data bit 6 |
+| GPIO25 | GPIO25 | D7 | Data bit 7 |
+
+### ESP32 WiFi Mode
+
+When using WiFi mode:
+1. Flash the ESP32 firmware
+2. Connect to "OpenFlash-XXXX" WiFi network
+3. Open http://192.168.4.1 in browser
+4. Or connect ESP32 to your WiFi and use assigned IP
+
+### Flashing ESP32 Firmware
+
+```bash
+# Using espflash
+espflash flash target/xtensa-esp32-none-elf/release/openflash-firmware-esp32
+
+# Using esptool.py
+esptool.py --chip esp32 --port /dev/ttyUSB0 write_flash 0x0 firmware.bin
+```
+
+---
+
+## STM32F4 (Black Pill / Nucleo) Wiring (v1.5+)
+
+The STM32F4 series offers higher performance than STM32F1 with native USB OTG.
+
+### Supported STM32F4 Variants
+
+| Variant | Flash | RAM | USB | FSMC | Notes |
+|---------|-------|-----|-----|------|-------|
+| STM32F401 | 256KB | 64KB | OTG FS | ❌ | Budget option |
+| STM32F411 | 512KB | 128KB | OTG FS | ❌ | Black Pill |
+| STM32F446 | 512KB | 128KB | OTG FS/HS | ✅ | Best choice |
+
+### STM32F4 SPI NAND Wiring
+
+Uses SPI1 peripheral:
+
+| STM32F4 Pin | GPIO | SPI NAND Signal | Description |
+|-------------|------|-----------------|-------------|
+| PA5 | SPI1_SCK | CLK | Clock |
+| PA6 | SPI1_MISO | DO | Data Out |
+| PA7 | SPI1_MOSI | DI | Data In |
+| PA4 | GPIO | CS# | Chip Select |
+| 3.3V | - | VCC | Power |
+| GND | - | GND | Ground |
+
+```
+STM32F4       SPI NAND
+───────       ────────
+PA5   ───►    CLK
+PA6   ◄───    DO (MISO)
+PA7   ───►    DI (MOSI)
+PA4   ───►    CS#
+3.3V  ───►    VCC   ⚠️  3.3V ONLY
+GND   ───►    GND
+```
+
+### STM32F4 eMMC Wiring
+
+Uses SPI2 peripheral:
+
+| STM32F4 Pin | GPIO | eMMC Signal | Description |
+|-------------|------|-------------|-------------|
+| PB13 | SPI2_SCK | CLK | Clock |
+| PB14 | SPI2_MISO | DAT0 | Data Out |
+| PB15 | SPI2_MOSI | CMD | Command/Data In |
+| PB12 | GPIO | CS# | Chip Select |
+| 3.3V | - | VCC | Power (check voltage!) |
+| GND | - | GND | Ground |
+
+### STM32F4 Parallel NAND (FSMC) - STM32F446 only
+
+Uses FSMC for high-speed parallel access:
+
+| STM32F4 Pin | FSMC | NAND Signal | Description |
+|-------------|------|-------------|-------------|
+| PD14 | D0 | D0 | Data bit 0 |
+| PD15 | D1 | D1 | Data bit 1 |
+| PD0 | D2 | D2 | Data bit 2 |
+| PD1 | D3 | D3 | Data bit 3 |
+| PE7 | D4 | D4 | Data bit 4 |
+| PE8 | D5 | D5 | Data bit 5 |
+| PE9 | D6 | D6 | Data bit 6 |
+| PE10 | D7 | D7 | Data bit 7 |
+| PD4 | NOE | RE# | Read Enable |
+| PD5 | NWE | WE# | Write Enable |
+| PD7 | NCE2 | CE# | Chip Enable |
+| PD11 | A16 | CLE | Command Latch |
+| PD12 | A17 | ALE | Address Latch |
+| PD6 | NWAIT | R/B# | Ready/Busy |
+
+### STM32F4 Notes
+
+- **USB**: Uses PA11 (D-) and PA12 (D+) for USB OTG FS
+- **Clock**: Up to 180MHz with external crystal
+- **Flash**: Use ST-Link, DFU bootloader, or SWD
+- **Power**: 3.3V operation
+
+### Flashing STM32F4 Firmware
+
+```bash
+# Using ST-Link
+st-flash write target/thumbv7em-none-eabihf/release/openflash-firmware-stm32f4.bin 0x8000000
+
+# Using DFU (hold BOOT0, connect USB)
+dfu-util -a 0 -s 0x08000000:leave -D firmware.bin
+
+# Using probe-rs
+probe-rs run --chip STM32F411CEUx target/thumbv7em-none-eabihf/release/openflash-firmware-stm32f4
+```

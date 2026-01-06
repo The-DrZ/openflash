@@ -5,7 +5,7 @@
     ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██╔══╝  ██║     ██╔══██║╚════██║██╔══██║
     ╚██████╔╝██║     ███████╗██║ ╚████║██║     ███████╗██║  ██║███████║██║  ██║
      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-                                                                        v1.4.0
+                                                                        v1.5.0
 ```
 
 <div align="center">
@@ -57,11 +57,11 @@ Commercial NAND programmers cost **$200-2000**. They run on Windows XP. They loo
 
 ## 📥 Download
 
-**v1.4.0** — AI Analysis Major Upgrade
+**v1.5.0** — ESP32 & STM32F4 Support
 
 | | | |
 |:---:|:---:|:---:|
-| [**Windows**](https://github.com/openflash/openflash/releases/download/v1.4.0/OpenFlash-1.4.0-x64.msi)<br>`OpenFlash-1.4.0-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v1.4.0/OpenFlash-1.4.0.dmg)<br>`OpenFlash-1.4.0.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v1.4.0/OpenFlash-1.4.0.AppImage)<br>`OpenFlash-1.4.0.AppImage` |
+| [**Windows**](https://github.com/openflash/openflash/releases/download/v1.5.0/OpenFlash-1.5.0-x64.msi)<br>`OpenFlash-1.5.0-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v1.5.0/OpenFlash-1.5.0.dmg)<br>`OpenFlash-1.5.0.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v1.5.0/OpenFlash-1.5.0.AppImage)<br>`OpenFlash-1.5.0.AppImage` |
 
 <details>
 <summary><b>Build from source</b></summary>
@@ -306,15 +306,19 @@ AI-Powered Features:
 
 ## 🏎️ Speed
 
-| | Pico (RP2040) | Blue Pill (STM32F1) |
-|---|:---:|:---:|
-| **Chip ID** | 10ms | 50ms |
-| **Page read** | 100μs | 500μs |
-| **1GB dump** | 45 min | 3.5 hours |
-| **Price** | $4 | $2 |
-| **SPI NAND** | ✅ v1.1+ | ✅ v1.25+ |
-| **eMMC** | ✅ v1.2+ | ✅ v1.25+ |
-| **Verdict** | ✅ Get this | 💰 Ultra budget |
+| | Pico (RP2040) | Blue Pill (STM32F1) | Black Pill (STM32F4) | ESP32 |
+|---|:---:|:---:|:---:|:---:|
+| **Chip ID** | 10ms | 50ms | 5ms | 15ms |
+| **Page read** | 100μs | 500μs | 50μs | 120μs |
+| **1GB dump** | 45 min | 3.5 hours | 25 min | 50 min |
+| **Price** | ~$4 | ~$2 | ~$5 | ~$4 |
+| **SPI NAND** | ✅ | ✅ | ✅ | ✅ |
+| **eMMC** | ✅ | ✅ | ✅ | ✅ |
+| **WiFi** | ❌ | ❌ | ❌ | ✅ |
+| **USB** | CDC | CDC | OTG FS | UART* |
+| **Verdict** | ✅ Best start | 💰 Budget | ⚡ Fastest | 📶 Wireless |
+
+*ESP32-S2/S3/C3 have native USB
 
 ---
 
@@ -396,6 +400,36 @@ cargo build --release --target thumbv7m-none-eabi
 
 </details>
 
+<details>
+<summary><b>STM32F4 (Black Pill) — v1.5+</b></summary>
+
+```bash
+rustup target add thumbv7em-none-eabihf
+cd openflash/firmware/stm32f4
+cargo build --release --target thumbv7em-none-eabihf
+# Flash via ST-Link, DFU, or probe-rs
+```
+
+</details>
+
+<details>
+<summary><b>ESP32 — v1.5+</b></summary>
+
+```bash
+# Install espup (ESP32 Rust toolchain)
+cargo install espup
+espup install
+
+# Build
+cd openflash/firmware/esp32
+cargo build --release
+
+# Flash
+espflash flash target/xtensa-esp32-none-elf/release/openflash-firmware-esp32
+```
+
+</details>
+
 ---
 
 ## 🗺️ Roadmap
@@ -430,7 +464,7 @@ v1.3  ✅  AI-Powered Analysis
           ├── Encryption/compression detection
           └── Chip-specific recommendations
 
-v1.4  ✅  AI Analysis v1.4 ← YOU ARE HERE
+v1.4  ✅  AI Analysis v1.4
           ├── Filesystem detection (YAFFS2, UBIFS, ext4, FAT...)
           ├── OOB/spare area analysis with ECC detection
           ├── Encryption key search (AES-128/192/256)
@@ -439,7 +473,62 @@ v1.4  ✅  AI Analysis v1.4 ← YOU ARE HERE
           ├── Dump comparison (diff)
           └── Report export (Markdown)
 
-v2.0  🚀  Multi-device parallel dumping
+v1.5  ✅  ESP32 & STM32F4 Support ← YOU ARE HERE
+          ├── ESP32 firmware (WiFi/BLE wireless operation!)
+          ├── STM32F4 firmware (faster, USB OTG, FSMC)
+          ├── Web interface for ESP32 (browser control)
+          ├── 4 supported platforms: RP2040, STM32F1, STM32F4, ESP32
+          └── Protocol v1.5 with WiFi commands
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+v1.6  🔜  NOR Flash & UFS Support
+          ├── SPI NOR flash (W25Q, MX25L, etc.)
+          ├── UFS (Universal Flash Storage) via UniPro
+          ├── ONFI 5.0 support
+          └── 16-bit parallel NAND bus
+
+v1.7  📋  Advanced Write Operations
+          ├── Full chip programming
+          ├── Bad block management
+          ├── Wear leveling write
+          ├── Incremental backup/restore
+          └── Clone chip-to-chip
+
+v1.8  📋  Scripting & Automation
+          ├── Python API (pyopenflash)
+          ├── CLI tool for headless operation
+          ├── Batch processing
+          ├── Custom analysis plugins
+          └── CI/CD integration
+
+v1.9  📋  Advanced AI Features
+          ├── ML-based chip identification
+          ├── Firmware unpacking (binwalk integration)
+          ├── Automatic rootfs extraction
+          ├── Vulnerability scanning
+          └── Custom signature database
+
+v2.0  🚀  Multi-device & Enterprise
+          ├── Multi-device parallel dumping
+          ├── Device farm management
+          ├── Remote operation (server mode)
+          ├── Production line integration
+          └── REST API
+
+v2.1  🔮  Hardware Expansion
+          ├── Official OpenFlash PCB
+          ├── TSOP-48 ZIF adapter board
+          ├── BGA rework station integration
+          ├── Logic analyzer mode
+          └── JTAG/SWD passthrough
+
+v3.0  🌟  OpenFlash Pro
+          ├── Cloud sync & backup
+          ├── Team collaboration
+          ├── Chip database crowdsourcing
+          ├── AI model updates OTA
+          └── Enterprise support
 ```
 
 ---
@@ -468,7 +557,7 @@ MIT. Do whatever. Don't sue us.
 
 <div align="center">
 
-**OpenFlash v1.4.0**
+**OpenFlash v1.5.0**
 
 *Your data wants to be free.*
 
