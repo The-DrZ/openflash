@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 pub enum FlashInterface {
     ParallelNand = 0x00,
     SpiNand = 0x01,
+    Emmc = 0x02,
 }
 
 /// USB Protocol Commands
@@ -44,6 +45,19 @@ pub enum Command {
     SpiNandBlockErase = 0x2A,
     SpiNandWriteEnable = 0x2B,
     SpiNandWriteDisable = 0x2C,
+    
+    // eMMC commands (0x40-0x5F)
+    EmmcInit = 0x40,              // Initialize eMMC card
+    EmmcReadCid = 0x41,           // Read CID register
+    EmmcReadCsd = 0x42,           // Read CSD register
+    EmmcReadExtCsd = 0x43,        // Read Extended CSD
+    EmmcReadBlock = 0x44,         // Read single block
+    EmmcReadMultiple = 0x45,      // Read multiple blocks
+    EmmcWriteBlock = 0x46,        // Write single block
+    EmmcWriteMultiple = 0x47,     // Write multiple blocks
+    EmmcErase = 0x48,             // Erase blocks
+    EmmcGetStatus = 0x49,         // Get card status
+    EmmcSetPartition = 0x4A,      // Select partition (user/boot/rpmb)
 }
 
 impl Command {
@@ -79,6 +93,19 @@ impl Command {
             0x2B => Some(Command::SpiNandWriteEnable),
             0x2C => Some(Command::SpiNandWriteDisable),
             
+            // eMMC
+            0x40 => Some(Command::EmmcInit),
+            0x41 => Some(Command::EmmcReadCid),
+            0x42 => Some(Command::EmmcReadCsd),
+            0x43 => Some(Command::EmmcReadExtCsd),
+            0x44 => Some(Command::EmmcReadBlock),
+            0x45 => Some(Command::EmmcReadMultiple),
+            0x46 => Some(Command::EmmcWriteBlock),
+            0x47 => Some(Command::EmmcWriteMultiple),
+            0x48 => Some(Command::EmmcErase),
+            0x49 => Some(Command::EmmcGetStatus),
+            0x4A => Some(Command::EmmcSetPartition),
+            
             _ => None,
         }
     }
@@ -99,6 +126,23 @@ impl Command {
             Command::SpiNandBlockErase |
             Command::SpiNandWriteEnable |
             Command::SpiNandWriteDisable
+        )
+    }
+    
+    /// Check if command is for eMMC interface
+    pub fn is_emmc(&self) -> bool {
+        matches!(self,
+            Command::EmmcInit |
+            Command::EmmcReadCid |
+            Command::EmmcReadCsd |
+            Command::EmmcReadExtCsd |
+            Command::EmmcReadBlock |
+            Command::EmmcReadMultiple |
+            Command::EmmcWriteBlock |
+            Command::EmmcWriteMultiple |
+            Command::EmmcErase |
+            Command::EmmcGetStatus |
+            Command::EmmcSetPartition
         )
     }
 }
@@ -158,6 +202,11 @@ pub mod nand_commands {
 /// SPI NAND flash commands (re-exported from spi_nand module)
 pub mod spi_nand_commands {
     pub use crate::spi_nand::commands::*;
+}
+
+/// eMMC commands (re-exported from emmc module)
+pub mod emmc_commands {
+    pub use crate::emmc::commands::*;
 }
 
 /// SPI configuration for SPI NAND
@@ -229,5 +278,20 @@ mod tests {
         assert!(Command::SpiNandPageRead.is_spi_nand());
         assert!(!Command::NandReadPage.is_spi_nand());
         assert!(!Command::Ping.is_spi_nand());
+    }
+    
+    #[test]
+    fn test_emmc_command_detection() {
+        assert!(Command::EmmcInit.is_emmc());
+        assert!(Command::EmmcReadBlock.is_emmc());
+        assert!(!Command::SpiNandReadId.is_emmc());
+        assert!(!Command::NandReadPage.is_emmc());
+    }
+    
+    #[test]
+    fn test_emmc_command_from_u8() {
+        assert_eq!(Command::from_u8(0x40), Some(Command::EmmcInit));
+        assert_eq!(Command::from_u8(0x44), Some(Command::EmmcReadBlock));
+        assert_eq!(Command::from_u8(0x48), Some(Command::EmmcErase));
     }
 }

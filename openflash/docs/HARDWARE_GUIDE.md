@@ -225,3 +225,73 @@ Coming soon! Check the `hardware/` directory for:
 2. **Power Sequence** - Connect GND before VCC
 3. **Hot Swap** - Don't connect/disconnect while powered
 4. **Verify Voltage** - Always check 3.3V before connecting chip
+
+---
+
+## SPI NAND Wiring (v1.1+)
+
+SPI NAND uses the SPI0 peripheral on the Pico:
+
+| Pico Pin | GPIO | SPI NAND Signal | Description |
+|----------|------|-----------------|-------------|
+| Pin 21 | GP16 | DO (MISO) | Data Out |
+| Pin 22 | GP17 | CS# | Chip Select |
+| Pin 24 | GP18 | CLK | Clock |
+| Pin 25 | GP19 | DI (MOSI) | Data In |
+| Pin 36 | 3V3 | VCC | Power (3.3V) |
+| Pin 3,8,13 | GND | GND | Ground |
+
+```
+PICO          SPI NAND
+────          ────────
+GP16  ───►    DO (MISO)
+GP17  ───►    CS#
+GP18  ───►    CLK
+GP19  ───►    DI (MOSI)
+3V3   ───►    VCC   ⚠️  3.3V ONLY
+GND   ───►    GND
+```
+
+---
+
+## eMMC Wiring (v1.2+)
+
+eMMC uses SPI mode via the SPI1 peripheral on the Pico:
+
+| Pico Pin | GPIO | eMMC Signal | Description |
+|----------|------|-------------|-------------|
+| Pin 16 | GP12 | DAT0 (MISO) | Data Out |
+| Pin 17 | GP13 | CS# | Chip Select |
+| Pin 19 | GP14 | CLK | Clock |
+| Pin 20 | GP15 | CMD (MOSI) | Command/Data In |
+| Pin 36 | 3V3 | VCC | Power (check voltage!) |
+| Pin 3,8,13 | GND | GND | Ground |
+
+```
+PICO          eMMC
+────          ────
+GP12  ───►    DAT0 (MISO)
+GP13  ───►    CS#
+GP14  ───►    CLK
+GP15  ───►    CMD (MOSI)
+3V3   ───►    VCC   ⚠️  Check voltage!
+GND   ───►    GND
+```
+
+### eMMC Voltage Warning
+
+⚠️ **IMPORTANT**: eMMC chips can operate at different voltages:
+- **3.3V** - Most common for older/larger eMMC
+- **1.8V** - Common for newer/mobile eMMC
+- **Dual voltage** - Some chips support both
+
+**Always check your eMMC datasheet before connecting!**
+
+Many eMMC modules (like those from phone/tablet boards) have onboard voltage regulators. If using a bare eMMC chip, you may need a level shifter for 1.8V operation.
+
+### eMMC Module Adapters
+
+For easier connection, consider using:
+- **eMMC to SD adapter** - Allows reading eMMC as SD card
+- **eMMC socket board** - ZIF socket for BGA eMMC
+- **eMMC breakout board** - Exposes all pins with headers

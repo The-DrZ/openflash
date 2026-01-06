@@ -42,8 +42,11 @@ Commercial NAND programmers cost **$200-2000**. They run on Windows XP. They loo
 │   + 20 jumper wires ($1)                  Parallel NAND:                │
 │   + This software (free)                  Samsung, Hynix, Micron...     │
 │   ─────────────────────────                                             │
-│   = Full NAND programmer                  SPI NAND (v1.1+):             │
-│                                           GigaDevice, Winbond...        │
+│   = Full NAND programmer                  SPI NAND (v1.1+):
+                                           GigaDevice, Winbond...        │
+│                                                                         │
+│                                           eMMC (v1.2+):                 │
+│                                           Samsung, Micron, SanDisk...   │
 │                                                                         │
 │                                           128MB to 8GB+                 │
 │                                                                         │
@@ -130,6 +133,25 @@ GND   ───►    GND
 
 </details>
 
+<details>
+<summary><b>eMMC (v1.2+ — SPI mode, 4 wires)</b></summary>
+
+```
+PICO          eMMC
+────          ────
+GP12  ───►    DAT0 (MISO)
+GP13  ───►    CS# (directly controlled)
+GP14  ───►    CLK
+GP15  ───►    CMD (MOSI)
+3V3   ───►    VCC   ⚠️  3.3V ONLY — check your eMMC voltage!
+GND   ───►    GND
+
+Note: eMMC chips often require 1.8V or 3.3V — verify before connecting!
+      Some eMMC modules have onboard voltage regulators.
+```
+
+</details>
+
 **Flash firmware:**
 1. Hold BOOTSEL on Pico
 2. Plug USB
@@ -159,6 +181,13 @@ SPI NAND (v1.1+):
 ├── Internal ECC support
 ├── 20+ chips: GigaDevice, Winbond, Macronix, Micron, Toshiba, XTX
 └── Only 4 wires needed!
+
+eMMC (v1.2+):
+├── SPI mode communication
+├── CID/CSD/EXT_CSD register access
+├── Block read/write (512 bytes)
+├── Boot partition support
+└── Samsung, Micron, SanDisk, Toshiba, Kingston
 ```
 
 ### Fixes bit errors
@@ -311,7 +340,12 @@ v1.1  ✅  SPI NAND support ← YOU ARE HERE
           ├── Internal ECC status
           └── Only 4 wires needed!
 
-v1.2  📋  eMMC support
+v1.2  📋  eMMC support ← YOU ARE HERE
+          ├── eMMC/MMC card support via SPI mode
+          ├── Read CID/CSD/EXT_CSD registers
+          ├── Block read/write operations
+          └── Boot partition access
+
 v2.0  🚀  Multi-device parallel dumping
 ```
 

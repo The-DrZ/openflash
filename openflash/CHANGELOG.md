@@ -8,7 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **SPI NAND Support** (v1.1 feature)
+- **eMMC Support** (v1.2 feature)
+  - New `emmc` module in core library with chip database
+  - Support for eMMC chips (Samsung, Micron, SanDisk, Toshiba, Kingston)
+  - MMC/SD protocol commands via SPI mode
+  - CID/CSD/EXT_CSD register parsing
+  - Block read/write operations (512 bytes)
+  - Boot partition access support
+  - CRC7/CRC16 calculation
+  - eMMC driver for RP2040 firmware (SPI1 interface)
+  - Updated documentation with eMMC wiring diagrams
+
+### Changed
+- Protocol commands extended with eMMC range (0x40-0x5F)
+- FlashInterface enum now includes Emmc variant
+- README updated with eMMC support information
+
+## [1.1.0] - 2026-01-XX
+
+### Added
+- **SPI NAND Support**
   - New `spi_nand` module in core library with chip database
   - Support for 20+ SPI NAND chips (GigaDevice, Winbond, Macronix, Micron, Toshiba, XTX)
   - SPI NAND protocol commands (READ_ID, PAGE_READ, PROGRAM, ERASE)

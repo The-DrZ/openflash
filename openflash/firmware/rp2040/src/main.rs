@@ -18,10 +18,12 @@ use {defmt_rtt as _, panic_probe as _};
 
 mod pio_nand;
 mod spi_nand;
+mod emmc;
 mod usb_handler;
 
 use pio_nand::{NandController, NandPins};
 use spi_nand::SpiNandController;
+use emmc::EmmcController;
 use usb_handler::UsbHandler;
 
 bind_interrupts!(struct Irqs {
@@ -62,6 +64,13 @@ static mut STATE: Option<State> = None;
 ///   GP17 - SPI0 CS# (directly controlled)
 ///   GP18 - SPI0 SCK
 ///   GP19 - SPI0 TX (MOSI)
+///
+/// === eMMC Mode (SPI) ===
+/// Uses same SPI0 pins as SPI NAND:
+///   GP16 - SPI0 RX (DAT0/MISO)
+///   GP17 - SPI0 CS# (directly controlled)
+///   GP18 - SPI0 SCK (CLK)
+///   GP19 - SPI0 TX (CMD/MOSI)
 ///
 /// Optional (shared):
 ///   GP14 - WP# (Write Protect, active low)
@@ -115,6 +124,22 @@ async fn main(spawner: Spawner) {
     let spi_cs = Output::new(p.PIN_17, Level::High); // CS# idle high
     let spi_nand = SpiNandController::new(spi, spi_cs);
     info!("SPI NAND controller initialized");
+
+    // Initialize eMMC controller (shares SPI1 for separate CS)
+    // Note: eMMC uses same SPI bus but different CS pin (GP20)
+    let mut emmc_spi_config = SpiConfig::default();
+    emmc_spi_config.frequency = 400_000; // Start slow for init (400kHz)
+    
+    let emmc_spi = Spi::new_blocking(
+        p.SPI1,
+        p.PIN_14, // SCK (SPI1)
+        p.PIN_15, // MOSI (SPI1)
+        p.PIN_12, // MISO (SPI1)
+        emmc_spi_config,
+    );
+    let emmc_cs = Output::new(p.PIN_13, Level::High); // CS# idle high
+    let emmc = EmmcController::new(emmc_spi, emmc_cs);
+    info!("eMMC controller initialized");
 
     // Create USB driver
     let driver = Driver::new(p.USB, Irqs);
