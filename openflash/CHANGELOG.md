@@ -7,8 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.25.0] - 2026-01-XX
+
 ### Added
-- **eMMC Support** (v1.2 feature)
+- **STM32F1 SPI NAND Support**
+  - New `spi_nand` module for STM32F1 firmware
+  - Hardware SPI peripheral support for high-speed communication
+  - Full SPI NAND command set (READ_ID, PAGE_READ, PROGRAM, ERASE)
+  - Internal ECC status reporting
+  - Feature register access (protection, status, configuration)
+  - Quad SPI enable support
+  - Block unlock functionality
+
+- **STM32F1 eMMC Support**
+  - New `emmc` module for STM32F1 firmware
+  - SPI mode eMMC/MMC communication
+  - Card initialization with high-capacity detection
+  - CID/CSD register reading
+  - Single and multi-block read operations
+  - Single block write operations
+  - Block erase support
+  - CRC7 command checksum calculation
+
+### Changed
+- STM32F1 firmware version updated to 1.25.0
+- STM32F1 main.rs now includes spi_nand and emmc modules
+
+## [1.2.0] - 2026-01-XX
+
+### Added
+- **eMMC Support**
   - New `emmc` module in core library with chip database
   - Support for eMMC chips (Samsung, Micron, SanDisk, Toshiba, Kingston)
   - MMC/SD protocol commands via SPI mode
@@ -93,5 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **1.0.0** - Initial public release
 - **0.x.x** - Development versions (not released)
 
-[Unreleased]: https://github.com/openflash/openflash/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/openflash/openflash/compare/v1.25.0...HEAD
+[1.25.0]: https://github.com/openflash/openflash/compare/v1.2.0...v1.25.0
+[1.2.0]: https://github.com/openflash/openflash/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/openflash/openflash/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/openflash/openflash/releases/tag/v1.0.0

@@ -1,5 +1,6 @@
 //! OpenFlash STM32F1 Firmware
-//! Minimal firmware for NAND flash operations via USB
+//! Firmware for NAND flash operations via USB
+//! Supports: Parallel NAND, SPI NAND, eMMC
 
 #![no_std]
 #![no_main]
@@ -14,6 +15,8 @@ use embassy_usb::{Builder, Config};
 use {defmt_rtt as _, panic_probe as _};
 
 mod usb_handler;
+mod spi_nand;
+mod emmc;
 
 use usb_handler::UsbHandler;
 
@@ -30,7 +33,7 @@ static mut STATE: Option<State> = None;
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let p = embassy_stm32::init(Default::default());
-    info!("OpenFlash STM32F1 Firmware v0.1.0");
+    info!("OpenFlash STM32F1 Firmware v1.25.0");
 
     let driver = Driver::new(p.USB, Irqs, p.PA12, p.PA11);
 

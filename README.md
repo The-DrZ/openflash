@@ -5,7 +5,7 @@
     ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██╔══╝  ██║     ██╔══██║╚════██║██╔══██║
     ╚██████╔╝██║     ███████╗██║ ╚████║██║     ███████╗██║  ██║███████║██║  ██║
      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-                                                                        v1.1.0
+                                                                       v1.25.0
 ```
 
 <div align="center">
@@ -235,12 +235,14 @@ Auto-detect:
 
 ## 🏎️ Speed
 
-| | Pico (RP2040) | Blue Pill (STM32) |
+| | Pico (RP2040) | Blue Pill (STM32F1) |
 |---|:---:|:---:|
 | **Chip ID** | 10ms | 50ms |
 | **Page read** | 100μs | 500μs |
 | **1GB dump** | 45 min | 3.5 hours |
 | **Price** | $4 | $2 |
+| **SPI NAND** | ✅ v1.1+ | ✅ v1.25+ |
+| **eMMC** | ✅ v1.2+ | ✅ v1.25+ |
 | **Verdict** | ✅ Get this | 💰 Ultra budget |
 
 ---
@@ -334,17 +336,22 @@ v1.0  ✅  Initial release
           ├── Hamming + BCH ECC
           └── SquashFS/UBIFS/JFFS2 detection
 
-v1.1  ✅  SPI NAND support ← YOU ARE HERE
+v1.1  ✅  SPI NAND support
           ├── 20+ SPI NAND chips
           ├── Quad SPI (QSPI) support
           ├── Internal ECC status
           └── Only 4 wires needed!
 
-v1.2  📋  eMMC support ← YOU ARE HERE
+v1.2  ✅  eMMC support (RP2040)
           ├── eMMC/MMC card support via SPI mode
           ├── Read CID/CSD/EXT_CSD registers
           ├── Block read/write operations
           └── Boot partition access
+
+v1.25 ✅  STM32F1 SPI NAND & eMMC ← YOU ARE HERE
+          ├── SPI NAND support for Blue Pill
+          ├── eMMC support for Blue Pill
+          └── Full feature parity with RP2040
 
 v2.0  🚀  Multi-device parallel dumping
 ```
@@ -375,7 +382,7 @@ MIT. Do whatever. Don't sue us.
 
 <div align="center">
 
-**OpenFlash v1.1.0**
+**OpenFlash v1.25.0**
 
 *Your data wants to be free.*
 

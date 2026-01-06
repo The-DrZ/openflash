@@ -295,3 +295,74 @@ For easier connection, consider using:
 - **eMMC to SD adapter** - Allows reading eMMC as SD card
 - **eMMC socket board** - ZIF socket for BGA eMMC
 - **eMMC breakout board** - Exposes all pins with headers
+
+---
+
+## STM32F1 (Blue Pill) Wiring (v1.25+)
+
+The STM32F103C8T6 "Blue Pill" is an ultra-budget alternative to the Pico.
+
+### STM32F1 SPI NAND Wiring
+
+Uses SPI1 peripheral:
+
+| Blue Pill Pin | GPIO | SPI NAND Signal | Description |
+|---------------|------|-----------------|-------------|
+| PA5 | SPI1_SCK | CLK | Clock |
+| PA6 | SPI1_MISO | DO | Data Out |
+| PA7 | SPI1_MOSI | DI | Data In |
+| PA4 | GPIO | CS# | Chip Select |
+| 3.3V | - | VCC | Power |
+| GND | - | GND | Ground |
+
+```
+STM32F1       SPI NAND
+───────       ────────
+PA5   ───►    CLK
+PA6   ◄───    DO (MISO)
+PA7   ───►    DI (MOSI)
+PA4   ───►    CS#
+3.3V  ───►    VCC   ⚠️  3.3V ONLY
+GND   ───►    GND
+```
+
+### STM32F1 eMMC Wiring
+
+Uses SPI2 peripheral:
+
+| Blue Pill Pin | GPIO | eMMC Signal | Description |
+|---------------|------|-------------|-------------|
+| PB13 | SPI2_SCK | CLK | Clock |
+| PB14 | SPI2_MISO | DAT0 | Data Out |
+| PB15 | SPI2_MOSI | CMD | Command/Data In |
+| PB12 | GPIO | CS# | Chip Select |
+| 3.3V | - | VCC | Power (check voltage!) |
+| GND | - | GND | Ground |
+
+```
+STM32F1       eMMC
+───────       ────
+PB13  ───►    CLK
+PB14  ◄───    DAT0 (MISO)
+PB15  ───►    CMD (MOSI)
+PB12  ───►    CS#
+3.3V  ───►    VCC   ⚠️  Check voltage!
+GND   ───►    GND
+```
+
+### STM32F1 Notes
+
+- **USB**: Uses PA11 (D-) and PA12 (D+) for USB CDC
+- **Clock**: Internal 8MHz HSI or external 8MHz crystal
+- **Flash**: Requires ST-Link or serial bootloader (BOOT0 pin)
+- **Power**: 3.3V operation, 5V tolerant on most GPIO pins
+
+### Flashing STM32F1 Firmware
+
+```bash
+# Using ST-Link
+st-flash write target/thumbv7m-none-eabi/release/openflash-firmware-stm32f1.bin 0x8000000
+
+# Using serial bootloader (connect BOOT0 to 3.3V, reset, then flash)
+stm32flash -w firmware.bin /dev/ttyUSB0
+```
