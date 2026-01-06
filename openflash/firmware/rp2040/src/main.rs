@@ -8,14 +8,20 @@ use embassy_rp::peripherals::USB;
 use embassy_rp::usb::{Driver, InterruptHandler};
 use embassy_usb::class::cdc_acm::{CdcAcmClass, State};
 use embassy_usb::{Builder, Config};
+use embassy_time::{Duration, Timer};
 use {defmt_rtt as _, panic_probe as _};
+
+mod pio_nand;
+mod usb_handler;
+
+use usb_handler::UsbHandler;
 
 bind_interrupts!(struct Irqs {
     USBCTRL_IRQ => InterruptHandler<USB>;
 });
 
 #[embassy_executor::main]
-async fn main(_spawner: Spawner) {
+async fn main(spawner: Spawner) {
     let p = embassy_rp::init(Default::default());
     info!("OpenFlash RP2040 Firmware Started");
 
@@ -55,14 +61,29 @@ async fn main(_spawner: Spawner) {
     let mut class = CdcAcmClass::new(&mut builder, &mut state, 64);
 
     // Build the builder
-    let mut usb = builder.build();
+    let usb = builder.build();
 
-    // Run the USB device
+    // Run the USB driver in a separate task
+    spawner.spawn(usb_task(usb)).unwrap();
+
+    // Create USB handler
+    let mut usb_handler = UsbHandler::new(class);
+
+    // Main application loop - handle commands from USB
     loop {
-        usb.run().await;
-        // Handle USB commands here
-        class.wait_connection().await;
-        info!("Connected to USB");
+        // Wait for USB connection
+        usb_handler.class.wait_connection().await;
+        info!("USB CDC connection established");
+
+        // Handle incoming commands
+        usb_handler.handle_commands().await;
+
+        // Small delay to prevent busy-waiting
+        Timer::after(Duration::from_millis(10)).await;
     }
 }
 
+#[embassy_executor::task]
+async fn usb_task(mut usb: embassy_usb::UsbDevice<'static, Driver<'static, USB>>) {
+    usb.run().await;
+}
