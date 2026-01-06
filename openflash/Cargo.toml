@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "core",
+    "gui/src-tauri",
+    "firmware/rp2040",
+    "firmware/stm32f1",
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Shared dependencies for the entire workspace
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
