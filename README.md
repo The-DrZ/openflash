@@ -5,12 +5,12 @@
     ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██╔══╝  ██║     ██╔══██║╚════██║██╔══██║
     ╚██████╔╝██║     ███████╗██║ ╚████║██║     ███████╗██║  ██║███████║██║  ██║
      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-                                                                        v1.7.0
+                                                                        v2.3.0
 ```
 
 <div align="center">
 
-**$4 hardware. $0 software. Infinite possibilities.**
+**$4-60 hardware. $0 software. 9 platforms. Infinite possibilities.**
 
 [Download](#-download) · [5-Minute Setup](#-5-minute-setup) · [Why This Exists](#-why-this-exists)
 
@@ -37,18 +37,21 @@ Commercial NAND programmers cost **$200-2000**. They run on Windows XP. They loo
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                                                                         │
-│   Your $4 Raspberry Pi Pico    ──────►    Any NAND Flash Chip           │
+│   Your $4-60 Hardware          ──────►    Any NAND Flash Chip           │
 │                                                                         │
-│   + 20 jumper wires ($1)                  Parallel NAND:                │
-│   + This software (free)                  Samsung, Hynix, Micron...     │
-│   ─────────────────────────                                             │
-│   = Full NAND programmer                  SPI NAND (v1.1+):             │
-│                                           GigaDevice, Winbond...        │
-│                                                                         │
+│   Microcontrollers:                       Parallel NAND:                │
+│   • Raspberry Pi Pico ($4)                Samsung, Hynix, Micron...     │
+│   • Raspberry Pi Pico 2 ($5)                                            │
+│   • STM32F4 Black Pill ($5)               SPI NAND (v1.1+):             │
+│   • Arduino GIGA R1 ($60)                 GigaDevice, Winbond...        │
+│   • ESP32 ($4)                                                          │
 │                                           eMMC (v1.2+):                 │
-│                                           Samsung, Micron, SanDisk...   │
+│   Single Board Computers:                 Samsung, Micron, SanDisk...   │
+│   • Raspberry Pi 4/5 ($35-75)                                           │
+│   • Orange Pi ($15-50)                    128MB to 8GB+                 │
 │                                                                         │
-│                                           128MB to 8GB+                 │
+│   + jumper wires ($1)                     9 platforms supported!        │
+│   + This software (free)                                                │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -57,11 +60,11 @@ Commercial NAND programmers cost **$200-2000**. They run on Windows XP. They loo
 
 ## 📥 Download
 
-**v1.7.0** — Advanced Write Operations
+**v2.3.0** — Platform Expansion (9 platforms!)
 
 | | | |
 |:---:|:---:|:---:|
-| [**Windows**](https://github.com/openflash/openflash/releases/download/v1.7.0/OpenFlash-1.7.0-x64.msi)<br>`OpenFlash-1.7.0-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v1.7.0/OpenFlash-1.7.0.dmg)<br>`OpenFlash-1.7.0.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v1.7.0/OpenFlash-1.7.0.AppImage)<br>`OpenFlash-1.7.0.AppImage` |
+| [**Windows**](https://github.com/openflash/openflash/releases/download/v2.3.0/OpenFlash-2.3.0-x64.msi)<br>`OpenFlash-2.3.0-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v2.3.0/OpenFlash-2.3.0.dmg)<br>`OpenFlash-2.3.0.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v2.3.0/OpenFlash-2.3.0.AppImage)<br>`OpenFlash-2.3.0.AppImage` |
 
 <details>
 <summary><b>Build from source</b></summary>
@@ -306,19 +309,21 @@ AI-Powered Features:
 
 ## 🏎️ Speed
 
-| | Pico (RP2040) | Blue Pill (STM32F1) | Black Pill (STM32F4) | ESP32 |
-|---|:---:|:---:|:---:|:---:|
-| **Chip ID** | 10ms | 50ms | 5ms | 15ms |
-| **Page read** | 100μs | 500μs | 50μs | 120μs |
-| **1GB dump** | 45 min | 3.5 hours | 25 min | 50 min |
-| **Price** | ~$4 | ~$2 | ~$5 | ~$4 |
-| **SPI NAND** | ✅ | ✅ | ✅ | ✅ |
-| **eMMC** | ✅ | ✅ | ✅ | ✅ |
-| **WiFi** | ❌ | ❌ | ❌ | ✅ |
-| **USB** | CDC | CDC | OTG FS | UART* |
-| **Verdict** | ✅ Best start | 💰 Budget | ⚡ Fastest | 📶 Wireless |
+| | Pico | Pico 2 | STM32F4 | Arduino GIGA | ESP32 | RPi 4/5 | Orange Pi |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Chip ID** | 10ms | 5ms | 5ms | 2ms | 15ms | 3ms | 5ms |
+| **Page read** | 100μs | 60μs | 50μs | 20μs | 120μs | 30μs | 50μs |
+| **1GB dump** | 45 min | 30 min | 25 min | 10 min | 50 min | 12 min | 20 min |
+| **Price** | ~$4 | ~$5 | ~$5 | ~$60 | ~$4 | ~$35-75 | ~$15-50 |
+| **SPI NAND** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **eMMC** | ✅ | ✅ | ✅ | ✅ HS200 | ✅ | ✅ | ✅ |
+| **NV-DDR** | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **WiFi** | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **USB** | CDC | CDC | OTG | HS 480M | UART* | N/A | N/A |
+| **Verdict** | ✅ Start | ⚡ Fast | 💪 MCU | 🏆 Pro | 📶 WiFi | 🖥️ Server | 💰 Budget |
 
 *ESP32-S2/S3/C3 have native USB
+**RPi/Orange Pi connect via network (TCP/Unix socket)
 
 ---
 
@@ -389,6 +394,18 @@ cargo build --release --target thumbv6m-none-eabi
 </details>
 
 <details>
+<summary><b>RP2350 (Raspberry Pi Pico 2) — v2.3+</b></summary>
+
+```bash
+rustup target add thumbv8m.main-none-eabihf
+cd openflash/firmware/rp2350
+cargo build --release --target thumbv8m.main-none-eabihf
+# Hold BOOTSEL → plug USB → copy .uf2
+```
+
+</details>
+
+<details>
 <summary><b>STM32F103 (Blue Pill)</b></summary>
 
 ```bash
@@ -413,6 +430,18 @@ cargo build --release --target thumbv7em-none-eabihf
 </details>
 
 <details>
+<summary><b>Arduino GIGA R1 WiFi (STM32H747) — v2.3+</b></summary>
+
+```bash
+rustup target add thumbv7em-none-eabihf
+cd openflash/firmware/arduino_giga
+cargo build --release --target thumbv7em-none-eabihf
+# Flash via DFU (double-tap reset) or probe-rs
+```
+
+</details>
+
+<details>
 <summary><b>ESP32 — v1.5+</b></summary>
 
 ```bash
@@ -426,6 +455,34 @@ cargo build --release
 
 # Flash
 espflash flash target/xtensa-esp32-none-elf/release/openflash-firmware-esp32
+```
+
+</details>
+
+<details>
+<summary><b>Raspberry Pi SBC — v2.3+</b></summary>
+
+```bash
+# Build on the Pi itself or cross-compile
+cd openflash/firmware/raspberry_pi
+cargo build --release
+
+# Run as daemon (requires root for GPIO)
+sudo ./target/release/openflash-gpio --tcp 0.0.0.0:5000
+```
+
+</details>
+
+<details>
+<summary><b>Orange Pi — v2.3+</b></summary>
+
+```bash
+# Build on the Orange Pi itself
+cd openflash/firmware/orange_pi
+cargo build --release
+
+# Run as daemon (requires root for /dev/mem)
+sudo ./target/release/openflash-gpio --tcp 0.0.0.0:5000
 ```
 
 </details>
@@ -487,37 +544,51 @@ v1.6  ✅  NOR Flash & UFS Support
           ├── 16-bit parallel NAND bus
           └── 10 property-based tests
 
-v1.7  ✅  Advanced Write Operations ← YOU ARE HERE
+v1.7  ✅  Advanced Write Operations
           ├── Full chip programming with verification
           ├── Bad block management (auto-remap)
           ├── Wear leveling (erase count tracking)
           ├── Incremental backup/restore
           └── Clone chip-to-chip
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-v1.8  🔜  Scripting & Automation
+v1.8  ✅  Scripting & Automation
           ├── Python API (pyopenflash)
           ├── CLI tool for headless operation
           ├── Batch processing
           ├── Custom analysis plugins
           └── CI/CD integration
 
-v1.9  📋  Advanced AI Features
-          ├── ML-based chip identification
-          ├── Firmware unpacking (binwalk integration)
-          ├── Automatic rootfs extraction
-          ├── Vulnerability scanning
-          └── Custom signature database
-
-v2.0  🚀  Multi-device & Enterprise
+v2.0  ✅  Multi-device & Enterprise
           ├── Multi-device parallel dumping
           ├── Device farm management
           ├── Remote operation (server mode)
           ├── Production line integration
           └── REST API
 
-v2.1  🔮  Hardware Expansion
+v2.2  ✅  Expanded Chip Database
+          ├── 150+ new chips across all flash types
+          ├── Improved auto-detection
+          └── Community chip submissions
+
+v2.3  ✅  Platform Expansion ← YOU ARE HERE
+          ├── RP2350 (Raspberry Pi Pico 2) — NV-DDR, 150MHz
+          ├── Arduino GIGA R1 WiFi (STM32H747) — FMC, HS USB, WiFi
+          ├── Raspberry Pi SBC (3B+/4/5/Zero 2W) — Linux GPIO
+          ├── Orange Pi (Zero 3/5) — Budget SBC option
+          ├── Network device support (TCP/Unix socket)
+          ├── GUI platform info & capabilities display
+          └── 9 total platforms supported!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+v2.4  🔜  Advanced AI Features
+          ├── ML-based chip identification
+          ├── Firmware unpacking (binwalk integration)
+          ├── Automatic rootfs extraction
+          ├── Vulnerability scanning
+          └── Custom signature database
+
+v2.5  📋  Hardware Expansion
           ├── Official OpenFlash PCB
           ├── TSOP-48 ZIF adapter board
           ├── BGA rework station integration
@@ -558,7 +629,7 @@ MIT. Do whatever. Don't sue us.
 
 <div align="center">
 
-**OpenFlash v1.7.0**
+**OpenFlash v2.3.0**
 
 *Your data wants to be free.*
 
