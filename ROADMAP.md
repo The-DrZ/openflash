@@ -1,356 +1,191 @@
 # OpenFlash Roadmap
 
-Детальный план развития проекта OpenFlash.
-
-## Текущий статус: v3.0
+## Текущий статус: v3.0.0
 
 ---
 
 ## ✅ Завершённые версии
 
-### v1.0 — Initial Release
-- Parallel NAND read/write
-- 30+ чипов в базе данных
-- Hamming + BCH ECC
-- Детекция SquashFS/UBIFS/JFFS2
+### v1.x — Foundation
+- v1.0: Parallel NAND, 30+ чипов, Hamming/BCH ECC, SquashFS/UBIFS/JFFS2
+- v1.1: SPI NAND (20+ чипов, QSPI)
+- v1.2: eMMC support
+- v1.3: AI-анализ (pattern recognition, anomaly detection)
+- v1.4: Filesystem detection, OOB analysis, encryption key search, wear analysis
+- v1.5: ESP32 & STM32F4 support
+- v1.6: SPI NOR (30+ чипов), UFS, ONFI 5.0
+- v1.7: Write operations, bad block management, wear leveling, chip cloning
+- v1.8: Python API (pyopenflash), CLI, batch processing, plugins
+- v1.9: ML chip identification, firmware unpacking, vulnerability scanning
 
-### v1.1 — SPI NAND Support
-- 20+ SPI NAND чипов
-- Quad SPI (QSPI) поддержка
-- Internal ECC статус
-- Всего 4 провода!
+### v2.x — Scale & Hardware
+- v2.0: Multi-device, REST API, device farm, production line integration
+- v2.1: OpenFlash PCB, TSOP-48 adapter, logic analyzer, JTAG/SWD
+- v2.2: 150+ новых чипов
+- v2.3: RP2350, Arduino GIGA, Raspberry Pi SBC, Orange Pi (9 платформ)
+- v2.3.5: Teensy 4.x (USB HS 480Mbps!), Banana Pi (11 платформ)
 
-### v1.2 — eMMC Support
-- eMMC/MMC через SPI mode
-- CID/CSD/EXT_CSD регистры
-- Block read/write операции
-- Boot partition доступ
-
-### v1.25 — STM32F1 Expansion
-- SPI NAND для Blue Pill
-- eMMC для Blue Pill
-- Полный паритет с RP2040
-
-### v1.3 — AI-Powered Analysis
-- Pattern recognition
-- Anomaly detection
-- Recovery suggestions
-- Chip-specific recommendations
-
-### v1.4 — AI Analysis v1.4
-- Filesystem detection (YAFFS2, UBIFS, ext4, FAT...)
-- OOB/spare area analysis
-- Encryption key search (AES-128/192/256)
-- Wear leveling analysis
-- Memory map visualization
-- Dump comparison
-- Report export
-
-
-### v1.5 — ESP32 & STM32F4 Support
-- ESP32 firmware с WiFi/BLE
-- STM32F4 firmware (USB OTG, FSMC)
-- Web interface для ESP32
-- 4 платформы: RP2040, STM32F1, STM32F4, ESP32
-
-### v1.6 — NOR Flash & UFS Support
-- SPI NOR flash (W25Q, MX25L, IS25LP) — 30+ чипов
-- UFS (Universal Flash Storage) — версии 2.0-4.0
-- ONFI 5.0 support с NV-DDR3
-- 16-bit parallel NAND bus
-- 10 property-based тестов
-
-### v1.7 — Advanced Write Operations
-- Full chip programming с верификацией
-- Bad block management
-- Wear leveling write
-- Incremental backup/restore
-- Clone chip-to-chip
-- 12 новых протокольных команд (0xA0-0xAB)
-
-### v1.8 — Scripting & Automation
-- Python API (pyopenflash) через PyO3
-- CLI tool (openflash) с clap
-- Batch processing
-- Custom analysis plugins
-- CI/CD integration
-- 12 новых протокольных команд (0xB0-0xBB)
-
-### v1.9 — Advanced AI Features
-- ML-based chip identification
-- Firmware unpacking (binwalk)
-- Automatic rootfs extraction
-- Vulnerability scanning
-- Custom signature database
-- 10 новых протокольных команд (0xC0-0xC9)
-
-### v2.0 — Multi-device & Enterprise
-- Multi-device parallel dumping
-- Device farm management
-- Remote operation (server mode)
-- Production line integration
-- REST API
-- 16 новых протокольных команд (0xD0-0xDF)
-
-### v2.1 — Hardware Expansion
-**Статус:** ✅ Released
-
-| Фича | Статус |
-|------|--------|
-| Official OpenFlash PCB | ✅ Done |
-| TSOP-48 ZIF adapter board | ✅ Done |
-| BGA rework station integration | ✅ Done |
-| Logic analyzer mode | ✅ Done |
-| JTAG/SWD passthrough | ✅ Done |
-
-**OpenFlash PCB v1:**
-- RP2040 + ESP32 combo
-- TSOP-48 ZIF socket
-- SPI NAND/NOR socket (SOP-8)
-- eMMC socket
-- USB-C + WiFi
-- OLED display (128x64)
-- ~$25 BOM
-
-**Реализация:**
-- Новый модуль `hardware` в core library
-- 16 новых протокольных команд (0xE0-0xEF)
-- 14 unit тестов для hardware модуля
-- TSOP-48 pinout для Samsung, Hynix, Micron, Toshiba
-- Logic analyzer до 24 MHz с VCD/Sigrok экспортом
-- JTAG chain scanning и SWD debug interface
-
-### v2.3 — Platform Expansion
-**Статус:** ✅ Released
-
-| Фича | Статус |
-|------|--------|
-| Raspberry Pi Pico 2 (RP2350) | ✅ Done |
-| Raspberry Pi SBC (3B+, 4, 5, Zero 2W) | ✅ Done |
-| Arduino GIGA R1 WiFi (STM32H747) | ✅ Done |
-| Orange Pi (Zero 3, 2W, 5) | ✅ Done |
-
-**Новые платформы:**
-
-**1. Raspberry Pi Pico 2 (RP2350)** — Высокий приоритет
-- Архитектура: Dual Cortex-M33 @ 150MHz (или RISC-V Hazard3)
-- 520KB SRAM (vs 264KB на RP2040)
-- Улучшенные PIO блоки для NV-DDR timing
-- ARM TrustZone, secure boot
-- Прямая миграция с RP2040
-
-**2. Raspberry Pi SBC (Linux GPIO)**
-- Поддержка: Pi 3B+, Pi 4, Pi 5, Zero 2W
-- Работа через /dev/mem и rppal
-- Unix socket для локального управления
-- Headless server mode
-- Высокая скорость обработки (CPU 1.5+ GHz)
-
-**3. Arduino GIGA R1 WiFi (STM32H747)**
-- Dual-core: Cortex-M7 @ 480MHz + Cortex-M4 @ 240MHz
-- 1MB RAM, 2MB Flash
-- USB OTG HS (512-byte packets)
-- FMC для parallel NAND с hardware ECC
-- SDMMC для eMMC/SD с HS200
-- WiFi/BLE через Murata модуль
-
-**4. Orange Pi (Allwinner/Rockchip)**
-- Orange Pi Zero 3 (H618)
-- Orange Pi Zero 2W (H616)
-- Orange Pi 5 (RK3588)
-- Memory-mapped GPIO
-- Сверхдешёвые ($15-20) программаторы
-
-**Новые возможности:**
-- NV-DDR support на RP2350 (до 400MT/s)
-- Hardware ECC на STM32H747 FMC
-- HS200 mode для eMMC на Arduino GIGA
-- Unix socket API для SBC платформ
-
-**Итого поддерживаемых платформ: 9**
-- MCU: RP2040, RP2350, STM32F1, STM32F4, STM32H747, ESP32
-- SBC: Raspberry Pi, Orange Pi
+### v3.0 — Cloud & Pro ← ТЕКУЩАЯ
+- Cloud sync & backup
+- Team collaboration
+- Chip database crowdsourcing
+- AI model updates OTA
+- Enterprise support (Free/Pro/Enterprise tiers)
 
 ---
 
-### v2.3.5 — Teensy & Banana Pi
-**Статус:** ✅ Released
+## 🚀 Будущие версии
 
-| Фича | Статус |
-|------|--------|
-| Teensy 4.0 (NXP i.MX RT1062) | ✅ Done |
-| Teensy 4.1 (+ SD card slot) | ✅ Done |
-| Banana Pi M2 Zero (Allwinner H3) | ✅ Done |
-| Banana Pi M4 Berry (Allwinner H618) | ✅ Done |
-| Banana Pi BPI-F3 (SpacemiT K1 RISC-V) | ✅ Done |
+### v3.1 — FPGA & High-Speed
+**Цель:** Максимальная скорость и точность timing
 
-**Teensy 4.0/4.1 — Game Changer! ⚡**
-- **USB High Speed (480 Mbit/s)** — 10-20x быстрее USB Full Speed!
-- **1GB дамп за 3-5 минут** вместо 45 минут на Pico
-- NXP i.MX RT1062 @ 600 MHz (ARM Cortex-M7)
-- FlexIO для precise NV-DDR timing
-- Soft ECC on-the-fly (BCH-16/24) без потери скорости
-- Logic analyzer mode (до 24 MHz sample rate)
-- Teensy 4.1: SD card slot для автономной работы
-- Platform IDs: 0x30 (4.0), 0x31 (4.1)
-
-**Banana Pi — Budget SBC Alternative 🍌**
-- M2 Zero: RPi Zero form factor ($15)
-- M4 Berry: RPi 4 alternative ($25)
-- BPI-F3: **RISC-V** (SpacemiT K1) — первая RISC-V плата!
-- Hardware SPI для быстрых SPI NAND/NOR операций
-- Memory-mapped GPIO для Allwinner SoCs
-- Platform ID: 0x12
-
-**Новые capabilities:**
-- `sd_card` — SD card slot (Teensy 4.1)
-- `logic_analyzer` — Logic analyzer mode
-- `soft_ecc` — Software ECC on-the-fly
-
-**Итого поддерживаемых платформ: 11**
-- MCU: RP2040, RP2350, STM32F1, STM32F4, STM32H747, ESP32, Teensy 4.0, Teensy 4.1
-- SBC: Raspberry Pi, Orange Pi, Banana Pi
+| Фича | Описание |
+|------|----------|
+| FPGA programmer | Lattice iCE40/ECP5 для NV-DDR3/4 timing, 100+ MB/s |
+| Tang Nano support | Sipeed Tang Nano 9K/20K — дешёвые FPGA ($15-30) |
+| USB 3.0 bridge | FT601/FX3 для 300+ MB/s transfers |
+| Parallel read optimization | Чтение нескольких страниц одновременно |
+| DMA transfers | Zero-copy на всех платформах |
 
 ---
 
-### v2.2 — Expanded Memory Support
-**Статус:** ✅ Released
+### v3.2 — Extended Flash Support
+**Цель:** Поддержка всех типов flash памяти
 
-| Фича | Статус |
-|------|--------|
-| Parallel NAND expansion (50+ chips) | ✅ Done |
-| SPI NAND expansion (35+ chips) | ✅ Done |
-| SPI NOR expansion (45+ chips) | ✅ Done |
-| eMMC expansion (25+ chips) | ✅ Done |
-| New manufacturers support | ✅ Done |
-
-**Новые производители:**
-- SPI NAND: Foresee, Dosilicon, Zetta, Puya, Boya
-- SPI NOR: EON, XMC, Puya, Boya
-
-**Расширенная поддержка:**
-- GigaDevice GD5F1GM9 high-speed SPI NAND (166MHz)
-- Micron MT25QL01G 1Gbit SPI NOR
-- Samsung/Micron/Hynix eMMC 5.1 до 128GB
-- TLC NAND до 32GB (Micron, Kioxia, SK Hynix)
-- 1.8V и 1.2V варианты чипов
-
-**Итого поддерживаемых чипов:**
-- Parallel NAND: 60+
-- SPI NAND: 55+
-- SPI NOR: 75+
-- eMMC: 40+
+| Фича | Описание |
+|------|----------|
+| OneNAND | Samsung KFM/KFN series (legacy devices) |
+| HyperFlash | Cypress/Infineon S26KS/S26HL (automotive) |
+| OctalSPI | Macronix MX25/MX66 OctaFlash |
+| 3D NAND optimizations | Samsung V-NAND, Micron 3D TLC/QLC specific |
+| QLC NAND | 4-bit per cell support с расширенным ECC |
+| RPMB access | eMMC Replay Protected Memory Block |
+| SD/microSD raw | Прямой доступ к raw NAND внутри SD карт |
 
 ---
 
-### v3.0 — OpenFlash Pro ← ТЕКУЩАЯ
-**Статус:** ✅ Released
+### v3.3 — Forensics & Security
+**Цель:** Профессиональные инструменты для forensics
 
-**Цель:** Коммерческая версия с облачными функциями
-
-| Фича | Статус |
-|------|--------|
-| Cloud sync & backup | ✅ Done |
-| Team collaboration | ✅ Done |
-| Chip database crowdsourcing | ✅ Done |
-| AI model updates OTA | ✅ Done |
-| Enterprise support | ✅ Done |
-
-**Cloud Sync & Backup:**
-- `SyncConfig` — конфигурация автосинхронизации
-- `SyncItem` — элементы для синхронизации (дампы, отчёты, проекты)
-- `SyncStatus` — статус синхронизации
-- `ConflictResolution` — стратегии разрешения конфликтов
-- Автоматическая синхронизация при сохранении
-- Лимит размера файла для автосинхронизации
-
-**Team Collaboration:**
-- `Organization` — команды/организации
-- `TeamMember` — участники с ролями (Owner, Admin, Member, Viewer)
-- `SharedProject` — общие проекты
-- `ProjectAccess` — уровни доступа (Read, Write, Admin)
-- Приглашения и управление участниками
-
-**Chip Database Crowdsourcing:**
-- `ChipContribution` — вклад в базу чипов
-- `VerificationData` — данные верификации (ID, ONFI, timing)
-- `ContributionStatus` — статус модерации
-- `CommunityChipDatabase` — общая база данных
-- Система репутации и голосования
-
-**AI Model Updates OTA:**
-- `AiModelInfo` — информация о модели
-- `AiModelUpdate` — обновления моделей
-- `AiUpdateConfig` — конфигурация автообновления
-- Поддержка 5 типов моделей: ChipIdentification, PatternRecognition, FilesystemDetection, AnomalyDetection, EncryptionDetection
-- Автоматическая проверка и загрузка обновлений
-
-**Enterprise Support:**
-- `SupportTicket` — тикеты поддержки
-- `TicketMessage` — сообщения в тикетах
-- `TicketPriority` — приоритеты (Low, Normal, High, Critical)
-- `TicketStatus` — статусы (Open, InProgress, WaitingOnCustomer, Resolved, Closed)
-- Приоритетная поддержка для Enterprise tier
-
-**Subscription Tiers:**
-- **Free** — базовые функции, crowdsourcing
-- **Pro** — cloud sync, team collaboration, AI updates
-- **Enterprise** — приоритетная поддержка, безлимитное хранилище
-
-**Новые протокольные команды (0xF0-0xFF):**
-- `CloudAuth` (0xF0) — аутентификация
-- `CloudLogout` (0xF1) — выход
-- `CloudGetProfile` (0xF2) — профиль пользователя
-- `CloudSyncStart` (0xF3) — запуск синхронизации
-- `CloudSyncStatus` (0xF4) — статус синхронизации
-- `CloudUpload` (0xF5) — загрузка файла
-- `CloudDownload` (0xF6) — скачивание файла
-- `CloudListShared` (0xF7) — список общих элементов
-- `CloudShare` (0xF8) — поделиться элементом
-- `CloudSubmitChip` (0xF9) — отправить вклад в базу чипов
-- `CloudGetChipUpdates` (0xFA) — получить обновления базы
-- `CloudCheckAiUpdates` (0xFB) — проверить обновления AI
-- `CloudDownloadAiModel` (0xFC) — скачать AI модель
-- `CloudCreateTicket` (0xFD) — создать тикет поддержки
-- `CloudGetTickets` (0xFE) — получить тикеты
-- `CloudStatus` (0xFF) — статус облака
-
-**Новый модуль:**
-- `cloud.rs` — облачные функции и Pro features
+| Фича | Описание |
+|------|----------|
+| Write-blocker mode | Hardware write protection, гарантированный read-only |
+| Chain of custody | Криптографическое подтверждение целостности |
+| Court-ready reports | PDF отчёты с hash verification для суда |
+| Audit logging | Полный лог операций с timestamps и signatures |
+| Encrypted storage | AES-256 шифрование дампов at rest |
+| Data carving | Восстановление удалённых файлов из raw dumps |
+| Timeline reconstruction | Временная шкала изменений на основе FS metadata |
 
 ---
 
-## 🚀 Будущие релизы
+### v3.4 — AI & Analysis v2
+**Цель:** Продвинутый AI-анализ
 
-### v3.1 — Mobile & Embedded
-**Цель:** Мобильные приложения и встраиваемые системы
-
-| Фича | Приоритет |
-|------|-----------|
-| iOS app | 🟡 Medium |
-| Android app | 🟡 Medium |
-| Embedded Linux support | 🟢 Low |
-| WebAssembly core | 🟢 Low |
-
----
-
-## 🗓️ Таймлайн
-
-| Версия | Дата | Статус |
-|--------|------|--------|
-| v1.5 | Q1 2026 | ✅ Released |
-| v1.6 | Q1 2026 | ✅ Released |
-| v1.7 | Q2 2026 | ✅ Released |
-| v1.8 | Q2 2026 | ✅ Released |
-| v1.9 | Q3 2026 | ✅ Released |
-| v2.0 | Q4 2026 | ✅ Released |
-| v2.1 | Q1 2027 | ✅ Released |
-| v2.2 | Q1 2027 | ✅ Released |
-| v2.3 | Q1 2027 | ✅ Released |
-| v2.3.5 | Q1 2027 | ✅ Released |
-| v3.0 | Q1 2027 | ✅ Released |
-| v3.1 | 2028 | 🔮 Future |
+| Фича | Описание |
+|------|----------|
+| Firmware similarity | Fuzzy hashing (TLSH/ssdeep) для поиска похожих прошивок |
+| Backdoor detection | ML-детекция известных backdoor паттернов |
+| Crypto key extraction | Автоматический поиск RSA/EC ключей, сертификатов |
+| Bootloader analysis | U-Boot, Barebox, custom bootloader parsing |
+| Device tree extraction | Автоматический парсинг DTB/FDT |
+| Symbol recovery | Восстановление символов из stripped binaries |
+| Diff analysis v2 | Semantic diff между версиями firmware |
 
 ---
 
-*Последнее обновление: Январь 2027*
+### v3.5 — Developer Tools
+**Цель:** Интеграция в workflow разработчиков
+
+| Фича | Описание |
+|------|----------|
+| VS Code extension | Hex view, analysis, flash operations из IDE |
+| GitHub Actions | CI/CD action для firmware verification |
+| GitLab CI template | Готовый pipeline для embedded проектов |
+| Rust crate (crates.io) | openflash-core как библиотека |
+| C/C++ bindings | FFI для embedded toolchains |
+| GDB integration | Чтение flash через GDB remote protocol |
+| OpenOCD plugin | Интеграция с OpenOCD для debug + flash |
+
+---
+
+### v3.6 — RISC-V & New Platforms
+**Цель:** Поддержка RISC-V и новых MCU
+
+| Фича | Описание |
+|------|----------|
+| ESP32-C3/C6 | RISC-V варианты ESP32 |
+| CH32V series | WCH CH32V103/203/303 — дешёвые RISC-V ($0.50-2) |
+| GD32VF103 | GigaDevice RISC-V (совместим с STM32F103) |
+| BL602/BL616 | Bouffalo Lab WiFi+BLE RISC-V |
+| Milk-V Duo | RISC-V SBC ($9) |
+| LicheePi 4A | TH1520 RISC-V SBC |
+| BeagleV | StarFive RISC-V |
+
+---
+
+### v3.7 — Enterprise Scale
+**Цель:** Масштабирование для production
+
+| Фича | Описание |
+|------|----------|
+| Kubernetes operator | Auto-scaling device farm в k8s |
+| Prometheus metrics | Мониторинг производительности |
+| Grafana dashboards | Визуализация статистики |
+| LDAP/SAML auth | Enterprise SSO |
+| Multi-region cloud | Geo-distributed infrastructure |
+| On-premise deploy | Self-hosted OpenFlash Cloud |
+| Compliance (SOC2) | Сертификация для enterprise |
+
+---
+
+### v4.0 — Next Generation
+**Цель:** Архитектурные улучшения
+
+| Фича | Описание |
+|------|----------|
+| WebAssembly core | Анализ дампов в браузере без установки |
+| Distributed dumping | Параллельное чтение одного чипа несколькими устройствами |
+| Real-time collab | Совместный анализ как Google Docs |
+| Plugin sandbox | WASM-изолированные плагины |
+| Custom protocols | DSL для описания новых flash протоколов |
+| Hardware abstraction | Унифицированный HAL для всех платформ |
+
+---
+
+## 🔧 Технический долг
+
+| Область | Задачи |
+|---------|--------|
+| Performance | SIMD для ECC, async I/O везде, memory-mapped files |
+| Testing | 90%+ coverage, hardware-in-the-loop tests, fuzzing |
+| Documentation | API reference, video tutorials, cookbook |
+| Code quality | Clippy pedantic, безопасный unsafe, no panics |
+
+---
+
+## 📊 Chip Database Goals
+
+| Тип | Текущее | Цель v4.0 |
+|-----|---------|-----------|
+| Parallel NAND | 60+ | 150+ |
+| SPI NAND | 55+ | 120+ |
+| SPI NOR | 75+ | 200+ |
+| eMMC | 40+ | 80+ |
+| UFS | 10+ | 30+ |
+| OneNAND | 0 | 20+ |
+| HyperFlash | 0 | 15+ |
+
+---
+
+## 🎯 Приоритеты
+
+1. **Скорость** — FPGA и USB 3.0 для 100+ MB/s
+2. **Покрытие чипов** — максимум поддерживаемых устройств
+3. **Forensics** — профессиональные инструменты
+4. **AI** — умный анализ без ручной работы
+5. **Интеграции** — встраивание в существующие workflow
+
+---
+
+*Последнее обновление: Январь 2026*
