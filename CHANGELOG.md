@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.5] - 2027-Q1
+
+### Added
+- **Teensy 4.0/4.1 Support** ⚡
+  - New `teensy4` firmware module for NXP i.MX RT1062
+  - USB High Speed (480 Mbit/s) — 10-20x faster than USB Full Speed!
+  - 600 MHz ARM Cortex-M7 processor
+  - FlexIO-based NAND interface for precise timing
+  - NV-DDR support via FlexIO
+  - Soft ECC on-the-fly (BCH-16/24) without speed loss
+  - Logic analyzer mode capability (up to 24 MHz sample rate)
+  - Teensy 4.1: SD card slot for autonomous operation
+  - Platform IDs: 0x30 (Teensy 4.0), 0x31 (Teensy 4.1)
+  - Capabilities: All flash types + USB HS + Logic Analyzer + Soft ECC
+
+- **Banana Pi Support** 🍌
+  - New `banana_pi` driver module (Linux userspace)
+  - Banana Pi M2 Zero (Allwinner H3) — RPi Zero form factor
+  - Banana Pi M4 Berry (Allwinner H618) — RPi 4 alternative
+  - Banana Pi BPI-F3 (SpacemiT K1) — RISC-V architecture!
+  - Hardware SPI via spidev for fast SPI NAND/NOR operations
+  - Memory-mapped GPIO for Allwinner SoCs
+  - Unix socket and TCP support for local/remote control
+  - Platform ID: 0x12
+  - Best for: SPI NAND, SPI NOR, eMMC (parallel NAND not recommended)
+
+- **New Device Capabilities**
+  - `sd_card` — SD card slot availability (Teensy 4.1)
+  - `logic_analyzer` — Logic analyzer mode support
+  - `soft_ecc` — Software ECC on-the-fly capability
+
+- **GUI Updates**
+  - PlatformInfo component updated for new platforms
+  - New capability badges: USB HS 480M, SD Card, Logic Analyzer, Soft ECC
+  - Platform icons: ⚡ (Teensy), 🍌 (Banana Pi)
+
+### Changed
+- Protocol version updated to 0x25
+- Total supported platforms: 11 (8 MCU + 3 SBC)
+- DevicePlatform enum extended with Teensy40, Teensy41, BananaPi variants
+- DeviceCapabilities bitmap extended (bits 9-11)
+
+### Documentation
+- Updated README with Teensy and Banana Pi sections
+- Added build instructions for new platforms
+- Updated speed comparison table
+- Updated ROADMAP with v2.3.5 completion
+
 ## [2.3.0] - 2027-Q1
 
 ### Added

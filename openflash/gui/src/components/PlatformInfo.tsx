@@ -12,6 +12,9 @@ interface DeviceCapabilities {
   wifi: boolean;
   bluetooth: boolean;
   high_speed_usb: boolean;
+  sd_card: boolean;
+  logic_analyzer: boolean;
+  soft_ecc: boolean;
 }
 
 interface PlatformInfoData {
@@ -97,7 +100,10 @@ export function PlatformInfo({ connected, onStatusChange }: Props) {
           <div className="cap-badges">
             {caps.nvddr && <span className="cap-badge feature">NV-DDR</span>}
             {caps.hardware_ecc && <span className="cap-badge feature">HW ECC</span>}
-            {caps.high_speed_usb && <span className="cap-badge feature">USB HS</span>}
+            {caps.high_speed_usb && <span className="cap-badge feature">USB HS 480M</span>}
+            {caps.sd_card && <span className="cap-badge feature">SD Card</span>}
+            {caps.logic_analyzer && <span className="cap-badge feature">Logic Analyzer</span>}
+            {caps.soft_ecc && <span className="cap-badge feature">Soft ECC</span>}
             {caps.wifi && <span className="cap-badge wireless">WiFi</span>}
             {caps.bluetooth && <span className="cap-badge wireless">BT</span>}
           </div>

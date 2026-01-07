@@ -23,7 +23,10 @@ pub fn set_mock_platform(platform: DevicePlatform) {
         DevicePlatform::Rp2350 => 0x05,
         DevicePlatform::RaspberryPi => 0x10,
         DevicePlatform::OrangePi => 0x11,
+        DevicePlatform::BananaPi => 0x12,
         DevicePlatform::ArduinoGiga => 0x20,
+        DevicePlatform::Teensy40 => 0x30,
+        DevicePlatform::Teensy41 => 0x31,
         DevicePlatform::Unknown => 0x00,
     };
     MOCK_PLATFORM.store(id, Ordering::SeqCst);
@@ -86,6 +89,9 @@ pub fn get_mock_capabilities(platform: DevicePlatform) -> DeviceCapabilities {
             wifi: false,
             bluetooth: false,
             high_speed_usb: false,
+            sd_card: false,
+            logic_analyzer: false,
+            soft_ecc: false,
         },
         DevicePlatform::Rp2350 => DeviceCapabilities {
             parallel_nand: true,
@@ -97,6 +103,9 @@ pub fn get_mock_capabilities(platform: DevicePlatform) -> DeviceCapabilities {
             wifi: false,
             bluetooth: false,
             high_speed_usb: false,
+            sd_card: false,
+            logic_analyzer: false,
+            soft_ecc: false,
         },
         DevicePlatform::ArduinoGiga => DeviceCapabilities {
             parallel_nand: true,
@@ -108,6 +117,9 @@ pub fn get_mock_capabilities(platform: DevicePlatform) -> DeviceCapabilities {
             wifi: true,
             bluetooth: true,
             high_speed_usb: true,  // USB OTG HS
+            sd_card: true,
+            logic_analyzer: false,
+            soft_ecc: false,
         },
         DevicePlatform::Esp32 => DeviceCapabilities {
             parallel_nand: true,
@@ -119,6 +131,51 @@ pub fn get_mock_capabilities(platform: DevicePlatform) -> DeviceCapabilities {
             wifi: true,
             bluetooth: true,
             high_speed_usb: false,
+            sd_card: false,
+            logic_analyzer: false,
+            soft_ecc: false,
+        },
+        DevicePlatform::Teensy40 => DeviceCapabilities {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: true,  // FlexIO supports NV-DDR timing
+            hardware_ecc: false,
+            wifi: false,
+            bluetooth: false,
+            high_speed_usb: true,  // USB HS 480Mbps!
+            sd_card: false,
+            logic_analyzer: true,  // 600MHz CPU enables logic analyzer
+            soft_ecc: true,  // 600MHz CPU enables soft ECC on-the-fly
+        },
+        DevicePlatform::Teensy41 => DeviceCapabilities {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: true,
+            hardware_ecc: false,
+            wifi: false,
+            bluetooth: false,
+            high_speed_usb: true,  // USB HS 480Mbps!
+            sd_card: true,  // Teensy 4.1 has SD card slot
+            logic_analyzer: true,
+            soft_ecc: true,
+        },
+        DevicePlatform::BananaPi => DeviceCapabilities {
+            parallel_nand: false,  // Not recommended on Linux SBCs
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: false,
+            hardware_ecc: false,
+            wifi: true,
+            bluetooth: true,
+            high_speed_usb: false,
+            sd_card: true,
+            logic_analyzer: false,
+            soft_ecc: false,
         },
         DevicePlatform::RaspberryPi | DevicePlatform::OrangePi => DeviceCapabilities {
             parallel_nand: true,
@@ -130,6 +187,9 @@ pub fn get_mock_capabilities(platform: DevicePlatform) -> DeviceCapabilities {
             wifi: true,  // Most SBCs have WiFi
             bluetooth: true,
             high_speed_usb: false,
+            sd_card: true,
+            logic_analyzer: false,
+            soft_ecc: false,
         },
         _ => DeviceCapabilities::default(),
     }
@@ -196,6 +256,9 @@ pub fn get_mock_device_info_response() -> Vec<u8> {
     if caps.wifi { bitmap |= 0x40; }
     if caps.bluetooth { bitmap |= 0x80; }
     if caps.high_speed_usb { bitmap |= 0x100; }
+    if caps.sd_card { bitmap |= 0x200; }
+    if caps.logic_analyzer { bitmap |= 0x400; }
+    if caps.soft_ecc { bitmap |= 0x800; }
     
     let mut response = vec![0x01, platform_id, 0x23]; // cmd, platform, protocol version
     response.extend_from_slice(&bitmap.to_le_bytes());

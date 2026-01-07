@@ -5,12 +5,12 @@
     ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██╔══╝  ██║     ██╔══██║╚════██║██╔══██║
     ╚██████╔╝██║     ███████╗██║ ╚████║██║     ███████╗██║  ██║███████║██║  ██║
      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-                                                                        v2.3.0
+                                                                        v2.3.5
 ```
 
 <div align="center">
 
-**$4-60 hardware. $0 software. 9 platforms. Infinite possibilities.**
+**$4-60 hardware. $0 software. 11 platforms. Infinite possibilities.**
 
 [Download](#-download) · [5-Minute Setup](#-5-minute-setup) · [Why This Exists](#-why-this-exists)
 
@@ -45,12 +45,14 @@ Commercial NAND programmers cost **$200-2000**. They run on Windows XP. They loo
 │   • STM32F4 Black Pill ($5)               SPI NAND (v1.1+):             │
 │   • Arduino GIGA R1 ($60)                 GigaDevice, Winbond...        │
 │   • ESP32 ($4)                                                          │
-│                                           eMMC (v1.2+):                 │
-│   Single Board Computers:                 Samsung, Micron, SanDisk...   │
-│   • Raspberry Pi 4/5 ($35-75)                                           │
-│   • Orange Pi ($15-50)                    128MB to 8GB+                 │
+│   • Teensy 4.0/4.1 ($20-30) ⚡ NEW        eMMC (v1.2+):                 │
+│                                           Samsung, Micron, SanDisk...   │
+│   Single Board Computers:                                               │
+│   • Raspberry Pi 4/5 ($35-75)             128MB to 8GB+                 │
+│   • Orange Pi ($15-50)                                                  │
+│   • Banana Pi ($15-35) 🍌 NEW             11 platforms supported!       │
 │                                                                         │
-│   + jumper wires ($1)                     9 platforms supported!        │
+│   + jumper wires ($1)                                                   │
 │   + This software (free)                                                │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
@@ -60,11 +62,11 @@ Commercial NAND programmers cost **$200-2000**. They run on Windows XP. They loo
 
 ## 📥 Download
 
-**v2.3.0** — Platform Expansion (9 platforms!)
+**v2.3.5** — Teensy & Banana Pi Support (11 platforms!)
 
 | | | |
 |:---:|:---:|:---:|
-| [**Windows**](https://github.com/openflash/openflash/releases/download/v2.3.0/OpenFlash-2.3.0-x64.msi)<br>`OpenFlash-2.3.0-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v2.3.0/OpenFlash-2.3.0.dmg)<br>`OpenFlash-2.3.0.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v2.3.0/OpenFlash-2.3.0.AppImage)<br>`OpenFlash-2.3.0.AppImage` |
+| [**Windows**](https://github.com/openflash/openflash/releases/download/v2.3.5/OpenFlash-2.3.5-x64.msi)<br>`OpenFlash-2.3.5-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v2.3.5/OpenFlash-2.3.5.dmg)<br>`OpenFlash-2.3.5.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v2.3.5/OpenFlash-2.3.5.AppImage)<br>`OpenFlash-2.3.5.AppImage` |
 
 <details>
 <summary><b>Build from source</b></summary>
@@ -309,21 +311,23 @@ AI-Powered Features:
 
 ## 🏎️ Speed
 
-| | Pico | Pico 2 | STM32F4 | Arduino GIGA | ESP32 | RPi 4/5 | Orange Pi |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Chip ID** | 10ms | 5ms | 5ms | 2ms | 15ms | 3ms | 5ms |
-| **Page read** | 100μs | 60μs | 50μs | 20μs | 120μs | 30μs | 50μs |
-| **1GB dump** | 45 min | 30 min | 25 min | 10 min | 50 min | 12 min | 20 min |
-| **Price** | ~$4 | ~$5 | ~$5 | ~$60 | ~$4 | ~$35-75 | ~$15-50 |
-| **SPI NAND** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| **eMMC** | ✅ | ✅ | ✅ | ✅ HS200 | ✅ | ✅ | ✅ |
-| **NV-DDR** | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
-| **WiFi** | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
-| **USB** | CDC | CDC | OTG | HS 480M | UART* | N/A | N/A |
-| **Verdict** | ✅ Start | ⚡ Fast | 💪 MCU | 🏆 Pro | 📶 WiFi | 🖥️ Server | 💰 Budget |
+| | Pico | Pico 2 | STM32F4 | Arduino GIGA | Teensy 4.x | ESP32 | RPi 4/5 | Orange Pi | Banana Pi |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Chip ID** | 10ms | 5ms | 5ms | 2ms | 1ms | 15ms | 3ms | 5ms | 5ms |
+| **Page read** | 100μs | 60μs | 50μs | 20μs | 10μs | 120μs | 30μs | 50μs | 50μs |
+| **1GB dump** | 45 min | 30 min | 25 min | 10 min | 3-5 min | 50 min | 12 min | 20 min | 25 min |
+| **Price** | ~$4 | ~$5 | ~$5 | ~$60 | ~$20-30 | ~$4 | ~$35-75 | ~$15-50 | ~$15-35 |
+| **SPI NAND** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **eMMC** | ✅ | ✅ | ✅ | ✅ HS200 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| **NV-DDR** | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
+| **WiFi** | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **USB** | CDC | CDC | OTG | HS 480M | HS 480M | UART* | N/A | N/A | N/A |
+| **SD Card** | ❌ | ❌ | ❌ | ✅ | ✅ (4.1) | ❌ | ✅ | ✅ | ✅ |
+| **Verdict** | ✅ Start | ⚡ Fast | 💪 MCU | 🏆 Pro | ⚡ Speed | 📶 WiFi | 🖥️ Server | 💰 Budget | 🍌 Alt |
 
 *ESP32-S2/S3/C3 have native USB
-**RPi/Orange Pi connect via network (TCP/Unix socket)
+**RPi/Orange Pi/Banana Pi connect via network (TCP/Unix socket)
+***Teensy 4.x: USB High Speed (480 Mbit/s) = 10-20x faster transfers!
 
 ---
 
@@ -489,6 +493,53 @@ sudo ./target/release/openflash-gpio --tcp 0.0.0.0:5000
 
 </details>
 
+<details>
+<summary><b>Teensy 4.0/4.1 — v2.3.5+ ⚡ NEW</b></summary>
+
+```bash
+# Install Teensy toolchain
+rustup target add thumbv7em-none-eabihf
+
+# Build for Teensy 4.0
+cd openflash/firmware/teensy4
+cargo build --release --target thumbv7em-none-eabihf --features teensy40
+
+# Build for Teensy 4.1 (with SD card support)
+cargo build --release --target thumbv7em-none-eabihf --features teensy41
+
+# Flash via Teensy Loader or teensy_loader_cli
+teensy_loader_cli --mcu=TEENSY40 -w target/thumbv7em-none-eabihf/release/openflash-firmware-teensy4.hex
+```
+
+**Why Teensy 4.x?**
+- USB High Speed (480 Mbit/s) = 10-20x faster than Pico/STM32
+- 600 MHz ARM Cortex-M7 = soft ECC on-the-fly
+- Teensy 4.1: SD card slot for autonomous operation
+- FlexIO for precise NAND timing (NV-DDR support)
+
+</details>
+
+<details>
+<summary><b>Banana Pi — v2.3.5+ 🍌 NEW</b></summary>
+
+```bash
+# Build on the Banana Pi itself
+cd openflash/firmware/banana_pi
+cargo build --release
+
+# Run as daemon (requires root for /dev/mem or /dev/spidev)
+sudo ./target/release/openflash-gpio --tcp 0.0.0.0:5000
+
+# Supported boards:
+# - Banana Pi M2 Zero (Allwinner H3) - RPi Zero form factor
+# - Banana Pi M4 Berry (Allwinner H618) - RPi 4 alternative
+# - Banana Pi BPI-F3 (SpacemiT K1) - RISC-V!
+```
+
+**Note:** Banana Pi is best for SPI NAND/NOR and eMMC. Parallel NAND is not recommended on Linux SBCs due to timing constraints.
+
+</details>
+
 ---
 
 ## 🗺️ Roadmap
@@ -572,7 +623,7 @@ v2.2  ✅  Expanded Chip Database
           ├── Improved auto-detection
           └── Community chip submissions
 
-v2.3  ✅  Platform Expansion ← YOU ARE HERE
+v2.3  ✅  Platform Expansion
           ├── RP2350 (Raspberry Pi Pico 2) — NV-DDR, 150MHz
           ├── Arduino GIGA R1 WiFi (STM32H747) — FMC, HS USB, WiFi
           ├── Raspberry Pi SBC (3B+/4/5/Zero 2W) — Linux GPIO
@@ -580,6 +631,21 @@ v2.3  ✅  Platform Expansion ← YOU ARE HERE
           ├── Network device support (TCP/Unix socket)
           ├── GUI platform info & capabilities display
           └── 9 total platforms supported!
+
+v2.3.5 ✅  Teensy & Banana Pi ← YOU ARE HERE
+          ├── Teensy 4.0/4.1 (NXP i.MX RT1062) — USB HS 480Mbps!
+          │   ├── 10-20x faster transfers than USB Full Speed
+          │   ├── 600 MHz Cortex-M7 for soft ECC on-the-fly
+          │   ├── FlexIO for precise NV-DDR timing
+          │   ├── SD card slot on 4.1 for autonomous operation
+          │   └── Logic analyzer mode capability
+          ├── Banana Pi (M2 Zero, M4 Berry, BPI-F3)
+          │   ├── M2 Zero — RPi Zero form factor ($15)
+          │   ├── M4 Berry — RPi 4 alternative ($25)
+          │   ├── BPI-F3 — RISC-V (SpacemiT K1)!
+          │   └── Best for SPI NAND/NOR/eMMC
+          ├── Protocol version 0x25
+          └── 11 total platforms supported!
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -631,7 +697,7 @@ MIT. Do whatever. Don't sue us.
 
 <div align="center">
 
-**OpenFlash v2.3.0**
+**OpenFlash v2.3.5**
 
 *Your data wants to be free.*
 

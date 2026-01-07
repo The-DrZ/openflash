@@ -2,7 +2,7 @@
 
 Детальный план развития проекта OpenFlash.
 
-## Текущий статус: v2.3.0
+## Текущий статус: v2.3.5
 
 ---
 
@@ -120,7 +120,7 @@
 - Logic analyzer до 24 MHz с VCD/Sigrok экспортом
 - JTAG chain scanning и SWD debug interface
 
-### v2.3 — Platform Expansion ← ТЕКУЩАЯ
+### v2.3 — Platform Expansion
 **Статус:** ✅ Released
 
 | Фича | Статус |
@@ -170,6 +170,46 @@
 **Итого поддерживаемых платформ: 9**
 - MCU: RP2040, RP2350, STM32F1, STM32F4, STM32H747, ESP32
 - SBC: Raspberry Pi, Orange Pi
+
+---
+
+### v2.3.5 — Teensy & Banana Pi ← ТЕКУЩАЯ
+**Статус:** ✅ Released
+
+| Фича | Статус |
+|------|--------|
+| Teensy 4.0 (NXP i.MX RT1062) | ✅ Done |
+| Teensy 4.1 (+ SD card slot) | ✅ Done |
+| Banana Pi M2 Zero (Allwinner H3) | ✅ Done |
+| Banana Pi M4 Berry (Allwinner H618) | ✅ Done |
+| Banana Pi BPI-F3 (SpacemiT K1 RISC-V) | ✅ Done |
+
+**Teensy 4.0/4.1 — Game Changer! ⚡**
+- **USB High Speed (480 Mbit/s)** — 10-20x быстрее USB Full Speed!
+- **1GB дамп за 3-5 минут** вместо 45 минут на Pico
+- NXP i.MX RT1062 @ 600 MHz (ARM Cortex-M7)
+- FlexIO для precise NV-DDR timing
+- Soft ECC on-the-fly (BCH-16/24) без потери скорости
+- Logic analyzer mode (до 24 MHz sample rate)
+- Teensy 4.1: SD card slot для автономной работы
+- Platform IDs: 0x30 (4.0), 0x31 (4.1)
+
+**Banana Pi — Budget SBC Alternative 🍌**
+- M2 Zero: RPi Zero form factor ($15)
+- M4 Berry: RPi 4 alternative ($25)
+- BPI-F3: **RISC-V** (SpacemiT K1) — первая RISC-V плата!
+- Hardware SPI для быстрых SPI NAND/NOR операций
+- Memory-mapped GPIO для Allwinner SoCs
+- Platform ID: 0x12
+
+**Новые capabilities:**
+- `sd_card` — SD card slot (Teensy 4.1)
+- `logic_analyzer` — Logic analyzer mode
+- `soft_ecc` — Software ECC on-the-fly
+
+**Итого поддерживаемых платформ: 11**
+- MCU: RP2040, RP2350, STM32F1, STM32F4, STM32H747, ESP32, Teensy 4.0, Teensy 4.1
+- SBC: Raspberry Pi, Orange Pi, Banana Pi
 
 ---
 
@@ -231,6 +271,7 @@
 | v2.1 | Q1 2027 | ✅ Released |
 | v2.2 | Q1 2027 | ✅ Released |
 | v2.3 | Q1 2027 | ✅ Released |
+| v2.3.5 | Q1 2027 | ✅ Released |
 | v3.0 | 2028 | 🔮 Future |
 
 ---

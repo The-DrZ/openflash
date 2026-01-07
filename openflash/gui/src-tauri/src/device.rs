@@ -38,7 +38,10 @@ pub enum DevicePlatform {
     Rp2350,      // 0x05 - Raspberry Pi Pico 2
     RaspberryPi, // 0x10 - Raspberry Pi SBC
     OrangePi,    // 0x11 - Orange Pi SBC
+    BananaPi,    // 0x12 - Banana Pi SBC
     ArduinoGiga, // 0x20 - Arduino GIGA R1 WiFi
+    Teensy40,    // 0x30 - Teensy 4.0
+    Teensy41,    // 0x31 - Teensy 4.1
 }
 
 impl DevicePlatform {
@@ -51,7 +54,10 @@ impl DevicePlatform {
             0x05 => DevicePlatform::Rp2350,
             0x10 => DevicePlatform::RaspberryPi,
             0x11 => DevicePlatform::OrangePi,
+            0x12 | 0x13 | 0x14 => DevicePlatform::BananaPi,
             0x20 => DevicePlatform::ArduinoGiga,
+            0x30 => DevicePlatform::Teensy40,
+            0x31 => DevicePlatform::Teensy41,
             _ => DevicePlatform::Unknown,
         }
     }
@@ -66,7 +72,10 @@ impl DevicePlatform {
             DevicePlatform::Rp2350 => "Raspberry Pi Pico 2",
             DevicePlatform::RaspberryPi => "Raspberry Pi",
             DevicePlatform::OrangePi => "Orange Pi",
+            DevicePlatform::BananaPi => "Banana Pi",
             DevicePlatform::ArduinoGiga => "Arduino GIGA R1 WiFi",
+            DevicePlatform::Teensy40 => "Teensy 4.0",
+            DevicePlatform::Teensy41 => "Teensy 4.1",
         }
     }
 
@@ -80,12 +89,23 @@ impl DevicePlatform {
             DevicePlatform::Rp2350 => "🍓",
             DevicePlatform::RaspberryPi => "🥧",
             DevicePlatform::OrangePi => "🍊",
+            DevicePlatform::BananaPi => "🍌",
             DevicePlatform::ArduinoGiga => "🔵",
+            DevicePlatform::Teensy40 => "⚡",
+            DevicePlatform::Teensy41 => "⚡",
         }
     }
 
     pub fn is_sbc(&self) -> bool {
-        matches!(self, DevicePlatform::RaspberryPi | DevicePlatform::OrangePi)
+        matches!(self, DevicePlatform::RaspberryPi | DevicePlatform::OrangePi | DevicePlatform::BananaPi)
+    }
+
+    pub fn is_high_speed(&self) -> bool {
+        matches!(self, DevicePlatform::Teensy40 | DevicePlatform::Teensy41 | DevicePlatform::ArduinoGiga)
+    }
+
+    pub fn has_sd_card(&self) -> bool {
+        matches!(self, DevicePlatform::Teensy41)
     }
 }
 
@@ -100,7 +120,10 @@ pub struct DeviceCapabilities {
     pub hardware_ecc: bool,    // Hardware ECC (STM32H747 FMC)
     pub wifi: bool,            // WiFi connectivity
     pub bluetooth: bool,       // Bluetooth connectivity
-    pub high_speed_usb: bool,  // USB HS (480Mbps)
+    pub high_speed_usb: bool,  // USB HS (480Mbps) - Teensy 4.x
+    pub sd_card: bool,         // SD card slot (Teensy 4.1)
+    pub logic_analyzer: bool,  // Logic analyzer mode (Teensy 4.x)
+    pub soft_ecc: bool,        // Soft ECC on-the-fly (Teensy 4.x)
 }
 
 impl DeviceCapabilities {
@@ -115,6 +138,9 @@ impl DeviceCapabilities {
             wifi: bitmap & 0x40 != 0,
             bluetooth: bitmap & 0x80 != 0,
             high_speed_usb: bitmap & 0x100 != 0,
+            sd_card: bitmap & 0x200 != 0,
+            logic_analyzer: bitmap & 0x400 != 0,
+            soft_ecc: bitmap & 0x800 != 0,
         }
     }
 }
