@@ -372,10 +372,12 @@ AI-Powered Features:
 
 | | |
 |---|---|
-| **[Getting Started](openflash/docs/wiki/Getting-Started.md)** | First run guide |
+| **[Getting Started](openflash.wiki/Getting-Started.md)** | First run guide |
 | **[Hardware Guide](openflash/docs/HARDWARE_GUIDE.md)** | Wiring, BOM, PCB |
-| **[Supported Chips](openflash/docs/wiki/Supported-Chips.md)** | Compatibility list |
-| **[Troubleshooting](openflash/docs/wiki/Troubleshooting.md)** | When things break |
+| **[Supported Chips](openflash.wiki/Supported-Chips.md)** | Compatibility list |
+| **[Troubleshooting](openflash.wiki/Troubleshooting.md)** | When things break |
+| **[Changelog](CHANGELOG.md)** | Release history |
+| **[Roadmap](ROADMAP.md)** | Future plans |
 
 ---
 
@@ -617,7 +619,7 @@ cd openflash/gui && npm i && cargo tauri dev
 cargo test -p openflash-core
 ```
 
-PRs welcome. See [CONTRIBUTING.md](openflash/CONTRIBUTING.md).
+PRs welcome. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
