@@ -2,7 +2,7 @@
 
 Детальный план развития проекта OpenFlash.
 
-## Текущий статус: v2.2.0
+## Текущий статус: v2.3.0
 
 ---
 
@@ -120,7 +120,60 @@
 - Logic analyzer до 24 MHz с VCD/Sigrok экспортом
 - JTAG chain scanning и SWD debug interface
 
-### v2.2 — Expanded Memory Support ← ТЕКУЩАЯ
+### v2.3 — Platform Expansion ← ТЕКУЩАЯ
+**Статус:** ✅ Released
+
+| Фича | Статус |
+|------|--------|
+| Raspberry Pi Pico 2 (RP2350) | ✅ Done |
+| Raspberry Pi SBC (3B+, 4, 5, Zero 2W) | ✅ Done |
+| Arduino GIGA R1 WiFi (STM32H747) | ✅ Done |
+| Orange Pi (Zero 3, 2W, 5) | ✅ Done |
+
+**Новые платформы:**
+
+**1. Raspberry Pi Pico 2 (RP2350)** — Высокий приоритет
+- Архитектура: Dual Cortex-M33 @ 150MHz (или RISC-V Hazard3)
+- 520KB SRAM (vs 264KB на RP2040)
+- Улучшенные PIO блоки для NV-DDR timing
+- ARM TrustZone, secure boot
+- Прямая миграция с RP2040
+
+**2. Raspberry Pi SBC (Linux GPIO)**
+- Поддержка: Pi 3B+, Pi 4, Pi 5, Zero 2W
+- Работа через /dev/mem и rppal
+- Unix socket для локального управления
+- Headless server mode
+- Высокая скорость обработки (CPU 1.5+ GHz)
+
+**3. Arduino GIGA R1 WiFi (STM32H747)**
+- Dual-core: Cortex-M7 @ 480MHz + Cortex-M4 @ 240MHz
+- 1MB RAM, 2MB Flash
+- USB OTG HS (512-byte packets)
+- FMC для parallel NAND с hardware ECC
+- SDMMC для eMMC/SD с HS200
+- WiFi/BLE через Murata модуль
+
+**4. Orange Pi (Allwinner/Rockchip)**
+- Orange Pi Zero 3 (H618)
+- Orange Pi Zero 2W (H616)
+- Orange Pi 5 (RK3588)
+- Memory-mapped GPIO
+- Сверхдешёвые ($15-20) программаторы
+
+**Новые возможности:**
+- NV-DDR support на RP2350 (до 400MT/s)
+- Hardware ECC на STM32H747 FMC
+- HS200 mode для eMMC на Arduino GIGA
+- Unix socket API для SBC платформ
+
+**Итого поддерживаемых платформ: 9**
+- MCU: RP2040, RP2350, STM32F1, STM32F4, STM32H747, ESP32
+- SBC: Raspberry Pi, Orange Pi
+
+---
+
+### v2.2 — Expanded Memory Support
 **Статус:** ✅ Released
 
 | Фича | Статус |
@@ -177,6 +230,7 @@
 | v2.0 | Q4 2026 | ✅ Released |
 | v2.1 | Q1 2027 | ✅ Released |
 | v2.2 | Q1 2027 | ✅ Released |
+| v2.3 | Q1 2027 | ✅ Released |
 | v3.0 | 2028 | 🔮 Future |
 
 ---

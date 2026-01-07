@@ -14,7 +14,7 @@ use embassy_usb::driver::Driver;
 use crate::spi_nor::SpiNorController;
 
 /// Protocol version
-pub const PROTOCOL_VERSION: u8 = 0x16;
+pub const PROTOCOL_VERSION: u8 = 0x23;
 
 const MAX_PAGE_SIZE: usize = 4352;
 const PACKET_SIZE: usize = 64;

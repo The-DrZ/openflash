@@ -3,7 +3,7 @@
 //! Protocol version 1.6 - ESP32 support with SPI NOR
 
 /// Protocol version
-pub const PROTOCOL_VERSION: u8 = 0x16;
+pub const PROTOCOL_VERSION: u8 = 0x23;
 
 /// Command codes
 #[derive(Debug, Clone, Copy, PartialEq)]

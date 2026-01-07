@@ -7,6 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2027-Q1
+
+### Added
+- **Platform Expansion**
+  - Significantly expanded hardware platform support from 4 to 9 platforms
+  
+  - **Raspberry Pi Pico 2 (RP2350)**
+    - New `rp2350` firmware module
+    - Dual Cortex-M33 @ 150MHz (or RISC-V Hazard3 cores)
+    - 520KB SRAM (2x more than RP2040)
+    - Enhanced PIO blocks for NV-DDR timing support
+    - ARM TrustZone and secure boot capabilities
+    - Direct migration path from RP2040 firmware
+    - Platform ID: 0x05
+  
+  - **Raspberry Pi SBC (Linux GPIO)**
+    - New `raspberry_pi` driver module (userspace, not firmware)
+    - Support for Pi 3B+, Pi 4, Pi 5, Zero 2W
+    - GPIO access via rppal library
+    - Hardware SPI via spidev
+    - Unix socket API for local control
+    - TCP support for remote operation
+    - Headless server mode capability
+    - Platform ID: 0x10
+  
+  - **Arduino GIGA R1 WiFi (STM32H747)**
+    - New `arduino_giga` firmware module
+    - Dual-core: Cortex-M7 @ 480MHz + Cortex-M4 @ 240MHz
+    - 1MB RAM, 2MB Flash
+    - USB OTG HS with 512-byte packets
+    - FMC-based parallel NAND with hardware ECC
+    - SDMMC for eMMC/SD with HS200 mode
+    - WiFi/BLE via Murata module
+    - Platform ID: 0x20
+  
+  - **Orange Pi (Allwinner/Rockchip)**
+    - New `orange_pi` driver module (userspace)
+    - Orange Pi Zero 3 (Allwinner H618)
+    - Orange Pi Zero 2W (Allwinner H616)
+    - Orange Pi 5 (Rockchip RK3588)
+    - Memory-mapped GPIO for direct register access
+    - SPI via Linux spidev
+    - Ultra-low-cost programmers ($15-20)
+    - Platform ID: 0x11
+
+- **New Capabilities**
+  - NV-DDR support on RP2350 (up to 400MT/s)
+  - Hardware ECC on STM32H747 FMC peripheral
+  - HS200 mode for eMMC on Arduino GIGA
+  - Unix socket API for SBC platforms
+  - TCP remote control for headless operation
+
+- **New Firmware Modules**
+  - `firmware/rp2350/` - Raspberry Pi Pico 2 firmware
+  - `firmware/raspberry_pi/` - Raspberry Pi SBC driver
+  - `firmware/arduino_giga/` - Arduino GIGA R1 WiFi firmware
+  - `firmware/orange_pi/` - Orange Pi driver
+
+### Changed
+- Protocol version updated to 0x23
+- Core library version updated to 2.3.0
+- Total supported platforms: 9 (6 MCU + 3 SBC)
+
+### Documentation
+- Updated ROADMAP with v2.3 completion
+- Added platform-specific wiring guides
+- Updated Hardware-Setup wiki with new platforms
+
 ## [2.2.0] - 2027-Q1
 
 ### Added
