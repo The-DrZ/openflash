@@ -1,118 +1,174 @@
+pub mod ai;
+pub mod ai_advanced;
+pub mod analysis;
+pub mod ecc;
+pub mod emmc;
+pub mod hardware;
 pub mod onfi;
 pub mod protocol;
-pub mod ecc;
-pub mod analysis;
+pub mod scripting;
+pub mod server;
 pub mod spi_nand;
 pub mod spi_nor;
-pub mod emmc;
 pub mod ufs;
-pub mod ai;
 pub mod write_ops;
-pub mod scripting;
-pub mod ai_advanced;
-pub mod server;
-pub mod hardware;
 
+pub use ai::*;
+pub use analysis::*;
+pub use ecc::*;
 pub use onfi::*;
 pub use protocol::*;
-pub use ecc::*;
-pub use analysis::*;
-pub use ai::*;
 
 // Re-export chip info types (avoid glob conflicts)
-pub use spi_nand::{
-    SpiNandChipInfo, SpiNandCellType, SpiNandReadResult, EccStatus,
-    get_spi_nand_chip_info, get_spi_nand_manufacturer_name,
-    calculate_row_address, calculate_column_address,
+pub use ai_advanced::{
+    AiAdvancedError,
+    AiAdvancedResult,
+    ArchiveFormat,
+    ChipPrediction,
+    CompressionFormat,
+    CustomSignature,
+    CvssScore,
+    ExtractedFile,
+    ExtractedSection,
+    FeatureVector,
+    FilesystemType,
+    // Firmware Unpacking
+    FirmwareUnpacker,
+    // ML Chip Identification
+    MlChipIdentifier,
+    MlModelInfo,
+    PatternType,
+    // Rootfs Extraction
+    RootfsExtractor,
+    RootfsResult,
+    Severity,
+    SignatureCategory,
+    // Custom Signatures
+    SignatureDatabase,
+    SignatureDatabaseInfo,
+    SignatureMatch,
+    UnpackResult,
+    VulnScanResult,
+    // Vulnerability Scanning
+    VulnScanner,
+    Vulnerability,
 };
 pub use emmc::{
-    EmmcChipInfo, EmmcReadResult, CardState, ResponseType,
-    get_emmc_chip_info, get_emmc_manufacturer_name,
-    parse_capacity_from_ext_csd, parse_boot_size_from_ext_csd,
-    crc7, crc16,
-};
-pub use spi_nor::{
-    SpiNorChipInfo, SpiNorError, ProtectionStatus, SfdpInfo, SfdpParser,
-    QuadEnableMethod, FastReadSupport,
-    get_spi_nor_chip_info, get_spi_nor_manufacturer_name,
-};
-pub use ufs::{
-    UfsDeviceInfo, UfsVersion, UfsLun, UfsError,
-    DeviceDescriptor, UnitDescriptor, GeometryDescriptor,
-    ScsiCdbBuilder, ReadCommandType, select_read_command,
-    get_ufs_manufacturer_name,
-};
-pub use write_ops::{
-    WriteError, WriteResult,
-    BadBlockTable, BadBlockEntry, BadBlockReason,
-    WearLevelingManager, BlockWearInfo, WearStatistics,
-    ChipProgrammer, ProgramOptions, ProgramProgress, ProgramOperation,
-    ChangeTracker, BackupMetadata,
-    ChipCloner, CloneOptions, CloneMode, CloneProgress, ClonePhase,
-};
-pub use scripting::{
-    ScriptError, ScriptResult,
-    ConnectionConfig, DeviceInfo, DeviceHandle,
-    ReadOptions, WriteOptions, DumpResult, ReadStats,
-    ChipDetectionResult, AnalysisOptions, ScriptAnalysisResult,
-    PatternInfo, FilesystemInfo, AnomalyInfo, RecoverySuggestion, KeyCandidate,
-    ReportFormat, ReportOptions,
-    BatchJob, BatchJobType, BatchJobConfig, BatchJobStatus, BatchJobResult, BatchProcessor,
-    PluginMetadata, PluginHook, PluginContext, PluginResult, PluginManager,
-    CliCommand, CliOutputFormat, CliConfig,
-    CiJobConfig, CiOperation, CiArtifact, CiArtifactType, CiJobResult, CiOperationResult,
-    OpenFlash,
-};
-pub use ai_advanced::{
-    AiAdvancedError, AiAdvancedResult,
-    // ML Chip Identification
-    MlChipIdentifier, ChipPrediction, FeatureVector, MlModelInfo,
-    // Firmware Unpacking
-    FirmwareUnpacker, UnpackResult, ExtractedSection, CompressionFormat, ArchiveFormat,
-    // Rootfs Extraction
-    RootfsExtractor, RootfsResult, ExtractedFile, FilesystemType,
-    // Vulnerability Scanning
-    VulnScanner, VulnScanResult, Vulnerability, CvssScore, Severity,
-    // Custom Signatures
-    SignatureDatabase, CustomSignature, SignatureMatch, SignatureCategory, PatternType,
-    SignatureDatabaseInfo,
-};
-pub use server::{
-    ServerError, ServerResult,
-    // Device Pool
-    DeviceStatus, DevicePlatform, DeviceCapabilities, PoolDevice, DevicePool, PoolStats,
-    // Job Queue
-    JobPriority, JobStatus, JobType, Job, JobResult, JobQueue, QueueStats,
-    // REST API
-    AuthMethod, RateLimitConfig, RestApiConfig,
-    SubmitJobRequest, SubmitJobResponse, JobStatusResponse, DeviceListResponse,
-    DeviceInfo as ServerDeviceInfo,
-    // WebSocket
-    WsMessage, WebSocketConfig,
-    // gRPC
-    GrpcConfig,
-    // Server
-    ServerConfig, OpenFlashServer, ServerInfo,
-    // Parallel Dumping
-    ParallelDumpConfig, ParallelDumpJob, ChunkJob, ChunkStatus, ParallelJobStatus,
-    // Production Line
-    ProductionLineConfig, StationConfig, StationOperation, PassCriteria,
-    VerificationMode, ProductionLogging, ProductionUnitResult, ProductionStats,
+    crc16, crc7, get_emmc_chip_info, get_emmc_manufacturer_name, parse_boot_size_from_ext_csd,
+    parse_capacity_from_ext_csd, CardState, EmmcChipInfo, EmmcReadResult, ResponseType,
 };
 pub use hardware::{
-    HardwareError, HardwareResult, HardwareCommand,
-    // PCB
-    PcbRevision, SocketType, OpenFlashPcb, PcbCapabilities, PcbStatus,
-    // TSOP-48 Adapter
-    Tsop48Pinout, Tsop48Adapter, Tsop48PinMapping, VoltageLevel, BusWidth,
+    BgaProfile,
+    BgaReworkStation,
     // BGA Rework
-    BgaStationType, BgaReworkStation, BgaProfile,
-    // Logic Analyzer
-    TriggerType, LogicChannel, LogicAnalyzerConfig, LogicCapture,
-    LogicAnalyzer, LogicAnalyzerState,
+    BgaStationType,
+    BusWidth,
+    HardwareCommand,
+    HardwareError,
+    HardwareResult,
+    JtagController,
+    JtagDevice,
     // JTAG/SWD
-    JtagState, JtagDevice, JtagController, SwdController,
+    JtagState,
+    LogicAnalyzer,
+    LogicAnalyzerConfig,
+    LogicAnalyzerState,
+    LogicCapture,
+    LogicChannel,
+    OledDisplay,
     // OLED
-    OledType, OledDisplay,
+    OledType,
+    OpenFlashPcb,
+    PcbCapabilities,
+    // PCB
+    PcbRevision,
+    PcbStatus,
+    SocketType,
+    SwdController,
+    // Logic Analyzer
+    TriggerType,
+    Tsop48Adapter,
+    Tsop48PinMapping,
+    // TSOP-48 Adapter
+    Tsop48Pinout,
+    VoltageLevel,
 };
-
+pub use scripting::{
+    AnalysisOptions, AnomalyInfo, BatchJob, BatchJobConfig, BatchJobResult, BatchJobStatus,
+    BatchJobType, BatchProcessor, ChipDetectionResult, CiArtifact, CiArtifactType, CiJobConfig,
+    CiJobResult, CiOperation, CiOperationResult, CliCommand, CliConfig, CliOutputFormat,
+    ConnectionConfig, DeviceHandle, DeviceInfo, DumpResult, FilesystemInfo, KeyCandidate,
+    OpenFlash, PatternInfo, PluginContext, PluginHook, PluginManager, PluginMetadata, PluginResult,
+    ReadOptions, ReadStats, RecoverySuggestion, ReportFormat, ReportOptions, ScriptAnalysisResult,
+    ScriptError, ScriptResult, WriteOptions,
+};
+pub use server::{
+    // REST API
+    AuthMethod,
+    ChunkJob,
+    ChunkStatus,
+    DeviceCapabilities,
+    DeviceInfo as ServerDeviceInfo,
+    DeviceListResponse,
+    DevicePlatform,
+    DevicePool,
+    // Device Pool
+    DeviceStatus,
+    // gRPC
+    GrpcConfig,
+    Job,
+    // Job Queue
+    JobPriority,
+    JobQueue,
+    JobResult,
+    JobStatus,
+    JobStatusResponse,
+    JobType,
+    OpenFlashServer,
+    // Parallel Dumping
+    ParallelDumpConfig,
+    ParallelDumpJob,
+    ParallelJobStatus,
+    PassCriteria,
+    PoolDevice,
+    PoolStats,
+    // Production Line
+    ProductionLineConfig,
+    ProductionLogging,
+    ProductionStats,
+    ProductionUnitResult,
+    QueueStats,
+    RateLimitConfig,
+    RestApiConfig,
+    // Server
+    ServerConfig,
+    ServerError,
+    ServerInfo,
+    ServerResult,
+    StationConfig,
+    StationOperation,
+    SubmitJobRequest,
+    SubmitJobResponse,
+    VerificationMode,
+    WebSocketConfig,
+    // WebSocket
+    WsMessage,
+};
+pub use spi_nand::{
+    calculate_column_address, calculate_row_address, get_spi_nand_chip_info,
+    get_spi_nand_manufacturer_name, EccStatus, SpiNandCellType, SpiNandChipInfo, SpiNandReadResult,
+};
+pub use spi_nor::{
+    get_spi_nor_chip_info, get_spi_nor_manufacturer_name, FastReadSupport, ProtectionStatus,
+    QuadEnableMethod, SfdpInfo, SfdpParser, SpiNorChipInfo, SpiNorError,
+};
+pub use ufs::{
+    get_ufs_manufacturer_name, select_read_command, DeviceDescriptor, GeometryDescriptor,
+    ReadCommandType, ScsiCdbBuilder, UfsDeviceInfo, UfsError, UfsLun, UfsVersion, UnitDescriptor,
+};
+pub use write_ops::{
+    BackupMetadata, BadBlockEntry, BadBlockReason, BadBlockTable, BlockWearInfo, ChangeTracker,
+    ChipCloner, ChipProgrammer, CloneMode, CloneOptions, ClonePhase, CloneProgress,
+    ProgramOperation, ProgramOptions, ProgramProgress, WearLevelingManager, WearStatistics,
+    WriteError, WriteResult,
+};

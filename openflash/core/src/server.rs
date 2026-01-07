@@ -315,9 +315,21 @@ impl DevicePool {
     pub fn stats(&self) -> PoolStats {
         let total = self.devices.len();
         let available = self.devices.values().filter(|d| d.is_available()).count();
-        let busy = self.devices.values().filter(|d| d.status == DeviceStatus::Busy).count();
-        let offline = self.devices.values().filter(|d| d.status == DeviceStatus::Offline).count();
-        let error = self.devices.values().filter(|d| d.status == DeviceStatus::Error).count();
+        let busy = self
+            .devices
+            .values()
+            .filter(|d| d.status == DeviceStatus::Busy)
+            .count();
+        let offline = self
+            .devices
+            .values()
+            .filter(|d| d.status == DeviceStatus::Offline)
+            .count();
+        let error = self
+            .devices
+            .values()
+            .filter(|d| d.status == DeviceStatus::Error)
+            .count();
         let total_jobs: u64 = self.devices.values().map(|d| d.jobs_completed).sum();
         let total_bytes: u64 = self.devices.values().map(|d| d.bytes_processed).sum();
 
@@ -350,7 +362,6 @@ pub struct PoolStats {
     pub total_jobs_completed: u64,
     pub total_bytes_processed: u64,
 }
-
 
 // ============================================================================
 // Job Queue System
@@ -390,7 +401,10 @@ pub enum JobStatus {
     /// Job completed successfully
     Completed { device_id: String, duration_ms: u64 },
     /// Job failed
-    Failed { device_id: Option<String>, error: String },
+    Failed {
+        device_id: Option<String>,
+        error: String,
+    },
     /// Job was cancelled
     Cancelled,
     /// Job timed out
@@ -419,9 +433,7 @@ pub enum JobType {
         length: Option<u64>,
     },
     /// Verify chip contents
-    Verify {
-        file_path: String,
-    },
+    Verify { file_path: String },
     /// AI analysis
     Analyze {
         input_path: String,
@@ -553,7 +565,10 @@ impl Job {
     pub fn is_finished(&self) -> bool {
         matches!(
             self.status,
-            JobStatus::Completed { .. } | JobStatus::Failed { .. } | JobStatus::Cancelled | JobStatus::TimedOut
+            JobStatus::Completed { .. }
+                | JobStatus::Failed { .. }
+                | JobStatus::Cancelled
+                | JobStatus::TimedOut
         )
     }
 
@@ -808,9 +823,21 @@ impl JobQueue {
         QueueStats {
             pending_count: self.pending.len(),
             running_count: self.running.len(),
-            completed_count: self.completed.iter().filter(|j| matches!(j.status, JobStatus::Completed { .. })).count(),
-            failed_count: self.completed.iter().filter(|j| matches!(j.status, JobStatus::Failed { .. })).count(),
-            cancelled_count: self.completed.iter().filter(|j| j.status == JobStatus::Cancelled).count(),
+            completed_count: self
+                .completed
+                .iter()
+                .filter(|j| matches!(j.status, JobStatus::Completed { .. }))
+                .count(),
+            failed_count: self
+                .completed
+                .iter()
+                .filter(|j| matches!(j.status, JobStatus::Failed { .. }))
+                .count(),
+            cancelled_count: self
+                .completed
+                .iter()
+                .filter(|j| j.status == JobStatus::Cancelled)
+                .count(),
         }
     }
 }
@@ -830,7 +857,6 @@ pub struct QueueStats {
     pub failed_count: usize,
     pub cancelled_count: usize,
 }
-
 
 // ============================================================================
 // REST API Types
@@ -1021,21 +1047,43 @@ impl From<&PoolDevice> for DeviceInfo {
 #[serde(tag = "type")]
 pub enum WsMessage {
     /// Subscribe to job updates
-    Subscribe { job_ids: Vec<u64> },
+    Subscribe {
+        job_ids: Vec<u64>,
+    },
     /// Unsubscribe from job updates
-    Unsubscribe { job_ids: Vec<u64> },
+    Unsubscribe {
+        job_ids: Vec<u64>,
+    },
     /// Subscribe to device updates
-    SubscribeDevices { device_ids: Vec<String> },
+    SubscribeDevices {
+        device_ids: Vec<String>,
+    },
     /// Job status update
-    JobUpdate { job_id: u64, status: String, progress: Option<u8> },
+    JobUpdate {
+        job_id: u64,
+        status: String,
+        progress: Option<u8>,
+    },
     /// Job completed
-    JobCompleted { job_id: u64, result: JobResult },
+    JobCompleted {
+        job_id: u64,
+        result: JobResult,
+    },
     /// Job failed
-    JobFailed { job_id: u64, error: String },
+    JobFailed {
+        job_id: u64,
+        error: String,
+    },
     /// Device status update
-    DeviceUpdate { device_id: String, status: String },
+    DeviceUpdate {
+        device_id: String,
+        status: String,
+    },
     /// Error message
-    Error { code: String, message: String },
+    Error {
+        code: String,
+        message: String,
+    },
     /// Ping/pong for keepalive
     Ping,
     Pong,
@@ -1208,12 +1256,37 @@ impl OpenFlashServer {
         self.job_queue.get_job(job_id).map(|job| {
             let (status, progress, device_id, error) = match &job.status {
                 JobStatus::Queued => ("queued".to_string(), None, None, None),
-                JobStatus::Assigned { device_id } => ("assigned".to_string(), None, Some(device_id.clone()), None),
-                JobStatus::Running { device_id, progress } => ("running".to_string(), Some(*progress), Some(device_id.clone()), None),
-                JobStatus::Completed { device_id, .. } => ("completed".to_string(), Some(100), Some(device_id.clone()), None),
-                JobStatus::Failed { device_id, error } => ("failed".to_string(), None, device_id.clone(), Some(error.clone())),
+                JobStatus::Assigned { device_id } => {
+                    ("assigned".to_string(), None, Some(device_id.clone()), None)
+                }
+                JobStatus::Running {
+                    device_id,
+                    progress,
+                } => (
+                    "running".to_string(),
+                    Some(*progress),
+                    Some(device_id.clone()),
+                    None,
+                ),
+                JobStatus::Completed { device_id, .. } => (
+                    "completed".to_string(),
+                    Some(100),
+                    Some(device_id.clone()),
+                    None,
+                ),
+                JobStatus::Failed { device_id, error } => (
+                    "failed".to_string(),
+                    None,
+                    device_id.clone(),
+                    Some(error.clone()),
+                ),
                 JobStatus::Cancelled => ("cancelled".to_string(), None, None, None),
-                JobStatus::TimedOut => ("timed_out".to_string(), None, None, Some("Job timed out".to_string())),
+                JobStatus::TimedOut => (
+                    "timed_out".to_string(),
+                    None,
+                    None,
+                    Some("Job timed out".to_string()),
+                ),
             };
 
             JobStatusResponse {
@@ -1238,7 +1311,12 @@ impl OpenFlashServer {
 
     /// List devices
     pub fn list_devices(&self) -> DeviceListResponse {
-        let devices: Vec<DeviceInfo> = self.device_pool.devices.values().map(DeviceInfo::from).collect();
+        let devices: Vec<DeviceInfo> = self
+            .device_pool
+            .devices
+            .values()
+            .map(DeviceInfo::from)
+            .collect();
         DeviceListResponse {
             total: devices.len(),
             devices,
@@ -1265,9 +1343,10 @@ impl OpenFlashServer {
     /// Process job queue - assign jobs to available devices
     pub fn process_queue(&mut self) -> Vec<(u64, String)> {
         let mut assignments = Vec::new();
-        
+
         // Get available devices
-        let available: Vec<String> = self.device_pool
+        let available: Vec<String> = self
+            .device_pool
             .devices
             .values()
             .filter(|d| d.is_available())
@@ -1305,7 +1384,6 @@ pub struct ServerInfo {
     /// Queue statistics
     pub queue_stats: QueueStats,
 }
-
 
 // ============================================================================
 // Parallel Dumping
@@ -1447,7 +1525,11 @@ impl ParallelDumpJob {
 
     /// Get progress percentage
     pub fn progress(&self) -> u8 {
-        let completed = self.chunks.iter().filter(|c| c.status == ChunkStatus::Completed).count();
+        let completed = self
+            .chunks
+            .iter()
+            .filter(|c| c.status == ChunkStatus::Completed)
+            .count();
         ((completed * 100) / self.chunks.len().max(1)) as u8
     }
 
@@ -1462,12 +1544,16 @@ impl ParallelDumpJob {
 
     /// Check if all chunks are completed
     pub fn is_complete(&self) -> bool {
-        self.chunks.iter().all(|c| c.status == ChunkStatus::Completed)
+        self.chunks
+            .iter()
+            .all(|c| c.status == ChunkStatus::Completed)
     }
 
     /// Get next pending chunk
     pub fn next_pending_chunk(&mut self) -> Option<&mut ChunkJob> {
-        self.chunks.iter_mut().find(|c| c.status == ChunkStatus::Pending)
+        self.chunks
+            .iter_mut()
+            .find(|c| c.status == ChunkStatus::Pending)
     }
 }
 
@@ -1660,7 +1746,12 @@ mod tests {
     #[test]
     fn test_add_device_to_pool() {
         let mut pool = DevicePool::new(10);
-        let device = PoolDevice::new("dev1", "Test Device", "serial:///dev/ttyUSB0", DevicePlatform::RP2040);
+        let device = PoolDevice::new(
+            "dev1",
+            "Test Device",
+            "serial:///dev/ttyUSB0",
+            DevicePlatform::RP2040,
+        );
         assert!(pool.add_device(device).is_ok());
         assert_eq!(pool.devices.len(), 1);
     }
@@ -1668,10 +1759,25 @@ mod tests {
     #[test]
     fn test_pool_max_devices() {
         let mut pool = DevicePool::new(2);
-        let d1 = PoolDevice::new("dev1", "Device 1", "serial:///dev/ttyUSB0", DevicePlatform::RP2040);
-        let d2 = PoolDevice::new("dev2", "Device 2", "serial:///dev/ttyUSB1", DevicePlatform::STM32F4);
-        let d3 = PoolDevice::new("dev3", "Device 3", "serial:///dev/ttyUSB2", DevicePlatform::ESP32);
-        
+        let d1 = PoolDevice::new(
+            "dev1",
+            "Device 1",
+            "serial:///dev/ttyUSB0",
+            DevicePlatform::RP2040,
+        );
+        let d2 = PoolDevice::new(
+            "dev2",
+            "Device 2",
+            "serial:///dev/ttyUSB1",
+            DevicePlatform::STM32F4,
+        );
+        let d3 = PoolDevice::new(
+            "dev3",
+            "Device 3",
+            "serial:///dev/ttyUSB2",
+            DevicePlatform::ESP32,
+        );
+
         assert!(pool.add_device(d1).is_ok());
         assert!(pool.add_device(d2).is_ok());
         assert!(pool.add_device(d3).is_err());
@@ -1679,14 +1785,19 @@ mod tests {
 
     #[test]
     fn test_device_assignment() {
-        let mut device = PoolDevice::new("dev1", "Test", "serial:///dev/ttyUSB0", DevicePlatform::RP2040);
+        let mut device = PoolDevice::new(
+            "dev1",
+            "Test",
+            "serial:///dev/ttyUSB0",
+            DevicePlatform::RP2040,
+        );
         device.status = DeviceStatus::Available;
         assert!(device.is_available());
-        
+
         device.assign_job(123);
         assert!(!device.is_available());
         assert_eq!(device.current_job, Some(123));
-        
+
         device.release(true, 1024);
         assert!(device.is_available());
         assert_eq!(device.jobs_completed, 1);
@@ -1695,13 +1806,16 @@ mod tests {
 
     #[test]
     fn test_job_creation() {
-        let job = Job::new("Test Job", JobType::Read {
-            output_path: "/tmp/dump.bin".to_string(),
-            start_address: 0,
-            length: Some(1024),
-            include_oob: false,
-        });
-        
+        let job = Job::new(
+            "Test Job",
+            JobType::Read {
+                output_path: "/tmp/dump.bin".to_string(),
+                start_address: 0,
+                length: Some(1024),
+                include_oob: false,
+            },
+        );
+
         assert!(job.id > 0);
         assert_eq!(job.name, "Test Job");
         assert!(matches!(job.status, JobStatus::Queued));
@@ -1709,21 +1823,24 @@ mod tests {
 
     #[test]
     fn test_job_lifecycle() {
-        let mut job = Job::new("Test", JobType::Erase {
-            start_address: 0,
-            length: None,
-        });
-        
+        let mut job = Job::new(
+            "Test",
+            JobType::Erase {
+                start_address: 0,
+                length: None,
+            },
+        );
+
         assert!(job.is_pending());
-        
+
         job.start("dev1");
         assert!(job.is_running());
-        
+
         job.update_progress(50);
         if let JobStatus::Running { progress, .. } = job.status {
             assert_eq!(progress, 50);
         }
-        
+
         job.complete(JobResult::default());
         assert!(job.is_finished());
     }
@@ -1731,14 +1848,26 @@ mod tests {
     #[test]
     fn test_job_queue() {
         let mut queue = JobQueue::new(100);
-        
-        let job1 = Job::new("Job 1", JobType::Erase { start_address: 0, length: None });
-        let job2 = Job::new("Job 2", JobType::Erase { start_address: 0, length: None })
-            .with_priority(JobPriority::High);
-        
+
+        let job1 = Job::new(
+            "Job 1",
+            JobType::Erase {
+                start_address: 0,
+                length: None,
+            },
+        );
+        let job2 = Job::new(
+            "Job 2",
+            JobType::Erase {
+                start_address: 0,
+                length: None,
+            },
+        )
+        .with_priority(JobPriority::High);
+
         queue.submit(job1).unwrap();
         queue.submit(job2).unwrap();
-        
+
         // High priority job should be first
         assert_eq!(queue.pending[0].priority, JobPriority::High);
     }
@@ -1757,7 +1886,7 @@ mod tests {
             ..Default::default()
         };
         let job = ParallelDumpJob::new(4096, config);
-        
+
         assert_eq!(job.chunks.len(), 4);
         assert_eq!(job.chunks[0].start_address, 0);
         assert_eq!(job.chunks[0].length, 1024);
@@ -1767,18 +1896,28 @@ mod tests {
     #[test]
     fn test_pool_stats() {
         let mut pool = DevicePool::new(10);
-        let mut d1 = PoolDevice::new("dev1", "Device 1", "serial:///dev/ttyUSB0", DevicePlatform::RP2040);
+        let mut d1 = PoolDevice::new(
+            "dev1",
+            "Device 1",
+            "serial:///dev/ttyUSB0",
+            DevicePlatform::RP2040,
+        );
         d1.status = DeviceStatus::Available;
         d1.jobs_completed = 10;
         d1.bytes_processed = 1024 * 1024;
-        
-        let mut d2 = PoolDevice::new("dev2", "Device 2", "serial:///dev/ttyUSB1", DevicePlatform::STM32F4);
+
+        let mut d2 = PoolDevice::new(
+            "dev2",
+            "Device 2",
+            "serial:///dev/ttyUSB1",
+            DevicePlatform::STM32F4,
+        );
         d2.status = DeviceStatus::Busy;
         d2.jobs_completed = 5;
-        
+
         pool.add_device(d1).unwrap();
         pool.add_device(d2).unwrap();
-        
+
         let stats = pool.stats();
         assert_eq!(stats.total_devices, 2);
         assert_eq!(stats.available_devices, 1);
@@ -1789,12 +1928,18 @@ mod tests {
     #[test]
     fn test_queue_stats() {
         let mut queue = JobQueue::new(100);
-        
+
         for i in 0..5 {
-            let job = Job::new(&format!("Job {}", i), JobType::Erase { start_address: 0, length: None });
+            let job = Job::new(
+                &format!("Job {}", i),
+                JobType::Erase {
+                    start_address: 0,
+                    length: None,
+                },
+            );
             queue.submit(job).unwrap();
         }
-        
+
         let stats = queue.stats();
         assert_eq!(stats.pending_count, 5);
         assert_eq!(stats.running_count, 0);
@@ -1804,7 +1949,10 @@ mod tests {
     fn test_device_platform_from_str() {
         assert_eq!(DevicePlatform::from_str("RP2040"), DevicePlatform::RP2040);
         assert_eq!(DevicePlatform::from_str("stm32f4"), DevicePlatform::STM32F4);
-        assert_eq!(DevicePlatform::from_str("ESP32-S3"), DevicePlatform::ESP32S3);
+        assert_eq!(
+            DevicePlatform::from_str("ESP32-S3"),
+            DevicePlatform::ESP32S3
+        );
         assert_eq!(DevicePlatform::from_str("unknown"), DevicePlatform::Unknown);
     }
 

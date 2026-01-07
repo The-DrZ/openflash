@@ -79,17 +79,17 @@ pub fn get_mock_chip_info() -> ChipInfo {
 pub fn process_mock_command(cmd: Command, args: &[u8]) -> Vec<u8> {
     match cmd {
         Command::Ping => vec![0x01, 0x00], // OK
-        
+
         Command::NandReadId => {
             // Return Samsung K9F4G08U0D ID
             vec![0x14, 0x00, 0xEC, 0xDC, 0x10, 0x95, 0x54]
         }
-        
+
         Command::SpiNandReadId => {
             // Return GigaDevice GD5F1GQ4 ID
             vec![0x20, 0x00, 0xC8, 0xD1, 0x00]
         }
-        
+
         // SPI NOR commands
         Command::SpiNorReadJedecId => {
             // Return Winbond W25Q128JV JEDEC ID
@@ -134,7 +134,7 @@ pub fn process_mock_command(cmd: Command, args: &[u8]) -> Vec<u8> {
         Command::SpiNorWriteEnable => vec![0x71, 0x00],
         Command::SpiNorWriteDisable => vec![0x72, 0x00],
         Command::SpiNorReset => vec![0x73, 0x00],
-        
+
         // UFS commands
         Command::UfsInit => vec![0x80, 0x00],
         Command::UfsReadDescriptor => {
@@ -188,15 +188,15 @@ pub fn process_mock_command(cmd: Command, args: &[u8]) -> Vec<u8> {
         Command::UfsWrite10 | Command::UfsWrite16 => vec![0x85, 0x00],
         Command::UfsSelectLun => vec![0x87, 0x00],
         Command::UfsGetStatus => vec![0x88, 0x00, 0x00], // Status OK
-        
+
         Command::Reset => vec![0x08, 0x00],
-        
+
         Command::BusConfig => vec![0x02, 0x00],
-        
+
         Command::NandCmd => vec![0x10, 0x00],
-        
+
         Command::NandAddr => vec![0x11, 0x00],
-        
+
         Command::NandReadPage | Command::SpiNandReadCache => {
             // Generate mock page data
             if args.len() >= 6 {
@@ -207,9 +207,9 @@ pub fn process_mock_command(cmd: Command, args: &[u8]) -> Vec<u8> {
                 vec![0x12, 0x01] // Error
             }
         }
-        
+
         Command::NandWritePage | Command::SpiNandProgramExec => vec![0x13, 0x00],
-        
+
         Command::SpiNandReset => vec![0x21, 0x00],
         Command::SpiNandGetFeature => vec![0x22, 0x00, 0x00], // Feature value = 0
         Command::SpiNandSetFeature => vec![0x23, 0x00],
@@ -218,7 +218,7 @@ pub fn process_mock_command(cmd: Command, args: &[u8]) -> Vec<u8> {
         Command::SpiNandBlockErase => vec![0x2A, 0x00],
         Command::SpiNandWriteEnable => vec![0x2B, 0x00],
         Command::SpiNandWriteDisable => vec![0x2C, 0x00],
-        
+
         _ => vec![0x00, 0x01], // Unknown command error
     }
 }
@@ -226,7 +226,7 @@ pub fn process_mock_command(cmd: Command, args: &[u8]) -> Vec<u8> {
 /// Generate mock page data with realistic patterns
 fn generate_mock_page(page_addr: u32, size: usize) -> Vec<u8> {
     let mut data = Vec::with_capacity(size);
-    
+
     // First few pages contain "bootloader" pattern
     if page_addr < 64 {
         // U-Boot header at page 0
@@ -297,7 +297,7 @@ fn generate_mock_page(page_addr: u32, size: usize) -> Vec<u8> {
             data.push((seed % 256) as u8);
         }
     }
-    
+
     data
 }
 

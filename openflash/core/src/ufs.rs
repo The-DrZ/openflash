@@ -65,7 +65,6 @@ impl UfsVersion {
     }
 }
 
-
 /// UFS Logical Unit types
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UfsLun {
@@ -187,7 +186,6 @@ pub fn get_ufs_manufacturer_name(mfr_id: u16) -> &'static str {
         _ => "Unknown",
     }
 }
-
 
 // ============================================================================
 // UFS Descriptor Structures
@@ -343,7 +341,6 @@ impl DeviceDescriptor {
     }
 }
 
-
 /// Unit Descriptor - contains logical unit information
 /// Size: 45 bytes (UFS 2.0+)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -412,14 +409,12 @@ impl UnitDescriptor {
             data_reliability: data[9],
             logical_block_size: data[10],
             logical_block_count: u64::from_be_bytes([
-                data[11], data[12], data[13], data[14],
-                data[15], data[16], data[17], data[18],
+                data[11], data[12], data[13], data[14], data[15], data[16], data[17], data[18],
             ]),
             erase_block_size: u32::from_be_bytes([data[19], data[20], data[21], data[22]]),
             provisioning_type: data[23],
             phy_mem_resource_count: u64::from_be_bytes([
-                data[24], data[25], data[26], data[27],
-                data[28], data[29], data[30], data[31],
+                data[24], data[25], data[26], data[27], data[28], data[29], data[30], data[31],
             ]),
             context_capabilities: u16::from_be_bytes([data[32], data[33]]),
             large_unit_granularity: data[34],
@@ -470,7 +465,6 @@ impl UnitDescriptor {
         self.lu_write_protect != 0
     }
 }
-
 
 /// Geometry Descriptor - contains physical parameters
 /// Size: 72 bytes (UFS 2.0+)
@@ -557,8 +551,7 @@ impl GeometryDescriptor {
             media_technology: data[2],
             reserved: data[3],
             total_raw_device_capacity: u64::from_be_bytes([
-                data[4], data[5], data[6], data[7],
-                data[8], data[9], data[10], data[11],
+                data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11],
             ]),
             max_num_luns: data[12],
             segment_size: u32::from_be_bytes([data[13], data[14], data[15], data[16]]),
@@ -638,7 +631,6 @@ impl GeometryDescriptor {
     }
 }
 
-
 // ============================================================================
 // SCSI Command Builders
 // ============================================================================
@@ -649,7 +641,7 @@ pub struct ScsiCdbBuilder;
 impl ScsiCdbBuilder {
     /// Build READ(10) CDB for addresses < 2TB
     /// Returns 10-byte CDB
-    /// 
+    ///
     /// # Arguments
     /// * `lba` - Logical Block Address (must fit in 32 bits)
     /// * `transfer_length` - Number of blocks to read (max 65535)
@@ -672,7 +664,7 @@ impl ScsiCdbBuilder {
 
     /// Build READ(16) CDB for addresses >= 2TB
     /// Returns 16-byte CDB
-    /// 
+    ///
     /// # Arguments
     /// * `lba` - Logical Block Address (64-bit)
     /// * `transfer_length` - Number of blocks to read (max 4294967295)
@@ -779,8 +771,7 @@ impl ScsiCdbBuilder {
     /// Extract LBA from READ(16) CDB
     pub fn extract_lba_from_read16(cdb: &[u8; 16]) -> u64 {
         u64::from_be_bytes([
-            cdb[2], cdb[3], cdb[4], cdb[5],
-            cdb[6], cdb[7], cdb[8], cdb[9],
+            cdb[2], cdb[3], cdb[4], cdb[5], cdb[6], cdb[7], cdb[8], cdb[9],
         ])
     }
 
@@ -810,7 +801,6 @@ pub enum ReadCommandType {
     Read16,
 }
 
-
 // ============================================================================
 // Error Handling and Sense Data
 // ============================================================================
@@ -825,11 +815,7 @@ pub enum UfsError {
     /// Protocol error during communication
     ProtocolError(u8),
     /// SCSI command failed with sense data
-    ScsiError {
-        sense_key: u8,
-        asc: u8,
-        ascq: u8,
-    },
+    ScsiError { sense_key: u8, asc: u8, ascq: u8 },
     /// Invalid LUN specified
     InvalidLun(u8),
     /// Timeout waiting for response
@@ -852,7 +838,7 @@ impl UfsError {
 
         // Check response code (byte 0)
         let response_code = data[0] & 0x7F;
-        
+
         // Fixed format sense data: 0x70 (current) or 0x71 (deferred)
         // Descriptor format sense data: 0x72 (current) or 0x73 (deferred)
         match response_code {
@@ -880,7 +866,11 @@ impl UfsError {
     /// Returns fixed format sense data (18 bytes)
     pub fn to_sense_data(&self) -> Option<Vec<u8>> {
         match self {
-            UfsError::ScsiError { sense_key, asc, ascq } => {
+            UfsError::ScsiError {
+                sense_key,
+                asc,
+                ascq,
+            } => {
                 let mut data = vec![0u8; 18];
                 data[0] = 0x70; // Fixed format, current errors
                 data[2] = *sense_key & 0x0F;
@@ -934,9 +924,7 @@ impl UfsError {
     /// Get detailed ASC/ASCQ description for common codes
     pub fn asc_description(&self) -> Option<&'static str> {
         match self {
-            UfsError::ScsiError { asc, ascq, .. } => {
-                Some(Self::get_asc_description(*asc, *ascq))
-            }
+            UfsError::ScsiError { asc, ascq, .. } => Some(Self::get_asc_description(*asc, *ascq)),
             _ => None,
         }
     }
@@ -990,7 +978,6 @@ pub mod sense_keys {
     pub const COMPLETED: u8 = 0x0F;
 }
 
-
 // ============================================================================
 // Tests
 // ============================================================================
@@ -1040,7 +1027,10 @@ mod tests {
     #[test]
     fn test_manufacturer_names() {
         assert_eq!(get_ufs_manufacturer_name(manufacturers::SAMSUNG), "Samsung");
-        assert_eq!(get_ufs_manufacturer_name(manufacturers::SK_HYNIX), "SK Hynix");
+        assert_eq!(
+            get_ufs_manufacturer_name(manufacturers::SK_HYNIX),
+            "SK Hynix"
+        );
         assert_eq!(get_ufs_manufacturer_name(manufacturers::MICRON), "Micron");
         assert_eq!(get_ufs_manufacturer_name(0xFFFF), "Unknown");
     }
@@ -1103,32 +1093,50 @@ mod tests {
     #[test]
     fn test_read10_cdb_build() {
         let cdb = ScsiCdbBuilder::build_read10(0x12345678, 256, 0);
-        
+
         assert_eq!(cdb[0], scsi::READ_10);
         assert_eq!(ScsiCdbBuilder::extract_lba_from_read10(&cdb), 0x12345678);
-        assert_eq!(ScsiCdbBuilder::extract_transfer_length_from_read10(&cdb), 256);
+        assert_eq!(
+            ScsiCdbBuilder::extract_transfer_length_from_read10(&cdb),
+            256
+        );
     }
 
     #[test]
     fn test_read16_cdb_build() {
         let cdb = ScsiCdbBuilder::build_read16(0x123456789ABCDEF0, 0x12345678, 0);
-        
+
         assert_eq!(cdb[0], scsi::READ_16);
-        assert_eq!(ScsiCdbBuilder::extract_lba_from_read16(&cdb), 0x123456789ABCDEF0);
-        assert_eq!(ScsiCdbBuilder::extract_transfer_length_from_read16(&cdb), 0x12345678);
+        assert_eq!(
+            ScsiCdbBuilder::extract_lba_from_read16(&cdb),
+            0x123456789ABCDEF0
+        );
+        assert_eq!(
+            ScsiCdbBuilder::extract_transfer_length_from_read16(&cdb),
+            0x12345678
+        );
     }
 
     #[test]
     fn test_select_read_command() {
         // Small address and length -> READ(10)
         assert_eq!(select_read_command(0, 100), ReadCommandType::Read10);
-        assert_eq!(select_read_command(u32::MAX as u64, u16::MAX as u32), ReadCommandType::Read10);
-        
+        assert_eq!(
+            select_read_command(u32::MAX as u64, u16::MAX as u32),
+            ReadCommandType::Read10
+        );
+
         // Large address -> READ(16)
-        assert_eq!(select_read_command(u32::MAX as u64 + 1, 100), ReadCommandType::Read16);
-        
+        assert_eq!(
+            select_read_command(u32::MAX as u64 + 1, 100),
+            ReadCommandType::Read16
+        );
+
         // Large transfer length -> READ(16)
-        assert_eq!(select_read_command(0, u16::MAX as u32 + 1), ReadCommandType::Read16);
+        assert_eq!(
+            select_read_command(0, u16::MAX as u32 + 1),
+            ReadCommandType::Read16
+        );
     }
 
     #[test]
@@ -1141,7 +1149,11 @@ mod tests {
 
         let error = UfsError::from_sense_data(&sense_data);
         match error {
-            UfsError::ScsiError { sense_key, asc, ascq } => {
+            UfsError::ScsiError {
+                sense_key,
+                asc,
+                ascq,
+            } => {
                 assert_eq!(sense_key, 0x05);
                 assert_eq!(asc, 0x24);
                 assert_eq!(ascq, 0x00);
@@ -1160,7 +1172,11 @@ mod tests {
 
         let error = UfsError::from_sense_data(&sense_data);
         match error {
-            UfsError::ScsiError { sense_key, asc, ascq } => {
+            UfsError::ScsiError {
+                sense_key,
+                asc,
+                ascq,
+            } => {
                 assert_eq!(sense_key, 0x03);
                 assert_eq!(asc, 0x11);
                 assert_eq!(ascq, 0x00);
@@ -1178,15 +1194,21 @@ mod tests {
 
     #[test]
     fn test_error_descriptions() {
-        assert_eq!(UfsError::LinkFailure.description(), "UniPro link failed to initialize");
+        assert_eq!(
+            UfsError::LinkFailure.description(),
+            "UniPro link failed to initialize"
+        );
         assert_eq!(UfsError::Timeout.description(), "Operation timed out");
-        
-        let scsi_error = UfsError::ScsiError { sense_key: 0x05, asc: 0x24, ascq: 0x00 };
+
+        let scsi_error = UfsError::ScsiError {
+            sense_key: 0x05,
+            asc: 0x24,
+            ascq: 0x00,
+        };
         assert_eq!(scsi_error.description(), "Illegal request");
         assert_eq!(scsi_error.asc_description(), Some("Invalid field in CDB"));
     }
 }
-
 
 #[cfg(test)]
 mod proptests {

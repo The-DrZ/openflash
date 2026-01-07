@@ -1,5 +1,5 @@
 //! OpenFlash CLI - Command-line interface for flash programming
-//! 
+//!
 //! # Usage
 //! ```bash
 //! openflash scan                    # Scan for devices
@@ -46,7 +46,6 @@ struct Cli {
     #[command(subcommand)]
     command: Commands,
 }
-
 
 #[derive(Subcommand)]
 enum Commands {
@@ -219,112 +218,111 @@ enum Commands {
         #[command(subcommand)]
         action: ConfigAction,
     },
-    
+
     /// Unpack firmware (binwalk-like)
     Unpack {
         /// Input dump file
         input: PathBuf,
-        
+
         /// Output directory
         #[arg(short, long)]
         output: PathBuf,
-        
+
         /// Maximum extraction depth
         #[arg(long, default_value = "5")]
         depth: u32,
-        
+
         /// Recursive extraction
         #[arg(long, default_value = "true")]
         recursive: bool,
     },
-    
+
     /// Extract root filesystem
     Rootfs {
         /// Input dump file
         input: PathBuf,
-        
+
         /// Output directory
         #[arg(short, long)]
         output: PathBuf,
-        
+
         /// Extract file contents
         #[arg(long, default_value = "true")]
         contents: bool,
     },
-    
+
     /// Scan for vulnerabilities
     Vulnscan {
         /// Input dump file
         input: PathBuf,
-        
+
         /// Output report file
         #[arg(short, long)]
         output: Option<PathBuf>,
-        
+
         /// Check for hardcoded credentials
         #[arg(long, default_value = "true")]
         credentials: bool,
-        
+
         /// Check for weak crypto
         #[arg(long, default_value = "true")]
         weak_crypto: bool,
     },
-    
+
     /// ML-based chip identification
     Identify {
         /// Input dump file
         input: PathBuf,
-        
+
         /// Show top N predictions
         #[arg(long, default_value = "3")]
         top: usize,
     },
-    
+
     /// Custom signature operations
     Signatures {
         #[command(subcommand)]
         action: SignaturesAction,
     },
-    
+
     // ========== v2.0 - Multi-device & Enterprise ==========
-    
     /// Server mode operations
     Server {
         #[command(subcommand)]
         action: ServerAction,
     },
-    
+
     /// Device pool management
     Device {
         #[command(subcommand)]
         action: DeviceAction,
     },
-    
+
     /// Job queue management
     Job {
         #[command(subcommand)]
         action: JobAction,
     },
-    
+
     /// Parallel dump across multiple devices
     ParallelDump {
         /// Output directory
         #[arg(short, long)]
         output: PathBuf,
-        
+
         /// Number of devices to use
         #[arg(short, long, default_value = "4")]
         devices: usize,
-        
+
         /// Chunk size per device
         #[arg(long, default_value = "64M")]
         chunk_size: String,
-        
+
         /// Merge output files
         #[arg(long, default_value = "true")]
         merge: bool,
     },
-    
+
     /// Production line mode
     Production {
         #[command(subcommand)]
@@ -337,10 +335,7 @@ enum ConfigAction {
     /// Show current configuration
     Show,
     /// Set configuration value
-    Set {
-        key: String,
-        value: String,
-    },
+    Set { key: String, value: String },
     /// Reset to defaults
     Reset,
 }
@@ -378,11 +373,11 @@ enum ServerAction {
         /// Listen host
         #[arg(long, default_value = "0.0.0.0")]
         host: String,
-        
+
         /// Listen port
         #[arg(long, default_value = "8080")]
         port: u16,
-        
+
         /// Configuration file
         #[arg(short, long)]
         config: Option<PathBuf>,
@@ -410,15 +405,15 @@ enum DeviceAction {
         /// Device name
         #[arg(short, long)]
         name: String,
-        
+
         /// Device URI (serial://, tcp://, ws://)
         #[arg(short, long)]
         uri: String,
-        
+
         /// Device platform (RP2040, STM32F4, ESP32)
         #[arg(long, default_value = "RP2040")]
         platform: String,
-        
+
         /// Device tags
         #[arg(long)]
         tags: Vec<String>,
@@ -436,15 +431,15 @@ enum JobAction {
     Submit {
         /// Job type (read, write, erase, analyze)
         job_type: String,
-        
+
         /// Job parameters
         #[arg(trailing_var_arg = true)]
         params: Vec<String>,
-        
+
         /// Specific device ID
         #[arg(short, long)]
         device: Option<String>,
-        
+
         /// Job priority (low, normal, high, critical)
         #[arg(long)]
         priority: Option<String>,
@@ -464,7 +459,7 @@ enum JobAction {
         /// Filter by status
         #[arg(long)]
         status: Option<String>,
-        
+
         /// Maximum number of jobs to show
         #[arg(long, default_value = "20")]
         limit: usize,
@@ -478,7 +473,7 @@ enum ProductionAction {
         /// Configuration file
         #[arg(short, long)]
         config: PathBuf,
-        
+
         /// Production line ID
         #[arg(long)]
         line: Option<String>,
@@ -491,7 +486,6 @@ enum ProductionAction {
     },
 }
 
-
 fn main() {
     let cli = Cli::parse();
 
@@ -502,99 +496,150 @@ fn main() {
     let result = match &cli.command {
         Commands::Scan => commands::scan(&cli),
         Commands::Detect => commands::detect(&cli),
-        Commands::Read { output, start, length, oob, skip_bad } => {
-            commands::read(&cli, output.clone(), start, length.as_deref(), *oob, *skip_bad)
-        }
-        Commands::Write { input, start, verify, erase, skip_bad } => {
-            commands::write(&cli, input.clone(), start, *verify, *erase, *skip_bad)
-        }
-        Commands::Erase { start, length, force } => {
-            commands::erase(&cli, start.as_deref(), length.as_deref(), *force)
-        }
-        Commands::Verify { file, start } => {
-            commands::verify(&cli, file.clone(), start)
-        }
-        Commands::Analyze { input, output, deep, report_format } => {
-            commands::analyze(&cli, input.clone(), output.clone(), *deep, report_format)
-        }
-        Commands::Compare { file1, file2, output } => {
-            commands::compare(&cli, file1.clone(), file2.clone(), output.clone())
-        }
-        Commands::Clone { mode, verify } => {
-            commands::clone_chip(&cli, mode, *verify)
-        }
-        Commands::Batch { file, stop_on_error } => {
-            commands::batch(&cli, file.clone(), *stop_on_error)
-        }
-        Commands::Script { file, args } => {
-            commands::script(&cli, file.clone(), args.clone())
-        }
-        Commands::Chips { interface, manufacturer, search } => {
-            commands::list_chips(&cli, interface.clone(), manufacturer.clone(), search.clone())
-        }
+        Commands::Read {
+            output,
+            start,
+            length,
+            oob,
+            skip_bad,
+        } => commands::read(
+            &cli,
+            output.clone(),
+            start,
+            length.as_deref(),
+            *oob,
+            *skip_bad,
+        ),
+        Commands::Write {
+            input,
+            start,
+            verify,
+            erase,
+            skip_bad,
+        } => commands::write(&cli, input.clone(), start, *verify, *erase, *skip_bad),
+        Commands::Erase {
+            start,
+            length,
+            force,
+        } => commands::erase(&cli, start.as_deref(), length.as_deref(), *force),
+        Commands::Verify { file, start } => commands::verify(&cli, file.clone(), start),
+        Commands::Analyze {
+            input,
+            output,
+            deep,
+            report_format,
+        } => commands::analyze(&cli, input.clone(), output.clone(), *deep, report_format),
+        Commands::Compare {
+            file1,
+            file2,
+            output,
+        } => commands::compare(&cli, file1.clone(), file2.clone(), output.clone()),
+        Commands::Clone { mode, verify } => commands::clone_chip(&cli, mode, *verify),
+        Commands::Batch {
+            file,
+            stop_on_error,
+        } => commands::batch(&cli, file.clone(), *stop_on_error),
+        Commands::Script { file, args } => commands::script(&cli, file.clone(), args.clone()),
+        Commands::Chips {
+            interface,
+            manufacturer,
+            search,
+        } => commands::list_chips(
+            &cli,
+            interface.clone(),
+            manufacturer.clone(),
+            search.clone(),
+        ),
         Commands::Info => commands::info(&cli),
-        Commands::Interface { interface } => {
-            commands::set_interface(&cli, interface)
-        }
-        Commands::Config { action } => {
-            match action {
-                ConfigAction::Show => commands::config_show(&cli),
-                ConfigAction::Set { key, value } => commands::config_set(&cli, key, value),
-                ConfigAction::Reset => commands::config_reset(&cli),
+        Commands::Interface { interface } => commands::set_interface(&cli, interface),
+        Commands::Config { action } => match action {
+            ConfigAction::Show => commands::config_show(&cli),
+            ConfigAction::Set { key, value } => commands::config_set(&cli, key, value),
+            ConfigAction::Reset => commands::config_reset(&cli),
+        },
+        Commands::Unpack {
+            input,
+            output,
+            depth,
+            recursive,
+        } => commands::unpack(&cli, input.clone(), output.clone(), *depth, *recursive),
+        Commands::Rootfs {
+            input,
+            output,
+            contents,
+        } => commands::rootfs(&cli, input.clone(), output.clone(), *contents),
+        Commands::Vulnscan {
+            input,
+            output,
+            credentials,
+            weak_crypto,
+        } => commands::vulnscan(
+            &cli,
+            input.clone(),
+            output.clone(),
+            *credentials,
+            *weak_crypto,
+        ),
+        Commands::Identify { input, top } => commands::identify(&cli, input.clone(), *top),
+        Commands::Signatures { action } => match action {
+            SignaturesAction::Load { file } => commands::signatures_load(&cli, file.clone()),
+            SignaturesAction::Scan { input, signatures } => {
+                commands::signatures_scan(&cli, input.clone(), signatures.clone())
             }
-        }
-        Commands::Unpack { input, output, depth, recursive } => {
-            commands::unpack(&cli, input.clone(), output.clone(), *depth, *recursive)
-        }
-        Commands::Rootfs { input, output, contents } => {
-            commands::rootfs(&cli, input.clone(), output.clone(), *contents)
-        }
-        Commands::Vulnscan { input, output, credentials, weak_crypto } => {
-            commands::vulnscan(&cli, input.clone(), output.clone(), *credentials, *weak_crypto)
-        }
-        Commands::Identify { input, top } => {
-            commands::identify(&cli, input.clone(), *top)
-        }
-        Commands::Signatures { action } => {
-            match action {
-                SignaturesAction::Load { file } => commands::signatures_load(&cli, file.clone()),
-                SignaturesAction::Scan { input, signatures } => commands::signatures_scan(&cli, input.clone(), signatures.clone()),
-                SignaturesAction::Export { output } => commands::signatures_export(&cli, output.clone()),
-                SignaturesAction::List => commands::signatures_list(&cli),
+            SignaturesAction::Export { output } => {
+                commands::signatures_export(&cli, output.clone())
             }
-        }
+            SignaturesAction::List => commands::signatures_list(&cli),
+        },
         // v2.0 - Multi-device & Enterprise commands
-        Commands::Server { action } => {
-            match action {
-                ServerAction::Start { host, port, config } => commands::server_start(&cli, host, *port, config.clone()),
-                ServerAction::Stop => commands::server_stop(&cli),
-                ServerAction::Status { url } => commands::server_status(&cli, url.as_deref()),
+        Commands::Server { action } => match action {
+            ServerAction::Start { host, port, config } => {
+                commands::server_start(&cli, host, *port, config.clone())
             }
-        }
-        Commands::Device { action } => {
-            match action {
-                DeviceAction::List { url } => commands::device_list(&cli, url.as_deref()),
-                DeviceAction::Add { name, uri, platform, tags } => commands::device_add(&cli, name, uri, platform, tags.clone()),
-                DeviceAction::Remove { device_id } => commands::device_remove(&cli, device_id),
+            ServerAction::Stop => commands::server_stop(&cli),
+            ServerAction::Status { url } => commands::server_status(&cli, url.as_deref()),
+        },
+        Commands::Device { action } => match action {
+            DeviceAction::List { url } => commands::device_list(&cli, url.as_deref()),
+            DeviceAction::Add {
+                name,
+                uri,
+                platform,
+                tags,
+            } => commands::device_add(&cli, name, uri, platform, tags.clone()),
+            DeviceAction::Remove { device_id } => commands::device_remove(&cli, device_id),
+        },
+        Commands::Job { action } => match action {
+            JobAction::Submit {
+                job_type,
+                params,
+                device,
+                priority,
+            } => commands::job_submit(
+                &cli,
+                job_type,
+                params.clone(),
+                device.as_deref(),
+                priority.as_deref(),
+            ),
+            JobAction::Status { job_id } => commands::job_status(&cli, *job_id),
+            JobAction::Cancel { job_id } => commands::job_cancel(&cli, *job_id),
+            JobAction::List { status, limit } => {
+                commands::job_list(&cli, status.as_deref(), *limit)
             }
-        }
-        Commands::Job { action } => {
-            match action {
-                JobAction::Submit { job_type, params, device, priority } => commands::job_submit(&cli, job_type, params.clone(), device.as_deref(), priority.as_deref()),
-                JobAction::Status { job_id } => commands::job_status(&cli, *job_id),
-                JobAction::Cancel { job_id } => commands::job_cancel(&cli, *job_id),
-                JobAction::List { status, limit } => commands::job_list(&cli, status.as_deref(), *limit),
+        },
+        Commands::ParallelDump {
+            output,
+            devices,
+            chunk_size,
+            merge,
+        } => commands::parallel_dump(&cli, output.clone(), *devices, chunk_size, *merge),
+        Commands::Production { action } => match action {
+            ProductionAction::Start { config, line } => {
+                commands::production_start(&cli, config.clone(), line.as_deref())
             }
-        }
-        Commands::ParallelDump { output, devices, chunk_size, merge } => {
-            commands::parallel_dump(&cli, output.clone(), *devices, chunk_size, *merge)
-        }
-        Commands::Production { action } => {
-            match action {
-                ProductionAction::Start { config, line } => commands::production_start(&cli, config.clone(), line.as_deref()),
-                ProductionAction::Status { line } => commands::production_status(&cli, line.as_deref()),
-            }
-        }
+            ProductionAction::Status { line } => commands::production_status(&cli, line.as_deref()),
+        },
     };
 
     if let Err(e) = result {
@@ -606,7 +651,9 @@ fn main() {
 }
 
 fn print_banner() {
-    println!("{}", r#"
+    println!(
+        "{}",
+        r#"
    ____                   _____ _           _     
   / __ \                 |  ___| |         | |    
  | |  | |_ __   ___ _ __ | |_  | | __ _ ___| |__  
@@ -615,7 +662,9 @@ fn print_banner() {
   \____/| .__/ \___|_| |_\_|   |_|\__,_|___/_| |_|
         | |                                       
         |_|   v2.0.0 - Multi-device & Enterprise
-"#.cyan());
+"#
+        .cyan()
+    );
 }
 
 /// Create a progress bar with OpenFlash style
@@ -636,7 +685,8 @@ pub fn parse_address(s: &str) -> Result<u64, String> {
     if s.starts_with("0x") || s.starts_with("0X") {
         u64::from_str_radix(&s[2..], 16).map_err(|e| e.to_string())
     } else {
-        s.parse().map_err(|e: std::num::ParseIntError| e.to_string())
+        s.parse()
+            .map_err(|e: std::num::ParseIntError| e.to_string())
     }
 }
 

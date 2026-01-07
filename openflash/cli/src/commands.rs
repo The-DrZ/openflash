@@ -21,16 +21,22 @@ pub fn scan(cli: &Cli) -> Result<()> {
 
     match cli.format.as_str() {
         "json" => {
-            let json: Vec<_> = devices.iter().map(|(p, port, v)| {
-                serde_json::json!({"platform": p, "port": port, "version": v})
-            }).collect();
+            let json: Vec<_> = devices
+                .iter()
+                .map(|(p, port, v)| serde_json::json!({"platform": p, "port": port, "version": v}))
+                .collect();
             println!("{}", serde_json::to_string_pretty(&json)?);
         }
         _ => {
             println!("\n{}", "Found devices:".green().bold());
             for (platform, port, version) in &devices {
-                println!("  {} {} @ {} (fw {})", 
-                    "●".green(), platform.cyan(), port.white(), version.dimmed());
+                println!(
+                    "  {} {} @ {} (fw {})",
+                    "●".green(),
+                    platform.cyan(),
+                    port.white(),
+                    version.dimmed()
+                );
             }
         }
     }
@@ -58,13 +64,18 @@ pub fn detect(cli: &Cli) -> Result<()> {
             println!("  Block size:   {}", format_size(chip.block_size as u64));
             println!("  OOB size:     {} bytes", chip.oob_size);
             println!("  Interface:    {}", chip.interface);
-            println!("  ID:           {}", chip.id_bytes.iter()
-                .map(|b| format!("{:02X}", b)).collect::<Vec<_>>().join(" "));
+            println!(
+                "  ID:           {}",
+                chip.id_bytes
+                    .iter()
+                    .map(|b| format!("{:02X}", b))
+                    .collect::<Vec<_>>()
+                    .join(" ")
+            );
         }
     }
     Ok(())
 }
-
 
 /// Read/dump chip
 pub fn read(
@@ -88,11 +99,19 @@ pub fn read(
     let total = length_val.unwrap_or(chip.capacity);
 
     if !cli.quiet {
-        println!("{} {} to {}", "Reading".green(), format_size(total).yellow(), 
-            output.display().to_string().cyan());
+        println!(
+            "{} {} to {}",
+            "Reading".green(),
+            format_size(total).yellow(),
+            output.display().to_string().cyan()
+        );
     }
 
-    let pb = if !cli.quiet { Some(create_progress_bar(total, "Reading...")) } else { None };
+    let pb = if !cli.quiet {
+        Some(create_progress_bar(total, "Reading..."))
+    } else {
+        None
+    };
 
     let result = of.read_with_options(ReadOptions {
         start_address: start_addr,
@@ -138,13 +157,25 @@ pub fn write(
     let data = std::fs::read(&input)?;
 
     if !cli.quiet {
-        println!("{} {} from {}", "Writing".green(), format_size(data.len() as u64).yellow(),
-            input.display().to_string().cyan());
-        if erase { println!("  Erase before write: {}", "yes".green()); }
-        if verify { println!("  Verify after write: {}", "yes".green()); }
+        println!(
+            "{} {} from {}",
+            "Writing".green(),
+            format_size(data.len() as u64).yellow(),
+            input.display().to_string().cyan()
+        );
+        if erase {
+            println!("  Erase before write: {}", "yes".green());
+        }
+        if verify {
+            println!("  Verify after write: {}", "yes".green());
+        }
     }
 
-    let pb = if !cli.quiet { Some(create_progress_bar(data.len() as u64, "Writing...")) } else { None };
+    let pb = if !cli.quiet {
+        Some(create_progress_bar(data.len() as u64, "Writing..."))
+    } else {
+        None
+    };
 
     // Mock write operation
     std::thread::sleep(std::time::Duration::from_millis(100));
@@ -168,7 +199,7 @@ pub fn erase(cli: &Cli, start: Option<&str>, length: Option<&str>, force: bool) 
     }
 
     let start_addr = start.map(|s| parse_address(s)).transpose()?.unwrap_or(0);
-    
+
     if !cli.quiet {
         println!("{} chip...", "Erasing".red());
     }
@@ -185,9 +216,13 @@ pub fn erase(cli: &Cli, start: Option<&str>, length: Option<&str>, force: bool) 
 /// Verify chip contents
 pub fn verify(cli: &Cli, file: PathBuf, start: &str) -> Result<()> {
     let data = std::fs::read(&file)?;
-    
+
     if !cli.quiet {
-        println!("{} against {}", "Verifying".yellow(), file.display().to_string().cyan());
+        println!(
+            "{} against {}",
+            "Verifying".yellow(),
+            file.display().to_string().cyan()
+        );
     }
 
     // Mock verify
@@ -216,10 +251,19 @@ pub fn analyze(
     };
 
     if !cli.quiet {
-        println!("{} {} ({})...", "Analyzing".cyan(), 
-            input.as_ref().map(|p| p.display().to_string()).unwrap_or_default().yellow(),
-            format_size(data.len() as u64));
-        if deep { println!("  Deep scan: {}", "enabled".yellow()); }
+        println!(
+            "{} {} ({})...",
+            "Analyzing".cyan(),
+            input
+                .as_ref()
+                .map(|p| p.display().to_string())
+                .unwrap_or_default()
+                .yellow(),
+            format_size(data.len() as u64)
+        );
+        if deep {
+            println!("  Deep scan: {}", "enabled".yellow());
+        }
     }
 
     // Mock analysis result
@@ -228,12 +272,25 @@ pub fn analyze(
         encryption_probability: 0.15,
         compression_probability: 0.45,
         patterns: vec![
-            PatternInfo { pattern_type: "SquashFS".into(), offset: 0x10000, size: 0x500000, confidence: 0.95 },
-            PatternInfo { pattern_type: "U-Boot".into(), offset: 0, size: 0x10000, confidence: 0.90 },
+            PatternInfo {
+                pattern_type: "SquashFS".into(),
+                offset: 0x10000,
+                size: 0x500000,
+                confidence: 0.95,
+            },
+            PatternInfo {
+                pattern_type: "U-Boot".into(),
+                offset: 0,
+                size: 0x10000,
+                confidence: 0.90,
+            },
         ],
-        filesystems: vec![
-            FilesystemInfo { fs_type: "SquashFS".into(), offset: 0x10000, size: Some(0x500000), confidence: 0.95 },
-        ],
+        filesystems: vec![FilesystemInfo {
+            fs_type: "SquashFS".into(),
+            offset: 0x10000,
+            size: Some(0x500000),
+            confidence: 0.95,
+        }],
         anomalies: vec![],
         recovery_suggestions: vec![],
         key_candidates: vec![],
@@ -245,12 +302,23 @@ pub fn analyze(
         _ => {
             println!("\n{}", "Analysis Results:".green().bold());
             println!("  Quality:     {:.0}%", result.quality_score * 100.0);
-            println!("  Encryption:  {:.0}%", result.encryption_probability * 100.0);
-            println!("  Compression: {:.0}%", result.compression_probability * 100.0);
+            println!(
+                "  Encryption:  {:.0}%",
+                result.encryption_probability * 100.0
+            );
+            println!(
+                "  Compression: {:.0}%",
+                result.compression_probability * 100.0
+            );
             println!("\n{}", "Detected patterns:".cyan());
             for p in &result.patterns {
-                println!("  {} @ 0x{:X} ({}, {:.0}% confidence)", 
-                    p.pattern_type.yellow(), p.offset, format_size(p.size), p.confidence * 100.0);
+                println!(
+                    "  {} @ 0x{:X} ({}, {:.0}% confidence)",
+                    p.pattern_type.yellow(),
+                    p.offset,
+                    format_size(p.size),
+                    p.confidence * 100.0
+                );
             }
             println!("\n{}", result.summary.dimmed());
         }
@@ -269,10 +337,15 @@ pub fn analyze(
 fn generate_report(result: &ScriptAnalysisResult, format: &str) -> String {
     match format {
         "json" => serde_json::to_string_pretty(result).unwrap_or_default(),
-        "html" => format!("<html><body><h1>OpenFlash Analysis Report</h1><pre>{}</pre></body></html>",
-            serde_json::to_string_pretty(result).unwrap_or_default()),
-        _ => format!("# OpenFlash Analysis Report\n\n## Summary\n{}\n\n## Quality: {:.0}%\n",
-            result.summary, result.quality_score * 100.0),
+        "html" => format!(
+            "<html><body><h1>OpenFlash Analysis Report</h1><pre>{}</pre></body></html>",
+            serde_json::to_string_pretty(result).unwrap_or_default()
+        ),
+        _ => format!(
+            "# OpenFlash Analysis Report\n\n## Summary\n{}\n\n## Quality: {:.0}%\n",
+            result.summary,
+            result.quality_score * 100.0
+        ),
     }
 }
 
@@ -282,15 +355,20 @@ pub fn compare(cli: &Cli, file1: PathBuf, file2: PathBuf, output: Option<PathBuf
     let data2 = std::fs::read(&file2)?;
 
     if !cli.quiet {
-        println!("{} {} vs {}", "Comparing".cyan(),
+        println!(
+            "{} {} vs {}",
+            "Comparing".cyan(),
             file1.display().to_string().yellow(),
-            file2.display().to_string().yellow());
+            file2.display().to_string().yellow()
+        );
     }
 
     let mut diffs = 0;
     let min_len = data1.len().min(data2.len());
     for i in 0..min_len {
-        if data1[i] != data2[i] { diffs += 1; }
+        if data1[i] != data2[i] {
+            diffs += 1;
+        }
     }
     diffs += (data1.len() as i64 - data2.len() as i64).unsigned_abs() as usize;
 
@@ -307,17 +385,31 @@ pub fn compare(cli: &Cli, file1: PathBuf, file2: PathBuf, output: Option<PathBuf
 /// Clone chip-to-chip
 pub fn clone_chip(cli: &Cli, mode: &str, verify: bool) -> Result<()> {
     if !cli.quiet {
-        println!("{} (mode: {})", "Starting chip-to-chip clone".cyan(), mode.yellow());
-        println!("  Verify: {}", if verify { "yes".green() } else { "no".red() });
+        println!(
+            "{} (mode: {})",
+            "Starting chip-to-chip clone".cyan(),
+            mode.yellow()
+        );
+        println!(
+            "  Verify: {}",
+            if verify { "yes".green() } else { "no".red() }
+        );
     }
-    println!("{}", "Clone operation requires two devices connected.".yellow());
+    println!(
+        "{}",
+        "Clone operation requires two devices connected.".yellow()
+    );
     Ok(())
 }
 
 /// Run batch jobs
 pub fn batch(cli: &Cli, file: PathBuf, stop_on_error: bool) -> Result<()> {
     if !cli.quiet {
-        println!("{} {}", "Running batch file:".cyan(), file.display().to_string().yellow());
+        println!(
+            "{} {}",
+            "Running batch file:".cyan(),
+            file.display().to_string().yellow()
+        );
     }
 
     // Mock batch execution
@@ -333,7 +425,11 @@ pub fn batch(cli: &Cli, file: PathBuf, stop_on_error: bool) -> Result<()> {
 /// Run script
 pub fn script(cli: &Cli, file: PathBuf, args: Vec<String>) -> Result<()> {
     if !cli.quiet {
-        println!("{} {}", "Running script:".cyan(), file.display().to_string().yellow());
+        println!(
+            "{} {}",
+            "Running script:".cyan(),
+            file.display().to_string().yellow()
+        );
         if !args.is_empty() {
             println!("  Args: {:?}", args);
         }
@@ -358,11 +454,21 @@ pub fn list_chips(
         ("Samsung", "KLMAG1JETD", "emmc", "16GB"),
     ];
 
-    let filtered: Vec<_> = chips.iter()
+    let filtered: Vec<_> = chips
+        .iter()
         .filter(|(m, model, iface, _)| {
-            interface.as_ref().map(|i| iface.contains(i)).unwrap_or(true) &&
-            manufacturer.as_ref().map(|mf| m.to_lowercase().contains(&mf.to_lowercase())).unwrap_or(true) &&
-            search.as_ref().map(|s| model.to_lowercase().contains(&s.to_lowercase())).unwrap_or(true)
+            interface
+                .as_ref()
+                .map(|i| iface.contains(i))
+                .unwrap_or(true)
+                && manufacturer
+                    .as_ref()
+                    .map(|mf| m.to_lowercase().contains(&mf.to_lowercase()))
+                    .unwrap_or(true)
+                && search
+                    .as_ref()
+                    .map(|s| model.to_lowercase().contains(&s.to_lowercase()))
+                    .unwrap_or(true)
         })
         .collect();
 
@@ -374,9 +480,19 @@ pub fn list_chips(
             println!("{}", serde_json::to_string_pretty(&json)?);
         }
         _ => {
-            println!("\n{} ({} chips)", "Supported chips:".green().bold(), filtered.len());
+            println!(
+                "\n{} ({} chips)",
+                "Supported chips:".green().bold(),
+                filtered.len()
+            );
             for (mfr, model, iface, cap) in filtered {
-                println!("  {} {} ({}) - {}", mfr.cyan(), model.white(), iface.dimmed(), cap.yellow());
+                println!(
+                    "  {} {} ({}) - {}",
+                    mfr.cyan(),
+                    model.white(),
+                    iface.dimmed(),
+                    cap.yellow()
+                );
             }
         }
     }
@@ -437,7 +553,6 @@ pub fn config_reset(_cli: &Cli) -> Result<()> {
     Ok(())
 }
 
-
 // ============================================================================
 // v1.9 - Advanced AI Features Commands
 // ============================================================================
@@ -445,22 +560,34 @@ pub fn config_reset(_cli: &Cli) -> Result<()> {
 use openflash_core::ai_advanced::*;
 
 /// Unpack firmware (binwalk-like)
-pub fn unpack(cli: &Cli, input: PathBuf, output: PathBuf, depth: u32, recursive: bool) -> Result<()> {
+pub fn unpack(
+    cli: &Cli,
+    input: PathBuf,
+    output: PathBuf,
+    depth: u32,
+    recursive: bool,
+) -> Result<()> {
     let data = std::fs::read(&input)?;
-    
+
     if !cli.quiet {
-        println!("{} {} ({})...", "Unpacking".cyan(), 
+        println!(
+            "{} {} ({})...",
+            "Unpacking".cyan(),
             input.display().to_string().yellow(),
-            format_size(data.len() as u64));
+            format_size(data.len() as u64)
+        );
         println!("  Output: {}", output.display().to_string().cyan());
         println!("  Max depth: {}", depth);
-        println!("  Recursive: {}", if recursive { "yes".green() } else { "no".red() });
+        println!(
+            "  Recursive: {}",
+            if recursive { "yes".green() } else { "no".red() }
+        );
     }
 
     let unpacker = FirmwareUnpacker::new()
         .with_max_depth(depth)
         .with_recursive(recursive);
-    
+
     let result = unpacker.unpack(&data).map_err(|e| e.to_string())?;
 
     match cli.format.as_str() {
@@ -469,18 +596,20 @@ pub fn unpack(cli: &Cli, input: PathBuf, output: PathBuf, depth: u32, recursive:
             println!("\n{}", "Unpack Results:".green().bold());
             println!("  Sections found: {}", result.total_sections);
             println!("  Extracted size: {}", format_size(result.extracted_size));
-            
+
             if !result.sections.is_empty() {
                 println!("\n{}", "Detected sections:".cyan());
                 for section in &result.sections {
-                    println!("  {} @ 0x{:08X} ({}) - {}", 
+                    println!(
+                        "  {} @ 0x{:08X} ({}) - {}",
                         section.name.yellow(),
                         section.offset,
                         format_size(section.size),
-                        section.section_type.dimmed());
+                        section.section_type.dimmed()
+                    );
                 }
             }
-            
+
             if !result.warnings.is_empty() {
                 println!("\n{}", "Warnings:".yellow());
                 for warning in &result.warnings {
@@ -509,10 +638,13 @@ pub fn unpack(cli: &Cli, input: PathBuf, output: PathBuf, depth: u32, recursive:
 /// Extract root filesystem
 pub fn rootfs(cli: &Cli, input: PathBuf, output: PathBuf, contents: bool) -> Result<()> {
     let data = std::fs::read(&input)?;
-    
+
     if !cli.quiet {
-        println!("{} from {} ...", "Extracting rootfs".cyan(), 
-            input.display().to_string().yellow());
+        println!(
+            "{} from {} ...",
+            "Extracting rootfs".cyan(),
+            input.display().to_string().yellow()
+        );
     }
 
     let extractor = RootfsExtractor::new().with_contents(contents);
@@ -528,13 +660,18 @@ pub fn rootfs(cli: &Cli, input: PathBuf, output: PathBuf, contents: bool) -> Res
 
             println!("\n{}", "Found filesystems:".green().bold());
             for (i, fs) in results.iter().enumerate() {
-                println!("\n  {}. {} @ 0x{:08X} ({})", 
+                println!(
+                    "\n  {}. {} @ 0x{:08X} ({})",
                     i + 1,
                     format!("{}", fs.fs_type).cyan(),
                     fs.offset,
-                    format_size(fs.size));
-                println!("     Files: {}, Directories: {}", fs.total_files, fs.total_dirs);
-                
+                    format_size(fs.size)
+                );
+                println!(
+                    "     Files: {}, Directories: {}",
+                    fs.total_files, fs.total_dirs
+                );
+
                 if !fs.files.is_empty() && cli.verbose {
                     println!("     {}", "Contents:".dimmed());
                     for file in fs.files.iter().take(10) {
@@ -551,16 +688,16 @@ pub fn rootfs(cli: &Cli, input: PathBuf, output: PathBuf, contents: bool) -> Res
 
     // Create output directory
     std::fs::create_dir_all(&output)?;
-    
+
     for (i, fs) in results.iter().enumerate() {
         let fs_dir = output.join(format!("fs{}_{}", i, fs.fs_type));
         std::fs::create_dir_all(&fs_dir)?;
-        
+
         // Save file listing
         let listing: Vec<&str> = fs.files.iter().map(|f| f.path.as_str()).collect();
         let listing_path = fs_dir.join("_files.txt");
         std::fs::write(&listing_path, listing.join("\n"))?;
-        
+
         if !cli.quiet {
             println!("\nExtracted to: {}", fs_dir.display().to_string().cyan());
         }
@@ -571,22 +708,26 @@ pub fn rootfs(cli: &Cli, input: PathBuf, output: PathBuf, contents: bool) -> Res
 
 /// Scan for vulnerabilities
 pub fn vulnscan(
-    cli: &Cli, 
-    input: PathBuf, 
+    cli: &Cli,
+    input: PathBuf,
     output: Option<PathBuf>,
     credentials: bool,
     weak_crypto: bool,
 ) -> Result<()> {
     let data = std::fs::read(&input)?;
-    
+
     if !cli.quiet {
-        println!("{} {} ...", "Scanning".red(), input.display().to_string().yellow());
+        println!(
+            "{} {} ...",
+            "Scanning".red(),
+            input.display().to_string().yellow()
+        );
     }
 
     let scanner = VulnScanner::new()
         .with_credentials_check(credentials)
         .with_weak_crypto_check(weak_crypto);
-    
+
     let result = scanner.scan(&data).map_err(|e| e.to_string())?;
 
     match cli.format.as_str() {
@@ -611,12 +752,14 @@ pub fn vulnscan(
                         Severity::Low => "🟢",
                         Severity::Info => "🔵",
                     };
-                    
-                    println!("\n  {} {} (CVSS: {:.1})", 
+
+                    println!(
+                        "\n  {} {} (CVSS: {:.1})",
                         severity_icon,
                         vuln.name.red(),
-                        vuln.cvss.base_score);
-                    
+                        vuln.cvss.base_score
+                    );
+
                     if let Some(cve) = &vuln.cve_id {
                         println!("     CVE: {}", cve.cyan());
                     }
@@ -642,10 +785,13 @@ pub fn vulnscan(
 /// ML-based chip identification
 pub fn identify(cli: &Cli, input: PathBuf, top: usize) -> Result<()> {
     let data = std::fs::read(&input)?;
-    
+
     if !cli.quiet {
-        println!("{} {} ...", "Identifying chip from".cyan(), 
-            input.display().to_string().yellow());
+        println!(
+            "{} {} ...",
+            "Identifying chip from".cyan(),
+            input.display().to_string().yellow()
+        );
     }
 
     let identifier = MlChipIdentifier::new();
@@ -656,24 +802,36 @@ pub fn identify(cli: &Cli, input: PathBuf, top: usize) -> Result<()> {
         _ => {
             let model_info = identifier.model_info();
             println!("\n{}", "ML Model Info:".dimmed());
-            println!("  Version: {}, Accuracy: {:.0}%, Chips: {}", 
-                model_info.version, model_info.accuracy * 100.0, model_info.supported_chips);
+            println!(
+                "  Version: {}, Accuracy: {:.0}%, Chips: {}",
+                model_info.version,
+                model_info.accuracy * 100.0,
+                model_info.supported_chips
+            );
 
             println!("\n{}", "Chip Predictions:".green().bold());
             for (i, pred) in predictions.iter().take(top).enumerate() {
                 let confidence_bar = "█".repeat((pred.confidence * 20.0) as usize);
                 let confidence_empty = "░".repeat(20 - (pred.confidence * 20.0) as usize);
-                
-                println!("\n  {}. {} {}", i + 1, 
-                    pred.manufacturer.cyan(), 
-                    pred.model.white().bold());
-                println!("     Confidence: [{}{}] {:.1}%", 
-                    confidence_bar.green(), confidence_empty.dimmed(),
-                    pred.confidence * 100.0);
-                println!("     Page: {} bytes, Block: {}, Capacity: {}", 
-                    pred.page_size, 
+
+                println!(
+                    "\n  {}. {} {}",
+                    i + 1,
+                    pred.manufacturer.cyan(),
+                    pred.model.white().bold()
+                );
+                println!(
+                    "     Confidence: [{}{}] {:.1}%",
+                    confidence_bar.green(),
+                    confidence_empty.dimmed(),
+                    pred.confidence * 100.0
+                );
+                println!(
+                    "     Page: {} bytes, Block: {}, Capacity: {}",
+                    pred.page_size,
                     format_size(pred.block_size as u64),
-                    format_size(pred.capacity));
+                    format_size(pred.capacity)
+                );
                 println!("     Interface: {}", pred.interface.yellow());
             }
         }
@@ -687,10 +845,14 @@ pub fn signatures_load(cli: &Cli, file: PathBuf) -> Result<()> {
     let yaml = std::fs::read_to_string(&file)?;
     let mut db = SignatureDatabase::new("custom");
     let count = db.load_yaml(&yaml).map_err(|e| e.to_string())?;
-    
+
     if !cli.quiet {
-        println!("{} {} signatures from {}", 
-            "Loaded".green(), count, file.display().to_string().cyan());
+        println!(
+            "{} {} signatures from {}",
+            "Loaded".green(),
+            count,
+            file.display().to_string().cyan()
+        );
     }
     Ok(())
 }
@@ -698,9 +860,9 @@ pub fn signatures_load(cli: &Cli, file: PathBuf) -> Result<()> {
 /// Scan with custom signatures
 pub fn signatures_scan(cli: &Cli, input: PathBuf, signatures: Option<PathBuf>) -> Result<()> {
     let data = std::fs::read(&input)?;
-    
+
     let mut db = SignatureDatabase::new("scan");
-    
+
     // Load signatures if provided
     if let Some(sig_file) = signatures {
         let yaml = std::fs::read_to_string(&sig_file)?;
@@ -721,10 +883,12 @@ pub fn signatures_scan(cli: &Cli, input: PathBuf, signatures: Option<PathBuf>) -
     }
 
     if !cli.quiet {
-        println!("{} {} with {} signatures...", 
-            "Scanning".cyan(), 
+        println!(
+            "{} {} with {} signatures...",
+            "Scanning".cyan(),
             input.display().to_string().yellow(),
-            db.list().len());
+            db.list().len()
+        );
     }
 
     let matches = db.scan(&data);
@@ -735,7 +899,11 @@ pub fn signatures_scan(cli: &Cli, input: PathBuf, signatures: Option<PathBuf>) -
             if matches.is_empty() {
                 println!("{}", "No signature matches found.".green());
             } else {
-                println!("\n{} ({} matches)", "Signature Matches:".yellow().bold(), matches.len());
+                println!(
+                    "\n{} ({} matches)",
+                    "Signature Matches:".yellow().bold(),
+                    matches.len()
+                );
                 for m in &matches {
                     println!("\n  {} @ 0x{:08X}", m.signature.name.red(), m.offset);
                     println!("     Category: {:?}", m.signature.category);
@@ -753,10 +921,13 @@ pub fn signatures_export(cli: &Cli, output: PathBuf) -> Result<()> {
     let db = SignatureDatabase::new("export");
     let yaml = db.export_yaml();
     std::fs::write(&output, yaml)?;
-    
+
     if !cli.quiet {
-        println!("{} to {}", "Exported signatures".green(), 
-            output.display().to_string().cyan());
+        println!(
+            "{} to {}",
+            "Exported signatures".green(),
+            output.display().to_string().cyan()
+        );
     }
     Ok(())
 }
@@ -765,7 +936,7 @@ pub fn signatures_export(cli: &Cli, output: PathBuf) -> Result<()> {
 pub fn signatures_list(cli: &Cli) -> Result<()> {
     let db = SignatureDatabase::new("default");
     let info = db.info();
-    
+
     match cli.format.as_str() {
         "json" => println!("{}", serde_json::to_string_pretty(&info)?),
         _ => {
@@ -778,7 +949,6 @@ pub fn signatures_list(cli: &Cli) -> Result<()> {
     Ok(())
 }
 
-
 // ============================================================================
 // v2.0 - Multi-device & Enterprise Commands
 // ============================================================================
@@ -786,12 +956,7 @@ pub fn signatures_list(cli: &Cli) -> Result<()> {
 use openflash_core::server::*;
 
 /// Start server mode
-pub fn server_start(
-    cli: &Cli,
-    host: &str,
-    port: u16,
-    config_file: Option<PathBuf>,
-) -> Result<()> {
+pub fn server_start(cli: &Cli, host: &str, port: u16, config_file: Option<PathBuf>) -> Result<()> {
     let config = if let Some(path) = config_file {
         let content = std::fs::read_to_string(&path)?;
         serde_json::from_str(&content)?
@@ -808,15 +973,24 @@ pub fn server_start(
 
     if !cli.quiet {
         println!("{}", "Starting OpenFlash Server v2.0".cyan().bold());
-        println!("  REST API:   http://{}:{}{}", config.rest.host, config.rest.port, config.rest.prefix);
+        println!(
+            "  REST API:   http://{}:{}{}",
+            config.rest.host, config.rest.port, config.rest.prefix
+        );
         if config.websocket.enabled {
-            println!("  WebSocket:  ws://{}:{}{}", config.rest.host, config.rest.port, config.websocket.path);
+            println!(
+                "  WebSocket:  ws://{}:{}{}",
+                config.rest.host, config.rest.port, config.websocket.path
+            );
         }
         if config.grpc.enabled {
             println!("  gRPC:       {}:{}", config.grpc.host, config.grpc.port);
         }
         if config.metrics_enabled {
-            println!("  Metrics:    http://{}:{}/metrics", config.rest.host, config.metrics_port);
+            println!(
+                "  Metrics:    http://{}:{}/metrics",
+                config.rest.host, config.metrics_port
+            );
         }
         println!("\n{}", "Press Ctrl+C to stop the server.".dimmed());
     }
@@ -843,7 +1017,7 @@ pub fn server_stop(cli: &Cli) -> Result<()> {
 /// Get server status
 pub fn server_status(cli: &Cli, server_url: Option<&str>) -> Result<()> {
     let url = server_url.unwrap_or("http://localhost:8080");
-    
+
     if !cli.quiet {
         println!("{} {}...", "Checking server status at".cyan(), url.yellow());
     }
@@ -878,20 +1052,38 @@ pub fn server_status(cli: &Cli, server_url: Option<&str>) -> Result<()> {
             println!("  Name:    {}", info.name.cyan());
             println!("  Version: {}", info.version);
             println!("  Uptime:  {} hours", info.uptime_ms / 3600000);
-            
+
             println!("\n{}", "Device Pool:".cyan());
             println!("  Total:     {}", info.pool_stats.total_devices);
-            println!("  Available: {}", info.pool_stats.available_devices.to_string().green());
-            println!("  Busy:      {}", info.pool_stats.busy_devices.to_string().yellow());
+            println!(
+                "  Available: {}",
+                info.pool_stats.available_devices.to_string().green()
+            );
+            println!(
+                "  Busy:      {}",
+                info.pool_stats.busy_devices.to_string().yellow()
+            );
             println!("  Offline:   {}", info.pool_stats.offline_devices);
             println!("  Jobs done: {}", info.pool_stats.total_jobs_completed);
-            println!("  Data:      {}", format_size(info.pool_stats.total_bytes_processed));
-            
+            println!(
+                "  Data:      {}",
+                format_size(info.pool_stats.total_bytes_processed)
+            );
+
             println!("\n{}", "Job Queue:".cyan());
             println!("  Pending:   {}", info.queue_stats.pending_count);
-            println!("  Running:   {}", info.queue_stats.running_count.to_string().yellow());
-            println!("  Completed: {}", info.queue_stats.completed_count.to_string().green());
-            println!("  Failed:    {}", info.queue_stats.failed_count.to_string().red());
+            println!(
+                "  Running:   {}",
+                info.queue_stats.running_count.to_string().yellow()
+            );
+            println!(
+                "  Completed: {}",
+                info.queue_stats.completed_count.to_string().green()
+            );
+            println!(
+                "  Failed:    {}",
+                info.queue_stats.failed_count.to_string().red()
+            );
         }
     }
     Ok(())
@@ -900,7 +1092,7 @@ pub fn server_status(cli: &Cli, server_url: Option<&str>) -> Result<()> {
 /// List devices in pool
 pub fn device_list(cli: &Cli, server_url: Option<&str>) -> Result<()> {
     let url = server_url.unwrap_or("http://localhost:8080");
-    
+
     if !cli.quiet {
         println!("{} from {}...", "Listing devices".cyan(), url.yellow());
     }
@@ -922,7 +1114,11 @@ pub fn device_list(cli: &Cli, server_url: Option<&str>) -> Result<()> {
             platform: "STM32F4".to_string(),
             status: "Busy".to_string(),
             current_job: Some(42),
-            interfaces: vec!["parallel_nand".to_string(), "spi_nand".to_string(), "emmc".to_string()],
+            interfaces: vec![
+                "parallel_nand".to_string(),
+                "spi_nand".to_string(),
+                "emmc".to_string(),
+            ],
             tags: vec!["production".to_string(), "high-speed".to_string()],
         },
         DeviceInfo {
@@ -939,7 +1135,11 @@ pub fn device_list(cli: &Cli, server_url: Option<&str>) -> Result<()> {
     match cli.format.as_str() {
         "json" => println!("{}", serde_json::to_string_pretty(&devices)?),
         _ => {
-            println!("\n{} ({} devices)", "Device Pool:".green().bold(), devices.len());
+            println!(
+                "\n{} ({} devices)",
+                "Device Pool:".green().bold(),
+                devices.len()
+            );
             for dev in &devices {
                 let status_color = match dev.status.as_str() {
                     "Available" => dev.status.green(),
@@ -947,11 +1147,17 @@ pub fn device_list(cli: &Cli, server_url: Option<&str>) -> Result<()> {
                     "Offline" => dev.status.red(),
                     _ => dev.status.white(),
                 };
-                
-                println!("\n  {} {} ({})", 
-                    if dev.status == "Available" { "●".green() } else { "●".yellow() },
+
+                println!(
+                    "\n  {} {} ({})",
+                    if dev.status == "Available" {
+                        "●".green()
+                    } else {
+                        "●".yellow()
+                    },
                     dev.name.cyan(),
-                    dev.id.dimmed());
+                    dev.id.dimmed()
+                );
                 println!("     Platform:   {}", dev.platform);
                 println!("     Status:     {}", status_color);
                 if let Some(job) = dev.current_job {
@@ -974,7 +1180,12 @@ pub fn device_add(
     tags: Vec<String>,
 ) -> Result<()> {
     if !cli.quiet {
-        println!("{} device: {} ({})", "Adding".green(), name.cyan(), uri.yellow());
+        println!(
+            "{} device: {} ({})",
+            "Adding".green(),
+            name.cyan(),
+            uri.yellow()
+        );
     }
 
     let device = PoolDevice::new(
@@ -989,7 +1200,7 @@ pub fn device_add(
     println!("  Name: {}", device.name);
     println!("  URI: {}", device.uri);
     println!("  Platform: {:?}", device.platform);
-    
+
     Ok(())
 }
 
@@ -1012,13 +1223,19 @@ pub fn job_submit(
 ) -> Result<()> {
     let job_type_enum = match job_type {
         "read" => JobType::Read {
-            output_path: params.get(0).cloned().unwrap_or_else(|| "dump.bin".to_string()),
+            output_path: params
+                .get(0)
+                .cloned()
+                .unwrap_or_else(|| "dump.bin".to_string()),
             start_address: 0,
             length: None,
             include_oob: false,
         },
         "write" => JobType::Write {
-            input_path: params.get(0).cloned().unwrap_or_else(|| "firmware.bin".to_string()),
+            input_path: params
+                .get(0)
+                .cloned()
+                .unwrap_or_else(|| "firmware.bin".to_string()),
             start_address: 0,
             verify: true,
         },
@@ -1027,8 +1244,14 @@ pub fn job_submit(
             length: None,
         },
         "analyze" => JobType::Analyze {
-            input_path: params.get(0).cloned().unwrap_or_else(|| "dump.bin".to_string()),
-            output_path: params.get(1).cloned().unwrap_or_else(|| "report.json".to_string()),
+            input_path: params
+                .get(0)
+                .cloned()
+                .unwrap_or_else(|| "dump.bin".to_string()),
+            output_path: params
+                .get(1)
+                .cloned()
+                .unwrap_or_else(|| "report.json".to_string()),
             deep_scan: false,
         },
         _ => JobType::Custom {
@@ -1038,11 +1261,11 @@ pub fn job_submit(
     };
 
     let mut job = Job::new(&format!("{} job", job_type), job_type_enum);
-    
+
     if let Some(dev) = device_id {
         job = job.with_device(dev);
     }
-    
+
     if let Some(p) = priority {
         let prio = match p {
             "low" => JobPriority::Low,
@@ -1054,7 +1277,12 @@ pub fn job_submit(
     }
 
     if !cli.quiet {
-        println!("{} job: {} (type: {})", "Submitting".green(), job.name.cyan(), job_type.yellow());
+        println!(
+            "{} job: {} (type: {})",
+            "Submitting".green(),
+            job.name.cyan(),
+            job_type.yellow()
+        );
     }
 
     match cli.format.as_str() {
@@ -1108,7 +1336,12 @@ pub fn job_status(cli: &Cli, job_id: u64) -> Result<()> {
             if let Some(progress) = status.progress {
                 let bar = "█".repeat((progress / 5) as usize);
                 let empty = "░".repeat(20 - (progress / 5) as usize);
-                println!("  Progress: [{}{}] {}%", bar.green(), empty.dimmed(), progress);
+                println!(
+                    "  Progress: [{}{}] {}%",
+                    bar.green(),
+                    empty.dimmed(),
+                    progress
+                );
             }
             if let Some(dev) = &status.device_id {
                 println!("  Device:   {}", dev);
@@ -1142,25 +1375,31 @@ pub fn job_list(cli: &Cli, status_filter: Option<&str>, limit: usize) -> Result<
         ("5", "Erase job", "queued", "-", "-"),
     ];
 
-    let filtered: Vec<_> = jobs.iter()
+    let filtered: Vec<_> = jobs
+        .iter()
         .filter(|(_, _, s, _, _)| status_filter.map(|f| *s == f).unwrap_or(true))
         .take(limit)
         .collect();
 
     match cli.format.as_str() {
         "json" => {
-            let json: Vec<_> = filtered.iter().map(|(id, name, status, dev, prog)| {
-                serde_json::json!({
-                    "id": id, "name": name, "status": status, 
-                    "device": dev, "progress": prog
+            let json: Vec<_> = filtered
+                .iter()
+                .map(|(id, name, status, dev, prog)| {
+                    serde_json::json!({
+                        "id": id, "name": name, "status": status,
+                        "device": dev, "progress": prog
+                    })
                 })
-            }).collect();
+                .collect();
             println!("{}", serde_json::to_string_pretty(&json)?);
         }
         _ => {
             println!("\n{}", "Jobs:".green().bold());
-            println!("  {:<6} {:<15} {:<12} {:<10} {}", 
-                "ID", "Name", "Status", "Device", "Progress");
+            println!(
+                "  {:<6} {:<15} {:<12} {:<10} {}",
+                "ID", "Name", "Status", "Device", "Progress"
+            );
             println!("  {}", "-".repeat(55));
             for (id, name, status, dev, prog) in filtered {
                 let status_colored = match *status {
@@ -1169,8 +1408,14 @@ pub fn job_list(cli: &Cli, status_filter: Option<&str>, limit: usize) -> Result<
                     "failed" => status.red(),
                     _ => status.white(),
                 };
-                println!("  {:<6} {:<15} {:<12} {:<10} {}", 
-                    id.cyan(), name, status_colored, dev, prog);
+                println!(
+                    "  {:<6} {:<15} {:<12} {:<10} {}",
+                    id.cyan(),
+                    name,
+                    status_colored,
+                    dev,
+                    prog
+                );
             }
         }
     }
@@ -1186,13 +1431,19 @@ pub fn parallel_dump(
     merge: bool,
 ) -> Result<()> {
     let chunk_bytes = parse_address(chunk_size)?;
-    
+
     if !cli.quiet {
         println!("{}", "Starting parallel dump...".cyan().bold());
-        println!("  Output:      {}", output_dir.display().to_string().yellow());
+        println!(
+            "  Output:      {}",
+            output_dir.display().to_string().yellow()
+        );
         println!("  Devices:     {}", device_count);
         println!("  Chunk size:  {}", format_size(chunk_bytes));
-        println!("  Merge:       {}", if merge { "yes".green() } else { "no".red() });
+        println!(
+            "  Merge:       {}",
+            if merge { "yes".green() } else { "no".red() }
+        );
     }
 
     let config = ParallelDumpConfig {
@@ -1216,11 +1467,7 @@ pub fn parallel_dump(
 }
 
 /// Start production mode
-pub fn production_start(
-    cli: &Cli,
-    config_file: PathBuf,
-    line_id: Option<&str>,
-) -> Result<()> {
+pub fn production_start(cli: &Cli, config_file: PathBuf, line_id: Option<&str>) -> Result<()> {
     if !cli.quiet {
         println!("{}", "Starting production mode...".cyan().bold());
         println!("  Config: {}", config_file.display().to_string().yellow());
@@ -1269,12 +1516,18 @@ pub fn production_status(cli: &Cli, line_id: Option<&str>) -> Result<()> {
             println!("\n{}", "Production Statistics:".green().bold());
             println!("  Line ID:        {}", stats.line_id.cyan());
             println!("  Total units:    {}", stats.total_units);
-            println!("  Passed:         {} ({:.1}%)", 
-                stats.passed_units.to_string().green(), stats.pass_rate);
+            println!(
+                "  Passed:         {} ({:.1}%)",
+                stats.passed_units.to_string().green(),
+                stats.pass_rate
+            );
             println!("  Failed:         {}", stats.failed_units.to_string().red());
-            println!("  Avg cycle time: {} seconds", stats.avg_cycle_time_ms / 1000);
+            println!(
+                "  Avg cycle time: {} seconds",
+                stats.avg_cycle_time_ms / 1000
+            );
             println!("  Throughput:     {:.1} units/hour", stats.units_per_hour);
-            
+
             if !stats.failure_reasons.is_empty() {
                 println!("\n{}", "Failure reasons:".yellow());
                 for (reason, count) in &stats.failure_reasons {

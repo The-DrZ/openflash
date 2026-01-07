@@ -54,12 +54,12 @@ impl AppConfig {
     /// Save config to disk
     pub fn save(&self) -> Result<(), String> {
         let path = Self::config_path().ok_or("Could not determine config path")?;
-        
+
         // Create directory if needed
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        
+
         let content = serde_json::to_string_pretty(self).map_err(|e| e.to_string())?;
         fs::write(path, content).map_err(|e| e.to_string())
     }
@@ -92,7 +92,7 @@ mod tests {
         config.add_recent_file("/path/to/file1.bin");
         config.add_recent_file("/path/to/file2.bin");
         config.add_recent_file("/path/to/file1.bin"); // Duplicate
-        
+
         assert_eq!(config.recent_files.len(), 2);
         assert_eq!(config.recent_files[0], "/path/to/file1.bin");
     }

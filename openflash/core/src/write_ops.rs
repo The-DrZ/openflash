@@ -1,5 +1,5 @@
 //! Advanced Write Operations for OpenFlash v1.7
-//! 
+//!
 //! Provides full chip programming, bad block management, wear leveling,
 //! incremental backup/restore, and chip-to-chip cloning.
 
@@ -45,8 +45,16 @@ impl std::fmt::Display for WriteError {
                 write!(f, "Program failed at block {} page {}", block, page)
             }
             WriteError::EraseFailed(b) => write!(f, "Erase failed at block {}", b),
-            WriteError::VerifyFailed { block, page, offset } => {
-                write!(f, "Verify failed at block {} page {} offset {}", block, page, offset)
+            WriteError::VerifyFailed {
+                block,
+                page,
+                offset,
+            } => {
+                write!(
+                    f,
+                    "Verify failed at block {} page {} offset {}",
+                    block, page, offset
+                )
             }
             WriteError::NoSpareBlocks => write!(f, "No spare blocks available"),
             WriteError::WearLimitExceeded(b) => write!(f, "Wear limit exceeded for block {}", b),
@@ -54,7 +62,11 @@ impl std::fmt::Display for WriteError {
                 write!(f, "Invalid address: block {} page {}", block, page)
             }
             WriteError::DataSizeMismatch { expected, actual } => {
-                write!(f, "Data size mismatch: expected {} got {}", expected, actual)
+                write!(
+                    f,
+                    "Data size mismatch: expected {} got {}",
+                    expected, actual
+                )
             }
             WriteError::ChipMismatch { source, target } => {
                 write!(f, "Chip mismatch: {} vs {}", source, target)
@@ -123,7 +135,7 @@ impl BadBlockTable {
     pub fn new(total_blocks: u32, spare_percentage: u8) -> Self {
         let spare_count = (total_blocks as u64 * spare_percentage as u64 / 100) as u32;
         let spare_start = total_blocks - spare_count;
-        
+
         Self {
             entries: HashMap::new(),
             spare_blocks: (spare_start..total_blocks).collect(),
@@ -150,16 +162,19 @@ impl BadBlockTable {
         }
 
         let replacement = self.allocate_spare()?;
-        
-        self.entries.insert(block, BadBlockEntry {
-            bad_block: block,
-            replacement,
-            reason,
-            timestamp: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| d.as_secs())
-                .unwrap_or(0),
-        });
+
+        self.entries.insert(
+            block,
+            BadBlockEntry {
+                bad_block: block,
+                replacement,
+                reason,
+                timestamp: std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map(|d| d.as_secs())
+                    .unwrap_or(0),
+            },
+        );
 
         Ok(replacement)
     }
@@ -205,7 +220,6 @@ impl BadBlockTable {
         }
     }
 }
-
 
 // ============================================================================
 // Wear Leveling
@@ -270,7 +284,10 @@ impl WearLevelingManager {
 
     /// Get erase count for block
     pub fn get_erase_count(&self, block: u32) -> u32 {
-        self.block_info.get(&block).map(|i| i.erase_count).unwrap_or(0)
+        self.block_info
+            .get(&block)
+            .map(|i| i.erase_count)
+            .unwrap_or(0)
     }
 
     /// Get average erase count
@@ -300,21 +317,33 @@ impl WearLevelingManager {
 
     /// Check if wear leveling is needed
     pub fn needs_leveling(&self) -> bool {
-        let min = self.block_info.values().map(|i| i.erase_count).min().unwrap_or(0);
-        let max = self.block_info.values().map(|i| i.erase_count).max().unwrap_or(0);
+        let min = self
+            .block_info
+            .values()
+            .map(|i| i.erase_count)
+            .min()
+            .unwrap_or(0);
+        let max = self
+            .block_info
+            .values()
+            .map(|i| i.erase_count)
+            .max()
+            .unwrap_or(0);
         max - min > self.wear_threshold
     }
 
     /// Get blocks that should be moved for wear leveling
     pub fn get_leveling_candidates(&self) -> Vec<(u32, u32)> {
         let avg = self.average_erase_count();
-        let mut hot_blocks: Vec<_> = self.block_info
+        let mut hot_blocks: Vec<_> = self
+            .block_info
             .iter()
             .filter(|(_, info)| info.erase_count as f64 > avg * 1.5)
             .map(|(&b, _)| b)
             .collect();
-        
-        let mut cold_blocks: Vec<_> = self.block_info
+
+        let mut cold_blocks: Vec<_> = self
+            .block_info
             .iter()
             .filter(|(_, info)| (info.erase_count as f64) < avg * 0.5)
             .map(|(&b, _)| b)
@@ -323,7 +352,8 @@ impl WearLevelingManager {
         hot_blocks.sort_by_key(|b| std::cmp::Reverse(self.get_erase_count(*b)));
         cold_blocks.sort_by_key(|b| self.get_erase_count(*b));
 
-        hot_blocks.into_iter()
+        hot_blocks
+            .into_iter()
             .zip(cold_blocks.into_iter())
             .collect()
     }
@@ -331,7 +361,7 @@ impl WearLevelingManager {
     /// Get wear statistics
     pub fn get_statistics(&self) -> WearStatistics {
         let counts: Vec<u32> = self.block_info.values().map(|i| i.erase_count).collect();
-        
+
         WearStatistics {
             total_blocks: self.total_blocks,
             tracked_blocks: self.block_info.len() as u32,
@@ -345,15 +375,17 @@ impl WearLevelingManager {
 
     /// Calculate remaining life percentage
     pub fn remaining_life_percent(&self) -> f64 {
-        let max_count = self.block_info.values()
+        let max_count = self
+            .block_info
+            .values()
             .map(|i| i.erase_count)
             .max()
             .unwrap_or(0);
-        
+
         if self.max_erase_cycles == 0 {
             return 100.0;
         }
-        
+
         ((self.max_erase_cycles - max_count) as f64 / self.max_erase_cycles as f64) * 100.0
     }
 }
@@ -376,7 +408,6 @@ fn current_timestamp() -> u64 {
         .map(|d| d.as_secs())
         .unwrap_or(0)
 }
-
 
 // ============================================================================
 // Full Chip Programming
@@ -551,7 +582,13 @@ impl ChipProgrammer {
     }
 
     /// Verify programmed data
-    pub fn verify_page(&self, expected: &[u8], actual: &[u8], block: u32, page: u32) -> WriteResult<()> {
+    pub fn verify_page(
+        &self,
+        expected: &[u8],
+        actual: &[u8],
+        block: u32,
+        page: u32,
+    ) -> WriteResult<()> {
         if expected.len() != actual.len() {
             return Err(WriteError::DataSizeMismatch {
                 expected: expected.len(),
@@ -583,7 +620,6 @@ impl ChipProgrammer {
         usable_blocks as u64 * self.pages_per_block as u64 * self.page_size as u64
     }
 }
-
 
 // ============================================================================
 // Incremental Backup/Restore
@@ -736,12 +772,9 @@ impl BackupMetadata {
 
     /// Get backup size estimate
     pub fn estimated_size(&self) -> u64 {
-        self.included_blocks.len() as u64 
-            * self.block_size as u64 
-            * self.page_size as u64
+        self.included_blocks.len() as u64 * self.block_size as u64 * self.page_size as u64
     }
 }
-
 
 // ============================================================================
 // Chip-to-Chip Cloning
@@ -859,12 +892,10 @@ impl ChipCloner {
         target_total_blocks: u32,
     ) -> WriteResult<Self> {
         // Validate compatibility
-        let source_capacity = source_page_size as u64 
-            * source_pages_per_block as u64 
-            * source_total_blocks as u64;
-        let target_capacity = target_page_size as u64 
-            * target_pages_per_block as u64 
-            * target_total_blocks as u64;
+        let source_capacity =
+            source_page_size as u64 * source_pages_per_block as u64 * source_total_blocks as u64;
+        let target_capacity =
+            target_page_size as u64 * target_pages_per_block as u64 * target_total_blocks as u64;
 
         if target_capacity < source_capacity {
             return Err(WriteError::ChipMismatch {
@@ -910,15 +941,15 @@ impl ChipCloner {
 
     /// Get source capacity
     pub fn source_capacity(&self) -> u64 {
-        self.source_page_size as u64 
-            * self.source_pages_per_block as u64 
+        self.source_page_size as u64
+            * self.source_pages_per_block as u64
             * self.source_total_blocks as u64
     }
 
     /// Get target capacity
     pub fn target_capacity(&self) -> u64 {
-        self.target_page_size as u64 
-            * self.target_pages_per_block as u64 
+        self.target_page_size as u64
+            * self.target_pages_per_block as u64
             * self.target_total_blocks as u64
     }
 
@@ -933,7 +964,7 @@ impl ChipCloner {
         let target_bad: HashSet<_> = target_bad_blocks.iter().copied().collect();
 
         let mut target_block = 0u32;
-        
+
         for source_block in 0..self.source_total_blocks {
             if self.options.mode == CloneMode::SkipBadBlocks && source_bad.contains(&source_block) {
                 continue;
@@ -953,7 +984,6 @@ impl ChipCloner {
         mapping
     }
 }
-
 
 // ============================================================================
 // Tests
@@ -983,10 +1013,10 @@ mod tests {
     fn test_bad_block_translation() {
         let mut bbt = BadBlockTable::new(1024, 2);
         let _ = bbt.mark_bad(50, BadBlockReason::Factory);
-        
+
         // Good block should translate to itself
         assert_eq!(bbt.translate(10), 10);
-        
+
         // Bad block should translate to replacement
         let replacement = bbt.get_replacement(50).unwrap();
         assert_eq!(bbt.translate(50), replacement);
@@ -995,12 +1025,12 @@ mod tests {
     #[test]
     fn test_wear_leveling_manager() {
         let mut wm = WearLevelingManager::new(1024, 100000);
-        
+
         // Record some erases
         for _ in 0..100 {
             wm.record_erase(10).unwrap();
         }
-        
+
         assert_eq!(wm.get_erase_count(10), 100);
         assert_eq!(wm.get_erase_count(20), 0);
     }
@@ -1008,11 +1038,11 @@ mod tests {
     #[test]
     fn test_wear_limit_exceeded() {
         let mut wm = WearLevelingManager::new(1024, 100);
-        
+
         for _ in 0..100 {
             let _ = wm.record_erase(5);
         }
-        
+
         let result = wm.record_erase(5);
         assert!(matches!(result, Err(WriteError::WearLimitExceeded(5))));
     }
@@ -1020,11 +1050,11 @@ mod tests {
     #[test]
     fn test_wear_statistics() {
         let mut wm = WearLevelingManager::new(1024, 100000);
-        
+
         wm.record_erase(0).unwrap();
         wm.record_erase(0).unwrap();
         wm.record_erase(1).unwrap();
-        
+
         let stats = wm.get_statistics();
         assert_eq!(stats.min_erase_count, 1);
         assert_eq!(stats.max_erase_count, 2);
@@ -1034,11 +1064,11 @@ mod tests {
     #[test]
     fn test_change_tracker() {
         let mut tracker = ChangeTracker::new(1024);
-        
+
         tracker.mark_modified(10);
         tracker.mark_modified(20);
         tracker.mark_modified(10); // Duplicate
-        
+
         let modified = tracker.get_modified_blocks();
         assert_eq!(modified.len(), 2);
         assert!(modified.contains(&10));
@@ -1049,12 +1079,12 @@ mod tests {
     fn test_checksum_calculation() {
         let data1 = vec![0u8; 2048];
         let data2 = vec![1u8; 2048];
-        
+
         let cs1 = ChangeTracker::calculate_checksum(&data1);
         let cs2 = ChangeTracker::calculate_checksum(&data2);
-        
+
         assert_ne!(cs1, cs2);
-        
+
         // Same data should produce same checksum
         let cs1_again = ChangeTracker::calculate_checksum(&data1);
         assert_eq!(cs1, cs1_again);
@@ -1063,11 +1093,11 @@ mod tests {
     #[test]
     fn test_chip_programmer_address_conversion() {
         let programmer = ChipProgrammer::new(2048, 64, 1024, 64, 100000);
-        
+
         // Block 10, page 5
         let addr = programmer.block_page_to_address(10, 5);
         let (block, page) = programmer.address_to_block_page(addr);
-        
+
         assert_eq!(block, 10);
         assert_eq!(page, 5);
     }
@@ -1075,20 +1105,15 @@ mod tests {
     #[test]
     fn test_chip_programmer_capacity() {
         let programmer = ChipProgrammer::new(2048, 64, 1024, 64, 100000);
-        
+
         // 1024 blocks * 64 pages * 2048 bytes = 128MB
         assert_eq!(programmer.capacity(), 128 * 1024 * 1024);
     }
 
     #[test]
     fn test_backup_metadata() {
-        let meta = BackupMetadata::new_full(
-            "TEST_CHIP".to_string(),
-            128 * 1024 * 1024,
-            2048,
-            64,
-        );
-        
+        let meta = BackupMetadata::new_full("TEST_CHIP".to_string(), 128 * 1024 * 1024, 2048, 64);
+
         assert!(meta.is_full);
         assert!(meta.parent_id.is_none());
         assert!(!meta.chip_id.is_empty());
@@ -1103,7 +1128,7 @@ mod tests {
             64,
             "parent_123".to_string(),
         );
-        
+
         assert!(!meta.is_full);
         assert_eq!(meta.parent_id, Some("parent_123".to_string()));
     }
@@ -1113,7 +1138,7 @@ mod tests {
         // Same chips - should be compatible
         let cloner = ChipCloner::new(2048, 64, 1024, 2048, 64, 1024);
         assert!(cloner.is_ok());
-        
+
         // Target smaller than source - should fail
         let cloner = ChipCloner::new(2048, 64, 1024, 2048, 64, 512);
         assert!(cloner.is_err());
@@ -1122,16 +1147,16 @@ mod tests {
     #[test]
     fn test_clone_block_mapping() {
         let cloner = ChipCloner::new(2048, 64, 100, 2048, 64, 100).unwrap();
-        
+
         let source_bad = vec![5, 10];
         let target_bad = vec![7, 15];
-        
+
         let mapping = cloner.create_block_mapping(&source_bad, &target_bad);
-        
+
         // Source blocks 5 and 10 should not be in mapping (skipped)
         assert!(!mapping.contains_key(&5));
         assert!(!mapping.contains_key(&10));
-        
+
         // Target blocks 7 and 15 should not be targets
         assert!(!mapping.values().any(|&v| v == 7 || v == 15));
     }
@@ -1148,7 +1173,7 @@ mod tests {
             verify_errors: 0,
             phase: ClonePhase::Copying,
         };
-        
+
         assert!((progress.percent_complete() - 50.0).abs() < 0.1);
     }
 
@@ -1165,7 +1190,7 @@ mod tests {
     fn test_verify_page_success() {
         let programmer = ChipProgrammer::new(2048, 64, 1024, 64, 100000);
         let data = vec![0xAB; 2048];
-        
+
         let result = programmer.verify_page(&data, &data, 0, 0);
         assert!(result.is_ok());
     }
@@ -1176,8 +1201,15 @@ mod tests {
         let expected = vec![0xAB; 2048];
         let mut actual = vec![0xAB; 2048];
         actual[100] = 0xCD; // Introduce error
-        
+
         let result = programmer.verify_page(&expected, &actual, 5, 10);
-        assert!(matches!(result, Err(WriteError::VerifyFailed { block: 5, page: 10, offset: 100 })));
+        assert!(matches!(
+            result,
+            Err(WriteError::VerifyFailed {
+                block: 5,
+                page: 10,
+                offset: 100
+            })
+        ));
     }
 }

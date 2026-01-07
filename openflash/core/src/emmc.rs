@@ -9,71 +9,71 @@ pub struct EmmcChipInfo {
     pub manufacturer: String,
     pub model: String,
     pub size_gb: u32,
-    pub sector_size: u32,        // Typically 512 bytes
-    pub erase_group_size: u32,   // Sectors per erase group
+    pub sector_size: u32,      // Typically 512 bytes
+    pub erase_group_size: u32, // Sectors per erase group
     pub voltage: String,
     pub max_clock_mhz: u8,
-    pub ddr_support: bool,       // DDR mode support
-    pub hs200_support: bool,     // HS200 mode support
-    pub hs400_support: bool,     // HS400 mode support
-    pub boot_partition: bool,    // Has boot partitions
-    pub rpmb_support: bool,      // Replay Protected Memory Block
+    pub ddr_support: bool,    // DDR mode support
+    pub hs200_support: bool,  // HS200 mode support
+    pub hs400_support: bool,  // HS400 mode support
+    pub boot_partition: bool, // Has boot partitions
+    pub rpmb_support: bool,   // Replay Protected Memory Block
 }
 
 /// eMMC standard commands (SD/MMC protocol)
 pub mod commands {
     // Basic commands (class 0)
-    pub const GO_IDLE_STATE: u8 = 0;        // CMD0 - Reset
-    pub const SEND_OP_COND: u8 = 1;         // CMD1 - Send operating conditions
-    pub const ALL_SEND_CID: u8 = 2;         // CMD2 - Get CID
-    pub const SET_RELATIVE_ADDR: u8 = 3;    // CMD3 - Set RCA
-    pub const SET_DSR: u8 = 4;              // CMD4 - Set DSR
-    pub const SWITCH: u8 = 6;               // CMD6 - Switch function
-    pub const SELECT_CARD: u8 = 7;          // CMD7 - Select/deselect card
-    pub const SEND_EXT_CSD: u8 = 8;         // CMD8 - Send extended CSD
-    pub const SEND_CSD: u8 = 9;             // CMD9 - Send CSD
-    pub const SEND_CID: u8 = 10;            // CMD10 - Send CID
-    pub const STOP_TRANSMISSION: u8 = 12;   // CMD12 - Stop transmission
-    pub const SEND_STATUS: u8 = 13;         // CMD13 - Send status
-    pub const GO_INACTIVE_STATE: u8 = 15;   // CMD15 - Go inactive
-    
+    pub const GO_IDLE_STATE: u8 = 0; // CMD0 - Reset
+    pub const SEND_OP_COND: u8 = 1; // CMD1 - Send operating conditions
+    pub const ALL_SEND_CID: u8 = 2; // CMD2 - Get CID
+    pub const SET_RELATIVE_ADDR: u8 = 3; // CMD3 - Set RCA
+    pub const SET_DSR: u8 = 4; // CMD4 - Set DSR
+    pub const SWITCH: u8 = 6; // CMD6 - Switch function
+    pub const SELECT_CARD: u8 = 7; // CMD7 - Select/deselect card
+    pub const SEND_EXT_CSD: u8 = 8; // CMD8 - Send extended CSD
+    pub const SEND_CSD: u8 = 9; // CMD9 - Send CSD
+    pub const SEND_CID: u8 = 10; // CMD10 - Send CID
+    pub const STOP_TRANSMISSION: u8 = 12; // CMD12 - Stop transmission
+    pub const SEND_STATUS: u8 = 13; // CMD13 - Send status
+    pub const GO_INACTIVE_STATE: u8 = 15; // CMD15 - Go inactive
+
     // Block read commands (class 2)
-    pub const SET_BLOCKLEN: u8 = 16;        // CMD16 - Set block length
-    pub const READ_SINGLE_BLOCK: u8 = 17;   // CMD17 - Read single block
+    pub const SET_BLOCKLEN: u8 = 16; // CMD16 - Set block length
+    pub const READ_SINGLE_BLOCK: u8 = 17; // CMD17 - Read single block
     pub const READ_MULTIPLE_BLOCK: u8 = 18; // CMD18 - Read multiple blocks
-    
+
     // Block write commands (class 4)
-    pub const WRITE_BLOCK: u8 = 24;         // CMD24 - Write single block
-    pub const WRITE_MULTIPLE_BLOCK: u8 = 25;// CMD25 - Write multiple blocks
-    pub const PROGRAM_CSD: u8 = 27;         // CMD27 - Program CSD
-    
+    pub const WRITE_BLOCK: u8 = 24; // CMD24 - Write single block
+    pub const WRITE_MULTIPLE_BLOCK: u8 = 25; // CMD25 - Write multiple blocks
+    pub const PROGRAM_CSD: u8 = 27; // CMD27 - Program CSD
+
     // Erase commands (class 5)
-    pub const ERASE_GROUP_START: u8 = 35;   // CMD35 - Set erase start
-    pub const ERASE_GROUP_END: u8 = 36;     // CMD36 - Set erase end
-    pub const ERASE: u8 = 38;               // CMD38 - Erase
-    
+    pub const ERASE_GROUP_START: u8 = 35; // CMD35 - Set erase start
+    pub const ERASE_GROUP_END: u8 = 36; // CMD36 - Set erase end
+    pub const ERASE: u8 = 38; // CMD38 - Erase
+
     // Application specific commands
-    pub const APP_CMD: u8 = 55;             // CMD55 - App command prefix
-    pub const GEN_CMD: u8 = 56;             // CMD56 - General command
+    pub const APP_CMD: u8 = 55; // CMD55 - App command prefix
+    pub const GEN_CMD: u8 = 56; // CMD56 - General command
 }
 
 /// SPI mode commands (for SPI interface)
 pub mod spi_commands {
-    pub const READ_OCR: u8 = 58;            // CMD58 - Read OCR
-    pub const CRC_ON_OFF: u8 = 59;          // CMD59 - CRC on/off
+    pub const READ_OCR: u8 = 58; // CMD58 - Read OCR
+    pub const CRC_ON_OFF: u8 = 59; // CMD59 - CRC on/off
 }
 
 /// Response types
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ResponseType {
-    R1,     // Normal response
-    R1b,    // Normal response with busy
-    R2,     // CID/CSD response (136 bits)
-    R3,     // OCR response
-    R4,     // Fast I/O response
-    R5,     // Interrupt request response
-    R6,     // Published RCA response
-    R7,     // Card interface condition
+    R1,  // Normal response
+    R1b, // Normal response with busy
+    R2,  // CID/CSD response (136 bits)
+    R3,  // OCR response
+    R4,  // Fast I/O response
+    R5,  // Interrupt request response
+    R6,  // Published RCA response
+    R7,  // Card interface condition
 }
 
 /// Card status bits (R1 response)
@@ -141,9 +141,9 @@ pub mod ext_csd {
     pub const BUS_WIDTH: usize = 183;
     pub const HS_TIMING: usize = 185;
     pub const POWER_CLASS: usize = 187;
-    
+
     // Properties
-    pub const SEC_COUNT: usize = 212;       // 4 bytes, sector count
+    pub const SEC_COUNT: usize = 212; // 4 bytes, sector count
     pub const DEVICE_TYPE: usize = 196;
     pub const CSD_STRUCTURE: usize = 194;
     pub const EXT_CSD_REV: usize = 192;
@@ -172,17 +172,17 @@ pub fn get_emmc_chip_info(cid: &[u8]) -> Option<EmmcChipInfo> {
     if cid.len() < 16 {
         return None;
     }
-    
+
     let mid = cid[0];
     let manufacturer = get_emmc_manufacturer_name(mid).to_string();
-    
+
     // Extract product name (6 bytes, ASCII)
     let pnm: String = cid[3..9]
         .iter()
         .filter(|&&b| b >= 0x20 && b <= 0x7E)
         .map(|&b| b as char)
         .collect();
-    
+
     // Try to match known chips
     match (mid, pnm.as_str()) {
         // Samsung
@@ -214,7 +214,7 @@ pub fn get_emmc_chip_info(cid: &[u8]) -> Option<EmmcChipInfo> {
             boot_partition: true,
             rpmb_support: true,
         }),
-        
+
         // Micron
         (0x13, "Q2J54A") | (0xFE, "Q2J54A") => Some(EmmcChipInfo {
             manufacturer,
@@ -244,7 +244,7 @@ pub fn get_emmc_chip_info(cid: &[u8]) -> Option<EmmcChipInfo> {
             boot_partition: true,
             rpmb_support: true,
         }),
-        
+
         // SanDisk
         (0x02, "DA4032") | (0x45, "DA4032") => Some(EmmcChipInfo {
             manufacturer,
@@ -260,7 +260,7 @@ pub fn get_emmc_chip_info(cid: &[u8]) -> Option<EmmcChipInfo> {
             boot_partition: true,
             rpmb_support: true,
         }),
-        
+
         // Toshiba
         (0x11, "064G30") => Some(EmmcChipInfo {
             manufacturer,
@@ -276,7 +276,7 @@ pub fn get_emmc_chip_info(cid: &[u8]) -> Option<EmmcChipInfo> {
             boot_partition: true,
             rpmb_support: true,
         }),
-        
+
         // Kingston
         (0x70, "EMMC04G") => Some(EmmcChipInfo {
             manufacturer,
@@ -292,7 +292,283 @@ pub fn get_emmc_chip_info(cid: &[u8]) -> Option<EmmcChipInfo> {
             boot_partition: true,
             rpmb_support: false,
         }),
-        
+        (0x70, "EMMC08G") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "EMMC08G-M627".into(),
+            size_gb: 8,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 52,
+            ddr_support: true,
+            hs200_support: false,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: false,
+        }),
+        (0x70, "EMMC16G") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "EMMC16G-M627".into(),
+            size_gb: 16,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 52,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x70, "EMMC32G") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "EMMC32G-M627".into(),
+            size_gb: 32,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+
+        // ============ Samsung eMMC 5.1 (v2.2) ============
+        (0x15, "CJNB4R") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "KLMCG2JETD-B041".into(),
+            size_gb: 64,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x15, "DJNB4R") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "KLMDG4UCTA-B041".into(),
+            size_gb: 128,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x15, "8GTF4R") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "KLMAG2GEND-B031".into(),
+            size_gb: 16,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+
+        // ============ Micron eMMC 5.1 (v2.2) ============
+        (0x13, "Q4J55A") | (0xFE, "Q4J55A") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "MTFC16GACAANA".into(),
+            size_gb: 16,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x13, "Q5J56A") | (0xFE, "Q5J56A") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "MTFC32GACAANA".into(),
+            size_gb: 32,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x13, "Q6J57A") | (0xFE, "Q6J57A") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "MTFC64GACAANA".into(),
+            size_gb: 64,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x13, "Q7J58A") | (0xFE, "Q7J58A") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "MTFC128GACAANA".into(),
+            size_gb: 128,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+
+        // ============ SK Hynix eMMC (v2.2) ============
+        (0x90, "hB8aP>") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "H26M41208HPR".into(),
+            size_gb: 8,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x90, "hC8aP>") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "H26M52208FPR".into(),
+            size_gb: 16,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x90, "hD8aP>") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "H26M64208EMR".into(),
+            size_gb: 32,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x90, "hE8aP>") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "H26M78208CMR".into(),
+            size_gb: 64,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+
+        // ============ SanDisk/WD eMMC (v2.2) ============
+        (0x02, "DA4064") | (0x45, "DA4064") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "SDINBDG4-64G".into(),
+            size_gb: 64,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x02, "DG4016") | (0x45, "DG4016") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "SDINBDG4-16G".into(),
+            size_gb: 16,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+
+        // ============ Foresee eMMC (v2.2) ============
+        (0x88, "NCEMAM") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "NCEMAM8G-08".into(),
+            size_gb: 8,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 52,
+            ddr_support: true,
+            hs200_support: false,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: false,
+        }),
+        (0x88, "NCEMBM") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "NCEMBM8G-16".into(),
+            size_gb: 16,
+            sector_size: 512,
+            erase_group_size: 512,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: false,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+        (0x88, "NCEMCM") => Some(EmmcChipInfo {
+            manufacturer: manufacturer.clone(),
+            model: "NCEMCM8G-32".into(),
+            size_gb: 32,
+            sector_size: 512,
+            erase_group_size: 1024,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 200,
+            ddr_support: true,
+            hs200_support: true,
+            hs400_support: true,
+            boot_partition: true,
+            rpmb_support: true,
+        }),
+
         // Generic fallback
         _ => Some(EmmcChipInfo {
             manufacturer,
@@ -316,14 +592,14 @@ pub fn parse_capacity_from_ext_csd(ext_csd: &[u8]) -> u64 {
     if ext_csd.len() < 216 {
         return 0;
     }
-    
+
     let sec_count = u32::from_le_bytes([
         ext_csd[ext_csd::SEC_COUNT],
         ext_csd[ext_csd::SEC_COUNT + 1],
         ext_csd[ext_csd::SEC_COUNT + 2],
         ext_csd[ext_csd::SEC_COUNT + 3],
     ]);
-    
+
     (sec_count as u64) * 512
 }
 
@@ -332,7 +608,7 @@ pub fn parse_boot_size_from_ext_csd(ext_csd: &[u8]) -> u32 {
     if ext_csd.len() <= ext_csd::BOOT_SIZE_MULT {
         return 0;
     }
-    
+
     // Boot partition size = BOOT_SIZE_MULT * 128KB
     (ext_csd[ext_csd::BOOT_SIZE_MULT] as u32) * 128 * 1024
 }
@@ -408,7 +684,7 @@ mod tests {
         ext_csd[ext_csd::SEC_COUNT + 1] = 0x00;
         ext_csd[ext_csd::SEC_COUNT + 2] = 0xE9;
         ext_csd[ext_csd::SEC_COUNT + 3] = 0x00;
-        
+
         let capacity = parse_capacity_from_ext_csd(&ext_csd);
         assert_eq!(capacity, 15_269_888 * 512);
     }

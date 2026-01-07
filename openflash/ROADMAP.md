@@ -2,7 +2,7 @@
 
 Детальный план развития проекта OpenFlash.
 
-## Текущий статус: v2.1.0
+## Текущий статус: v2.2.0
 
 ---
 
@@ -92,7 +92,7 @@
 - REST API
 - 16 новых протокольных команд (0xD0-0xDF)
 
-### v2.1 — Hardware Expansion ← ТЕКУЩАЯ
+### v2.1 — Hardware Expansion
 **Статус:** ✅ Released
 
 | Фича | Статус |
@@ -119,6 +119,34 @@
 - TSOP-48 pinout для Samsung, Hynix, Micron, Toshiba
 - Logic analyzer до 24 MHz с VCD/Sigrok экспортом
 - JTAG chain scanning и SWD debug interface
+
+### v2.2 — Expanded Memory Support ← ТЕКУЩАЯ
+**Статус:** ✅ Released
+
+| Фича | Статус |
+|------|--------|
+| Parallel NAND expansion (50+ chips) | ✅ Done |
+| SPI NAND expansion (35+ chips) | ✅ Done |
+| SPI NOR expansion (45+ chips) | ✅ Done |
+| eMMC expansion (25+ chips) | ✅ Done |
+| New manufacturers support | ✅ Done |
+
+**Новые производители:**
+- SPI NAND: Foresee, Dosilicon, Zetta, Puya, Boya
+- SPI NOR: EON, XMC, Puya, Boya
+
+**Расширенная поддержка:**
+- GigaDevice GD5F1GM9 high-speed SPI NAND (166MHz)
+- Micron MT25QL01G 1Gbit SPI NOR
+- Samsung/Micron/Hynix eMMC 5.1 до 128GB
+- TLC NAND до 32GB (Micron, Kioxia, SK Hynix)
+- 1.8V и 1.2V варианты чипов
+
+**Итого поддерживаемых чипов:**
+- Parallel NAND: 60+
+- SPI NAND: 55+
+- SPI NOR: 75+
+- eMMC: 40+
 
 ---
 
@@ -148,6 +176,7 @@
 | v1.9 | Q3 2026 | ✅ Released |
 | v2.0 | Q4 2026 | ✅ Released |
 | v2.1 | Q1 2027 | ✅ Released |
+| v2.2 | Q1 2027 | ✅ Released |
 | v3.0 | 2028 | 🔮 Future |
 
 ---

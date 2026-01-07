@@ -26,10 +26,7 @@ impl Default for FlashConfig {
 }
 
 /// Process raw dump with ECC
-pub fn process_dump_with_ecc(
-    raw_data: &[u8],
-    config: &FlashConfig,
-) -> Result<Vec<u8>, String> {
+pub fn process_dump_with_ecc(raw_data: &[u8], config: &FlashConfig) -> Result<Vec<u8>, String> {
     let page_with_oob = config.page_size as usize + config.oob_size as usize;
     let mut processed = Vec::new();
 
@@ -46,7 +43,7 @@ pub fn process_dump_with_ecc(
         };
 
         let mut data = page_data.to_vec();
-        
+
         // Apply ECC correction if we have OOB data
         if !oob_data.is_empty() && config.ecc_algorithm != EccAlgorithm::None {
             match decode_with_ecc(&mut data, oob_data, &config.ecc_algorithm) {

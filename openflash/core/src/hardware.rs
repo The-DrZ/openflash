@@ -1,5 +1,5 @@
 //! Hardware Expansion Module - v2.1
-//! 
+//!
 //! Official OpenFlash PCB, adapters, logic analyzer mode, and debug interfaces.
 
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,10 @@ pub enum HardwareError {
     /// Adapter not connected
     AdapterNotConnected,
     /// Socket type mismatch
-    SocketMismatch { expected: SocketType, found: SocketType },
+    SocketMismatch {
+        expected: SocketType,
+        found: SocketType,
+    },
     /// Logic analyzer buffer overflow
     LogicAnalyzerOverflow,
     /// Capture timeout
@@ -36,7 +39,6 @@ pub enum HardwareError {
 }
 
 pub type HardwareResult<T> = Result<T, HardwareError>;
-
 
 // ============================================================================
 // OpenFlash PCB v1
@@ -102,7 +104,6 @@ pub struct OpenFlashPcb {
     pub usb_connected: bool,
 }
 
-
 impl Default for OpenFlashPcb {
     fn default() -> Self {
         Self {
@@ -156,7 +157,6 @@ pub struct PcbCapabilities {
     pub wifi: bool,
     pub oled: bool,
 }
-
 
 // ============================================================================
 // TSOP-48 ZIF Adapter
@@ -235,19 +235,18 @@ impl Tsop48Adapter {
     }
 }
 
-
 /// TSOP-48 pin mapping
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tsop48PinMapping {
-    pub io0_7: [u8; 8],   // Data pins D0-D7
-    pub io8_15: [u8; 8],  // Data pins D8-D15 (x16 mode)
-    pub cle: u8,          // Command Latch Enable
-    pub ale: u8,          // Address Latch Enable
-    pub ce: u8,           // Chip Enable
-    pub re: u8,           // Read Enable
-    pub we: u8,           // Write Enable
-    pub wp: u8,           // Write Protect
-    pub rb: u8,           // Ready/Busy
+    pub io0_7: [u8; 8],  // Data pins D0-D7
+    pub io8_15: [u8; 8], // Data pins D8-D15 (x16 mode)
+    pub cle: u8,         // Command Latch Enable
+    pub ale: u8,         // Address Latch Enable
+    pub ce: u8,          // Chip Enable
+    pub re: u8,          // Read Enable
+    pub we: u8,          // Write Enable
+    pub wp: u8,          // Write Protect
+    pub rb: u8,          // Ready/Busy
 }
 
 impl Tsop48PinMapping {
@@ -265,7 +264,13 @@ impl Tsop48PinMapping {
         Self {
             io0_7: [29, 30, 31, 32, 41, 42, 43, 44],
             io8_15: [26, 27, 28, 33, 38, 39, 40, 45],
-            cle: 17, ale: 18, ce: 9, re: 8, we: 19, wp: 20, rb: 7,
+            cle: 17,
+            ale: 18,
+            ce: 9,
+            re: 8,
+            we: 19,
+            wp: 20,
+            rb: 7,
         }
     }
 
@@ -273,7 +278,13 @@ impl Tsop48PinMapping {
         Self {
             io0_7: [29, 30, 31, 32, 41, 42, 43, 44],
             io8_15: [26, 27, 28, 33, 38, 39, 40, 45],
-            cle: 17, ale: 18, ce: 9, re: 8, we: 19, wp: 20, rb: 7,
+            cle: 17,
+            ale: 18,
+            ce: 9,
+            re: 8,
+            we: 19,
+            wp: 20,
+            rb: 7,
         }
     }
 
@@ -281,11 +292,16 @@ impl Tsop48PinMapping {
         Self {
             io0_7: [29, 30, 31, 32, 41, 42, 43, 44],
             io8_15: [26, 27, 28, 33, 38, 39, 40, 45],
-            cle: 17, ale: 18, ce: 9, re: 8, we: 19, wp: 22, rb: 7,
+            cle: 17,
+            ale: 18,
+            ce: 9,
+            re: 8,
+            we: 19,
+            wp: 22,
+            rb: 7,
         }
     }
 }
-
 
 // ============================================================================
 // BGA Rework Station Integration
@@ -374,7 +390,6 @@ impl BgaProfile {
     }
 }
 
-
 // ============================================================================
 // Logic Analyzer Mode
 // ============================================================================
@@ -432,18 +447,19 @@ impl Default for LogicAnalyzerConfig {
             sample_rate: 24_000_000, // 24 MHz
             buffer_size: 1_000_000,  // 1M samples
             pre_trigger_percent: 10,
-            channels: (0..8).map(|i| LogicChannel {
-                number: i,
-                name: format!("D{}", i),
-                enabled: true,
-                trigger: TriggerType::None,
-            }).collect(),
+            channels: (0..8)
+                .map(|i| LogicChannel {
+                    number: i,
+                    name: format!("D{}", i),
+                    enabled: true,
+                    trigger: TriggerType::None,
+                })
+                .collect(),
             trigger_pattern: None,
             trigger_mask: 0xFF,
         }
     }
 }
-
 
 /// Logic analyzer capture result
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -477,10 +493,17 @@ impl LogicCapture {
     pub fn to_vcd(&self, channel_names: &[&str]) -> String {
         let mut vcd = String::new();
         vcd.push_str("$version OpenFlash Logic Analyzer $end\n");
-        vcd.push_str(&format!("$timescale {}ns $end\n", 1_000_000_000 / self.sample_rate));
+        vcd.push_str(&format!(
+            "$timescale {}ns $end\n",
+            1_000_000_000 / self.sample_rate
+        ));
         vcd.push_str("$scope module capture $end\n");
         for (i, name) in channel_names.iter().enumerate() {
-            vcd.push_str(&format!("$var wire 1 {} {} $end\n", (b'!' + i as u8) as char, name));
+            vcd.push_str(&format!(
+                "$var wire 1 {} {} $end\n",
+                (b'!' + i as u8) as char,
+                name
+            ));
         }
         vcd.push_str("$upscope $end\n$enddefinitions $end\n");
         vcd
@@ -524,7 +547,6 @@ impl Default for LogicAnalyzer {
     }
 }
 
-
 impl LogicAnalyzer {
     /// Create with custom config
     pub fn with_config(config: LogicAnalyzerConfig) -> Self {
@@ -556,28 +578,87 @@ impl LogicAnalyzer {
     /// NAND protocol decoder preset
     pub fn preset_nand(&mut self) {
         self.config.channels = vec![
-            LogicChannel { number: 0, name: "CLE".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 1, name: "ALE".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 2, name: "WE#".into(), enabled: true, trigger: TriggerType::FallingEdge },
-            LogicChannel { number: 3, name: "RE#".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 4, name: "CE#".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 5, name: "R/B#".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 6, name: "D0".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 7, name: "D7".into(), enabled: true, trigger: TriggerType::None },
+            LogicChannel {
+                number: 0,
+                name: "CLE".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 1,
+                name: "ALE".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 2,
+                name: "WE#".into(),
+                enabled: true,
+                trigger: TriggerType::FallingEdge,
+            },
+            LogicChannel {
+                number: 3,
+                name: "RE#".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 4,
+                name: "CE#".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 5,
+                name: "R/B#".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 6,
+                name: "D0".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 7,
+                name: "D7".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
         ];
     }
 
     /// SPI protocol decoder preset
     pub fn preset_spi(&mut self) {
         self.config.channels = vec![
-            LogicChannel { number: 0, name: "CLK".into(), enabled: true, trigger: TriggerType::RisingEdge },
-            LogicChannel { number: 1, name: "MOSI".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 2, name: "MISO".into(), enabled: true, trigger: TriggerType::None },
-            LogicChannel { number: 3, name: "CS#".into(), enabled: true, trigger: TriggerType::FallingEdge },
+            LogicChannel {
+                number: 0,
+                name: "CLK".into(),
+                enabled: true,
+                trigger: TriggerType::RisingEdge,
+            },
+            LogicChannel {
+                number: 1,
+                name: "MOSI".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 2,
+                name: "MISO".into(),
+                enabled: true,
+                trigger: TriggerType::None,
+            },
+            LogicChannel {
+                number: 3,
+                name: "CS#".into(),
+                enabled: true,
+                trigger: TriggerType::FallingEdge,
+            },
         ];
     }
 }
-
 
 // ============================================================================
 // JTAG/SWD Passthrough
@@ -645,7 +726,6 @@ impl JtagDevice {
     }
 }
 
-
 /// JTAG controller
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct JtagController {
@@ -699,13 +779,14 @@ impl JtagController {
     /// Select device in chain
     pub fn select_device(&mut self, index: usize) -> HardwareResult<()> {
         if index >= self.chain.len() {
-            return Err(HardwareError::JtagChainError("Device index out of range".into()));
+            return Err(HardwareError::JtagChainError(
+                "Device index out of range".into(),
+            ));
         }
         self.selected = Some(index);
         Ok(())
     }
 }
-
 
 /// SWD (Serial Wire Debug) controller
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -802,7 +883,6 @@ impl SwdController {
     }
 }
 
-
 // ============================================================================
 // OLED Display
 // ============================================================================
@@ -883,7 +963,6 @@ pub struct PcbStatus {
     pub usb_connected: bool,
 }
 
-
 // ============================================================================
 // Protocol Commands for Hardware v2.1
 // ============================================================================
@@ -949,7 +1028,6 @@ impl HardwareCommand {
         }
     }
 }
-
 
 // ============================================================================
 // Tests
@@ -1017,11 +1095,11 @@ mod tests {
     fn test_swd_controller() {
         let mut swd = SwdController::default();
         assert!(!swd.connected);
-        
+
         let result = swd.connect();
         assert!(result.is_ok());
         assert!(swd.connected);
-        
+
         swd.disconnect();
         assert!(!swd.connected);
     }
@@ -1049,11 +1127,26 @@ mod tests {
 
     #[test]
     fn test_hardware_command_from_u8() {
-        assert_eq!(HardwareCommand::from_u8(0xE0), Some(HardwareCommand::PcbDetect));
-        assert_eq!(HardwareCommand::from_u8(0xE5), Some(HardwareCommand::LogicArm));
-        assert_eq!(HardwareCommand::from_u8(0xE8), Some(HardwareCommand::JtagScan));
-        assert_eq!(HardwareCommand::from_u8(0xEA), Some(HardwareCommand::SwdConnect));
-        assert_eq!(HardwareCommand::from_u8(0xEF), Some(HardwareCommand::HardwareStatus));
+        assert_eq!(
+            HardwareCommand::from_u8(0xE0),
+            Some(HardwareCommand::PcbDetect)
+        );
+        assert_eq!(
+            HardwareCommand::from_u8(0xE5),
+            Some(HardwareCommand::LogicArm)
+        );
+        assert_eq!(
+            HardwareCommand::from_u8(0xE8),
+            Some(HardwareCommand::JtagScan)
+        );
+        assert_eq!(
+            HardwareCommand::from_u8(0xEA),
+            Some(HardwareCommand::SwdConnect)
+        );
+        assert_eq!(
+            HardwareCommand::from_u8(0xEF),
+            Some(HardwareCommand::HardwareStatus)
+        );
         assert_eq!(HardwareCommand::from_u8(0xFF), None);
     }
 
@@ -1075,7 +1168,7 @@ mod tests {
     fn test_voltage_levels() {
         let mut adapter = Tsop48Adapter::default();
         assert_eq!(adapter.voltage, VoltageLevel::V3_3);
-        
+
         adapter.set_voltage(VoltageLevel::V1_8);
         assert_eq!(adapter.voltage, VoltageLevel::V1_8);
     }

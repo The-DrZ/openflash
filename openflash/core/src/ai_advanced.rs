@@ -1,5 +1,5 @@
 //! Advanced AI Features for OpenFlash v1.9
-//! 
+//!
 //! This module provides ML-based chip identification, firmware unpacking,
 //! rootfs extraction, vulnerability scanning, and custom signature database.
 
@@ -125,7 +125,7 @@ impl MlChipIdentifier {
     /// Extract features from dump data
     pub fn extract_features(&self, data: &[u8]) -> FeatureVector {
         let mut features = FeatureVector::default();
-        
+
         // Calculate byte histogram
         let mut histogram = [0u32; 256];
         for &byte in data {
@@ -133,7 +133,7 @@ impl MlChipIdentifier {
         }
         let total = data.len() as f32;
         features.byte_histogram = histogram.iter().map(|&c| c as f32 / total).collect();
-        
+
         // Calculate entropy for 16 regions
         let region_size = data.len() / 16;
         for i in 0..16 {
@@ -141,31 +141,33 @@ impl MlChipIdentifier {
             let end = ((i + 1) * region_size).min(data.len());
             features.entropy_features[i] = calculate_entropy(&data[start..end]);
         }
-        
+
         // Detect page size hints
         features.page_size_hints = detect_page_boundaries(data);
-        
+
         // Find magic bytes
         features.magic_bytes = find_magic_bytes(data);
-        
+
         features
     }
 
     /// Identify chip using ML model
     pub fn identify(&self, data: &[u8]) -> AiAdvancedResult<Vec<ChipPrediction>> {
         if data.len() < 4096 {
-            return Err(AiAdvancedError::InvalidData("Data too small for identification".into()));
+            return Err(AiAdvancedError::InvalidData(
+                "Data too small for identification".into(),
+            ));
         }
 
         let features = self.extract_features(data);
-        
+
         // Simulated ML predictions based on features
         let mut predictions = Vec::new();
-        
+
         // Analyze features to make predictions
         let avg_entropy: f32 = features.entropy_features.iter().sum::<f32>() / 16.0;
         let page_size = features.page_size_hints.first().copied().unwrap_or(2048);
-        
+
         // Primary prediction based on patterns
         if avg_entropy > 7.5 {
             predictions.push(ChipPrediction {
@@ -188,7 +190,7 @@ impl MlChipIdentifier {
                 interface: "parallel_nand".to_string(),
             });
         }
-        
+
         // Secondary predictions
         predictions.push(ChipPrediction {
             manufacturer: "Hynix".to_string(),
@@ -222,7 +224,6 @@ pub struct MlModelInfo {
     pub supported_chips: u32,
     pub accuracy: f32,
 }
-
 
 // ============================================================================
 // Firmware Unpacking (binwalk integration)
@@ -343,7 +344,7 @@ impl FirmwareUnpacker {
                 if let Some(pos) = find_signature(&data[offset..], &sig.magic) {
                     let abs_offset = offset + pos;
                     let section_size = estimate_section_size(data, abs_offset, &sig.sig_type);
-                    
+
                     if section_size >= self.min_section_size {
                         sections.push(ExtractedSection {
                             name: sig.name.clone(),
@@ -352,7 +353,12 @@ impl FirmwareUnpacker {
                             section_type: sig.sig_type.clone(),
                             compression: sig.compression,
                             archive: sig.archive,
-                            entropy: calculate_entropy(&data[abs_offset..abs_offset.saturating_add(section_size as usize).min(data.len())]),
+                            entropy: calculate_entropy(
+                                &data[abs_offset
+                                    ..abs_offset
+                                        .saturating_add(section_size as usize)
+                                        .min(data.len())],
+                            ),
                             data: None,
                             children: Vec::new(),
                         });
@@ -379,14 +385,17 @@ impl FirmwareUnpacker {
         for section in sections {
             let start = section.offset as usize;
             let end = (start + section.size as usize).min(data.len());
-            
+
             let extracted = self.extract_section(&data[start..end], &section, 0)?;
             extracted_size += extracted.size;
-            
+
             if extracted.entropy > 7.9 {
-                warnings.push(format!("High entropy section at 0x{:X} - possibly encrypted", section.offset));
+                warnings.push(format!(
+                    "High entropy section at 0x{:X} - possibly encrypted",
+                    section.offset
+                ));
             }
-            
+
             extracted_sections.push(extracted);
         }
 
@@ -399,9 +408,14 @@ impl FirmwareUnpacker {
         })
     }
 
-    fn extract_section(&self, data: &[u8], section: &ExtractedSection, depth: u32) -> AiAdvancedResult<ExtractedSection> {
+    fn extract_section(
+        &self,
+        data: &[u8],
+        section: &ExtractedSection,
+        depth: u32,
+    ) -> AiAdvancedResult<ExtractedSection> {
         let mut result = section.clone();
-        
+
         // Decompress if needed
         let decompressed = match section.compression {
             CompressionFormat::Gzip => decompress_gzip(data),
@@ -412,7 +426,7 @@ impl FirmwareUnpacker {
 
         if let Ok(decompressed_data) = decompressed {
             result.data = Some(decompressed_data.clone());
-            
+
             // Recursive extraction
             if self.recursive && depth < self.max_depth {
                 if let Ok(nested) = self.scan(&decompressed_data) {
@@ -420,7 +434,7 @@ impl FirmwareUnpacker {
                         if let Ok(child) = self.extract_section(
                             &decompressed_data[nested_section.offset as usize..],
                             &nested_section,
-                            depth + 1
+                            depth + 1,
                         ) {
                             result.children.push(child);
                         }
@@ -544,7 +558,6 @@ fn get_firmware_signatures() -> Vec<FirmwareSignature> {
         },
     ]
 }
-
 
 // ============================================================================
 // Automatic Rootfs Extraction
@@ -671,7 +684,7 @@ impl RootfsExtractor {
         }
 
         let magic = &data[offset..offset + 4];
-        
+
         match magic {
             [0x68, 0x73, 0x71, 0x73] => Some(FilesystemType::SquashFS), // hsqs
             [0x73, 0x71, 0x73, 0x68] => Some(FilesystemType::SquashFS), // sqsh (BE)
@@ -720,7 +733,7 @@ impl RootfsExtractor {
         for (fs_type, offset, size) in filesystems {
             let end = (offset as usize + size as usize).min(data.len());
             let fs_data = &data[offset as usize..end];
-            
+
             let extraction = match fs_type {
                 FilesystemType::SquashFS => self.extract_squashfs(fs_data),
                 FilesystemType::Jffs2 => self.extract_jffs2(fs_data),
@@ -754,13 +767,14 @@ impl RootfsExtractor {
     fn extract_squashfs(&self, data: &[u8]) -> AiAdvancedResult<RootfsResult> {
         // Parse SquashFS superblock
         if data.len() < 96 {
-            return Err(AiAdvancedError::ExtractionError("SquashFS too small".into()));
+            return Err(AiAdvancedError::ExtractionError(
+                "SquashFS too small".into(),
+            ));
         }
 
         let inode_count = u32::from_le_bytes([data[4], data[5], data[6], data[7]]);
         let bytes_used = u64::from_le_bytes([
-            data[40], data[41], data[42], data[43],
-            data[44], data[45], data[46], data[47],
+            data[40], data[41], data[42], data[43], data[44], data[45], data[46], data[47],
         ]);
 
         // Simulated extraction - in real implementation would parse full FS
@@ -782,7 +796,7 @@ impl RootfsExtractor {
     fn extract_jffs2(&self, data: &[u8]) -> AiAdvancedResult<RootfsResult> {
         let files = self.generate_mock_files(50);
         let total_dirs = files.iter().filter(|f| f.is_dir).count();
-        
+
         Ok(RootfsResult {
             fs_type: FilesystemType::Jffs2,
             offset: 0,
@@ -797,7 +811,7 @@ impl RootfsExtractor {
     fn extract_cramfs(&self, data: &[u8]) -> AiAdvancedResult<RootfsResult> {
         let files = self.generate_mock_files(30);
         let total_dirs = files.iter().filter(|f| f.is_dir).count();
-        
+
         Ok(RootfsResult {
             fs_type: FilesystemType::CramFS,
             offset: 0,
@@ -809,7 +823,11 @@ impl RootfsExtractor {
         })
     }
 
-    fn extract_generic(&self, data: &[u8], fs_type: FilesystemType) -> AiAdvancedResult<RootfsResult> {
+    fn extract_generic(
+        &self,
+        data: &[u8],
+        fs_type: FilesystemType,
+    ) -> AiAdvancedResult<RootfsResult> {
         Ok(RootfsResult {
             fs_type,
             offset: 0,
@@ -835,7 +853,9 @@ impl RootfsExtractor {
             ("/etc/init.d/rcS", false, 0o755),
         ];
 
-        common_paths.iter().take(count.min(common_paths.len()))
+        common_paths
+            .iter()
+            .take(count.min(common_paths.len()))
             .map(|(path, is_dir, mode)| ExtractedFile {
                 path: path.to_string(),
                 size: if *is_dir { 0 } else { 1024 },
@@ -850,7 +870,6 @@ impl RootfsExtractor {
             .collect()
     }
 }
-
 
 // ============================================================================
 // Vulnerability Scanning
@@ -1015,10 +1034,22 @@ impl VulnScanner {
         // Check for debug/backdoor patterns
         vulnerabilities.extend(self.scan_backdoors(data));
 
-        let critical = vulnerabilities.iter().filter(|v| v.cvss.severity == Severity::Critical).count();
-        let high = vulnerabilities.iter().filter(|v| v.cvss.severity == Severity::High).count();
-        let medium = vulnerabilities.iter().filter(|v| v.cvss.severity == Severity::Medium).count();
-        let low = vulnerabilities.iter().filter(|v| v.cvss.severity == Severity::Low).count();
+        let critical = vulnerabilities
+            .iter()
+            .filter(|v| v.cvss.severity == Severity::Critical)
+            .count();
+        let high = vulnerabilities
+            .iter()
+            .filter(|v| v.cvss.severity == Severity::High)
+            .count();
+        let medium = vulnerabilities
+            .iter()
+            .filter(|v| v.cvss.severity == Severity::Medium)
+            .count();
+        let low = vulnerabilities
+            .iter()
+            .filter(|v| v.cvss.severity == Severity::Low)
+            .count();
 
         Ok(VulnScanResult {
             total: vulnerabilities.len(),
@@ -1054,7 +1085,8 @@ impl VulnScanner {
                     cvss: CvssScore::from_base_score(7.5),
                     offset: offset as u64,
                     component: "credentials".to_string(),
-                    remediation: "Remove hardcoded credentials and use secure credential storage".to_string(),
+                    remediation: "Remove hardcoded credentials and use secure credential storage"
+                        .to_string(),
                     references: vec!["CWE-798: Use of Hard-coded Credentials".to_string()],
                 });
             }
@@ -1077,12 +1109,18 @@ impl VulnScanner {
                 vulns.push(Vulnerability {
                     cve_id: None,
                     name: format!("Weak cryptography: {}", desc),
-                    description: format!("Found weak crypto algorithm {} at offset 0x{:X}", desc, offset),
+                    description: format!(
+                        "Found weak crypto algorithm {} at offset 0x{:X}",
+                        desc, offset
+                    ),
                     cvss: CvssScore::from_base_score(5.3),
                     offset: offset as u64,
                     component: "crypto".to_string(),
-                    remediation: "Use modern cryptographic algorithms (AES-256, SHA-256+)".to_string(),
-                    references: vec!["CWE-327: Use of a Broken or Risky Cryptographic Algorithm".to_string()],
+                    remediation: "Use modern cryptographic algorithms (AES-256, SHA-256+)"
+                        .to_string(),
+                    references: vec![
+                        "CWE-327: Use of a Broken or Risky Cryptographic Algorithm".to_string()
+                    ],
                 });
             }
         }
@@ -1092,13 +1130,33 @@ impl VulnScanner {
 
     fn scan_known_vulns(&self, data: &[u8]) -> Vec<Vulnerability> {
         let mut vulns = Vec::new();
-        
+
         // Check for known vulnerable library versions
         let vuln_patterns: &[(&[u8], &str, &str, f32)] = &[
-            (b"OpenSSL 1.0.1", "CVE-2014-0160", "Heartbleed vulnerability", 9.8),
-            (b"OpenSSL 1.0.2", "CVE-2016-2107", "Padding oracle vulnerability", 7.5),
-            (b"busybox 1.2", "CVE-2021-42373", "BusyBox vulnerabilities", 6.5),
-            (b"dropbear 2015", "CVE-2016-3116", "Dropbear SSH vulnerability", 7.5),
+            (
+                b"OpenSSL 1.0.1",
+                "CVE-2014-0160",
+                "Heartbleed vulnerability",
+                9.8,
+            ),
+            (
+                b"OpenSSL 1.0.2",
+                "CVE-2016-2107",
+                "Padding oracle vulnerability",
+                7.5,
+            ),
+            (
+                b"busybox 1.2",
+                "CVE-2021-42373",
+                "BusyBox vulnerabilities",
+                6.5,
+            ),
+            (
+                b"dropbear 2015",
+                "CVE-2016-3116",
+                "Dropbear SSH vulnerability",
+                7.5,
+            ),
         ];
 
         for (pattern, cve, desc, score) in vuln_patterns {
@@ -1146,7 +1204,6 @@ impl VulnScanner {
         vulns
     }
 }
-
 
 // ============================================================================
 // Custom Signature Database
@@ -1237,7 +1294,7 @@ impl SignatureDatabase {
     pub fn load_yaml(&mut self, yaml: &str) -> AiAdvancedResult<usize> {
         // Simplified YAML parsing - in real impl would use serde_yaml
         let count = self.signatures.len();
-        
+
         // Parse basic YAML structure
         for line in yaml.lines() {
             if line.trim().starts_with("- name:") {
@@ -1283,7 +1340,10 @@ impl SignatureDatabase {
 
     /// Filter by category
     pub fn by_category(&self, category: SignatureCategory) -> Vec<&CustomSignature> {
-        self.signatures.iter().filter(|s| s.category == category).collect()
+        self.signatures
+            .iter()
+            .filter(|s| s.category == category)
+            .collect()
     }
 
     /// Scan data with all signatures
@@ -1299,7 +1359,7 @@ impl SignatureDatabase {
                             let abs_offset = offset + pos;
                             let context_start = abs_offset.saturating_sub(16);
                             let context_end = (abs_offset + pattern.len() + 16).min(data.len());
-                            
+
                             matches.push(SignatureMatch {
                                 signature: sig.clone(),
                                 offset: abs_offset as u64,
@@ -1363,7 +1423,9 @@ impl SignatureDatabase {
     pub fn info(&self) -> SignatureDatabaseInfo {
         let mut by_category = HashMap::new();
         for sig in &self.signatures {
-            *by_category.entry(format!("{:?}", sig.category)).or_insert(0) += 1;
+            *by_category
+                .entry(format!("{:?}", sig.category))
+                .or_insert(0) += 1;
         }
 
         SignatureDatabaseInfo {
@@ -1473,7 +1535,7 @@ fn find_magic_bytes(data: &[u8]) -> Vec<(u64, Vec<u8>)> {
 /// Estimate section size
 fn estimate_section_size(data: &[u8], offset: usize, sig_type: &str) -> u64 {
     let remaining = data.len() - offset;
-    
+
     match sig_type {
         "compressed" => {
             // Look for end of compressed stream
@@ -1483,11 +1545,18 @@ fn estimate_section_size(data: &[u8], offset: usize, sig_type: &str) -> u64 {
             // Try to read size from header
             if offset + 64 <= data.len() {
                 // SquashFS: size at offset 40
-                if data.len() > offset + 4 && &data[offset..offset + 4] == [0x68, 0x73, 0x71, 0x73] {
+                if data.len() > offset + 4 && &data[offset..offset + 4] == [0x68, 0x73, 0x71, 0x73]
+                {
                     if offset + 48 <= data.len() {
                         let size = u64::from_le_bytes([
-                            data[offset + 40], data[offset + 41], data[offset + 42], data[offset + 43],
-                            data[offset + 44], data[offset + 45], data[offset + 46], data[offset + 47],
+                            data[offset + 40],
+                            data[offset + 41],
+                            data[offset + 42],
+                            data[offset + 43],
+                            data[offset + 44],
+                            data[offset + 45],
+                            data[offset + 46],
+                            data[offset + 47],
                         ]);
                         if size > 0 && size <= remaining as u64 {
                             return size;
@@ -1505,13 +1574,19 @@ fn estimate_section_size(data: &[u8], offset: usize, sig_type: &str) -> u64 {
 /// Estimate filesystem size
 fn estimate_fs_size(data: &[u8], offset: usize, fs_type: FilesystemType) -> u64 {
     let remaining = (data.len() - offset) as u64;
-    
+
     match fs_type {
         FilesystemType::SquashFS => {
             if offset + 48 <= data.len() {
                 let size = u64::from_le_bytes([
-                    data[offset + 40], data[offset + 41], data[offset + 42], data[offset + 43],
-                    data[offset + 44], data[offset + 45], data[offset + 46], data[offset + 47],
+                    data[offset + 40],
+                    data[offset + 41],
+                    data[offset + 42],
+                    data[offset + 43],
+                    data[offset + 44],
+                    data[offset + 45],
+                    data[offset + 46],
+                    data[offset + 47],
                 ]);
                 return size.min(remaining);
             }
@@ -1539,7 +1614,6 @@ fn decompress_xz(data: &[u8]) -> Result<Vec<u8>, AiAdvancedError> {
     Ok(data.to_vec())
 }
 
-
 // ============================================================================
 // Tests
 // ============================================================================
@@ -1561,7 +1635,7 @@ mod tests {
         let identifier = MlChipIdentifier::new();
         let data = vec![0u8; 8192];
         let features = identifier.extract_features(&data);
-        
+
         assert_eq!(features.entropy_features.len(), 16);
         assert_eq!(features.byte_histogram.len(), 256);
         assert!(features.byte_histogram[0] > 0.99); // All zeros
@@ -1572,7 +1646,7 @@ mod tests {
         let identifier = MlChipIdentifier::new();
         let data = vec![0xFFu8; 65536];
         let predictions = identifier.identify(&data).unwrap();
-        
+
         assert!(!predictions.is_empty());
         assert!(predictions[0].confidence > 0.0);
     }
@@ -1582,16 +1656,14 @@ mod tests {
         let identifier = MlChipIdentifier::new();
         let data = vec![0u8; 100];
         let result = identifier.identify(&data);
-        
+
         assert!(result.is_err());
     }
 
     #[test]
     fn test_firmware_unpacker_creation() {
-        let unpacker = FirmwareUnpacker::new()
-            .with_max_depth(3)
-            .with_min_size(128);
-        
+        let unpacker = FirmwareUnpacker::new().with_max_depth(3).with_min_size(128);
+
         assert_eq!(unpacker.max_depth, 3);
         assert_eq!(unpacker.min_section_size, 128);
     }
@@ -1603,7 +1675,7 @@ mod tests {
         data[100] = 0x1F;
         data[101] = 0x8B;
         data[102] = 0x08;
-        
+
         let sections = unpacker.scan(&data).unwrap();
         assert!(!sections.is_empty());
         assert_eq!(sections[0].name, "gzip");
@@ -1618,7 +1690,7 @@ mod tests {
         data[1] = 0x73;
         data[2] = 0x71;
         data[3] = 0x73;
-        
+
         let sections = unpacker.scan(&data).unwrap();
         assert!(!sections.is_empty());
         assert!(sections[0].name.contains("SquashFS"));
@@ -1629,7 +1701,7 @@ mod tests {
         let extractor = RootfsExtractor::new()
             .with_contents(false)
             .with_max_size(1024 * 1024);
-        
+
         assert!(!extractor.extract_contents);
         assert_eq!(extractor.max_file_size, 1024 * 1024);
     }
@@ -1642,7 +1714,7 @@ mod tests {
         data[1] = 0x73;
         data[2] = 0x71;
         data[3] = 0x73;
-        
+
         let fs_type = extractor.detect_filesystem(&data, 0);
         assert_eq!(fs_type, Some(FilesystemType::SquashFS));
     }
@@ -1652,7 +1724,7 @@ mod tests {
         let scanner = VulnScanner::new()
             .with_credentials_check(true)
             .with_weak_crypto_check(true);
-        
+
         assert!(scanner.check_credentials);
         assert!(scanner.check_weak_crypto);
     }
@@ -1662,7 +1734,7 @@ mod tests {
         let scanner = VulnScanner::new();
         let data = b"config: admin:admin password";
         let result = scanner.scan(data).unwrap();
-        
+
         assert!(result.total > 0);
     }
 
@@ -1705,7 +1777,7 @@ mod tests {
             created: None,
             tags: Vec::new(),
         });
-        
+
         assert_eq!(db.list().len(), 1);
         assert!(db.get("test_sig").is_some());
     }
@@ -1724,10 +1796,10 @@ mod tests {
             created: None,
             tags: Vec::new(),
         });
-        
+
         let data = vec![0x00, 0xCA, 0xFE, 0x00];
         let matches = db.scan(&data);
-        
+
         assert_eq!(matches.len(), 1);
         assert_eq!(matches[0].offset, 1);
     }
@@ -1746,7 +1818,7 @@ mod tests {
             created: None,
             tags: Vec::new(),
         });
-        
+
         let yaml = db.export_yaml();
         assert!(yaml.contains("Signature 1"));
         assert!(yaml.contains("tester"));
@@ -1758,7 +1830,7 @@ mod tests {
         let data = vec![0u8; 1000];
         let entropy = calculate_entropy(&data);
         assert!(entropy < 0.01);
-        
+
         // Random-ish data = high entropy
         let data: Vec<u8> = (0..=255).cycle().take(1024).collect();
         let entropy = calculate_entropy(&data);
@@ -1768,7 +1840,7 @@ mod tests {
     #[test]
     fn test_find_signature() {
         let data = vec![0x00, 0x01, 0x02, 0x03, 0x04];
-        
+
         assert_eq!(find_signature(&data, &[0x01, 0x02]), Some(1));
         assert_eq!(find_signature(&data, &[0xFF]), None);
         assert_eq!(find_signature(&data, &[]), None);

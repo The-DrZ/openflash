@@ -96,8 +96,10 @@ impl UsbDevice {
         // Receive response
         let buf = RequestBuffer::new(64);
         let result = self.interface.bulk_in(EP_IN, buf).await;
-        
-        result.status.map_err(|e| format!("USB read error: {:?}", e))?;
+
+        result
+            .status
+            .map_err(|e| format!("USB read error: {:?}", e))?;
         Ok(result.data)
     }
 
@@ -112,8 +114,10 @@ impl UsbDevice {
         while data.len() < page_size as usize {
             let buf = RequestBuffer::new(64);
             let result = self.interface.bulk_in(EP_IN, buf).await;
-            result.status.map_err(|e| format!("USB read error: {:?}", e))?;
-            
+            result
+                .status
+                .map_err(|e| format!("USB read error: {:?}", e))?;
+
             let remaining = page_size as usize - data.len();
             let to_copy = remaining.min(result.data.len());
             data.extend_from_slice(&result.data[..to_copy]);
@@ -137,11 +141,11 @@ impl DeviceManager {
             interface: FlashInterface::ParallelNand,
         }
     }
-    
+
     pub fn set_interface(&mut self, interface: FlashInterface) {
         self.interface = interface;
     }
-    
+
     pub fn get_interface(&self) -> FlashInterface {
         self.interface
     }
@@ -152,13 +156,15 @@ impl DeviceManager {
         if let Ok(devices) = nusb::list_devices() {
             for dev_info in devices {
                 if dev_info.vendor_id() == VENDOR_ID && dev_info.product_id() == PRODUCT_ID {
-                    let id = format!("{:04x}:{:04x}:{}", 
-                        dev_info.vendor_id(), 
+                    let id = format!(
+                        "{:04x}:{:04x}:{}",
+                        dev_info.vendor_id(),
                         dev_info.product_id(),
                         dev_info.bus_number()
                     );
 
-                    let name = dev_info.product_string()
+                    let name = dev_info
+                        .product_string()
                         .unwrap_or("OpenFlash Device")
                         .to_string();
 
@@ -182,21 +188,23 @@ impl DeviceManager {
     }
 
     pub fn connect(&mut self, device_id: &str) -> Result<(), String> {
-        let devices = nusb::list_devices()
-            .map_err(|e| format!("Failed to list devices: {}", e))?;
+        let devices = nusb::list_devices().map_err(|e| format!("Failed to list devices: {}", e))?;
 
         for dev_info in devices {
-            let id = format!("{:04x}:{:04x}:{}", 
-                dev_info.vendor_id(), 
+            let id = format!(
+                "{:04x}:{:04x}:{}",
+                dev_info.vendor_id(),
                 dev_info.product_id(),
                 dev_info.bus_number()
             );
 
             if id == device_id {
-                let device = dev_info.open()
+                let device = dev_info
+                    .open()
                     .map_err(|e| format!("Failed to open device: {}", e))?;
 
-                let interface = device.claim_interface(0)
+                let interface = device
+                    .claim_interface(0)
                     .map_err(|e| format!("Failed to claim interface: {}", e))?;
 
                 self.active_device = Some(Arc::new(TokioMutex::new(UsbDevice { interface })));

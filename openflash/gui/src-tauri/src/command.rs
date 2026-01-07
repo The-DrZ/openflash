@@ -20,10 +20,10 @@ pub fn scan_devices(
 ) -> Result<Vec<DeviceInfo>, String> {
     let mut manager = device_manager.lock().map_err(|e| e.to_string())?;
     let mut devices = manager.scan_devices();
-    
+
     // Add mock devices if enabled
     devices.extend(mock::get_mock_devices());
-    
+
     Ok(devices)
 }
 
@@ -46,46 +46,44 @@ pub fn connect_device(
         cfg.last_device = Some(device_id.clone());
         let _ = cfg.save();
     }
-    
+
     // Check if it's a mock device
     if device_id.starts_with("mock:") {
         return mock::mock_connect(&device_id);
     }
-    
+
     let mut manager = device_manager.lock().map_err(|e| e.to_string())?;
     manager.connect(&device_id)
 }
 
 #[tauri::command]
-pub fn disconnect_device(
-    device_manager: State<'_, Mutex<DeviceManager>>,
-) -> Result<(), String> {
+pub fn disconnect_device(device_manager: State<'_, Mutex<DeviceManager>>) -> Result<(), String> {
     if mock::is_mock_connected() {
         mock::mock_disconnect();
         return Ok(());
     }
-    
+
     let mut manager = device_manager.lock().map_err(|e| e.to_string())?;
     manager.disconnect();
     Ok(())
 }
 
 #[tauri::command]
-pub async fn ping(
-    device_manager: State<'_, Mutex<DeviceManager>>,
-) -> Result<bool, String> {
+pub async fn ping(device_manager: State<'_, Mutex<DeviceManager>>) -> Result<bool, String> {
     if mock::is_mock_connected() {
         let response = mock::process_mock_command(openflash_core::protocol::Command::Ping, &[]);
         return Ok(response.len() >= 2 && response[0] == 0x01 && response[1] == 0x00);
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
     };
 
     let dev = device.lock().await;
-    let response = dev.send_command(openflash_core::protocol::Command::Ping, &[]).await?;
+    let response = dev
+        .send_command(openflash_core::protocol::Command::Ping, &[])
+        .await?;
     Ok(response.len() >= 2 && response[0] == 0x01 && response[1] == 0x00)
 }
 
@@ -94,20 +92,23 @@ pub async fn read_nand_id(
     device_manager: State<'_, Mutex<DeviceManager>>,
 ) -> Result<Vec<u8>, String> {
     if mock::is_mock_connected() {
-        let response = mock::process_mock_command(openflash_core::protocol::Command::NandReadId, &[]);
+        let response =
+            mock::process_mock_command(openflash_core::protocol::Command::NandReadId, &[]);
         if response.len() >= 7 && response[1] == 0x00 {
             return Ok(response[2..7].to_vec());
         }
         return Err("Mock read ID failed".to_string());
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
     };
 
     let dev = device.lock().await;
-    let response = dev.send_command(openflash_core::protocol::Command::NandReadId, &[]).await?;
+    let response = dev
+        .send_command(openflash_core::protocol::Command::NandReadId, &[])
+        .await?;
 
     if response.len() >= 7 && response[1] == 0x00 {
         Ok(response[2..7].to_vec())
@@ -123,13 +124,13 @@ pub async fn get_chip_info(
     if mock::is_mock_connected() {
         return Ok(mock::get_mock_chip_info());
     }
-    
+
     // Check current interface mode
     let interface = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_interface()
     };
-    
+
     match interface {
         FlashInterface::ParallelNand => {
             let chip_id = read_nand_id(device_manager.clone()).await?;
@@ -230,7 +231,7 @@ pub async fn get_chip_info(
                 jedec_id.get(1).copied().unwrap_or(0),
                 jedec_id.get(2).copied().unwrap_or(0),
             ];
-            
+
             if let Some(info) = openflash_core::spi_nor::get_spi_nor_chip_info(&jedec_arr) {
                 Ok(ChipInfo {
                     manufacturer: info.manufacturer.clone(),
@@ -256,7 +257,10 @@ pub async fn get_chip_info(
                 let mfr_name = openflash_core::spi_nor::get_spi_nor_manufacturer_name(jedec_arr[0]);
                 Ok(ChipInfo {
                     manufacturer: mfr_name.to_string(),
-                    model: format!("Unknown SPI NOR 0x{:02X}{:02X}{:02X}", jedec_arr[0], jedec_arr[1], jedec_arr[2]),
+                    model: format!(
+                        "Unknown SPI NOR 0x{:02X}{:02X}{:02X}",
+                        jedec_arr[0], jedec_arr[1], jedec_arr[2]
+                    ),
                     chip_id: jedec_id.clone(),
                     size_mb: 0,
                     page_size: 256,
@@ -336,14 +340,16 @@ pub async fn read_spi_nand_id(
         // Return mock SPI NAND ID (GigaDevice GD5F1GQ4)
         return Ok(vec![0xC8, 0xD1, 0x00]);
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
     };
 
     let dev = device.lock().await;
-    let response = dev.send_command(openflash_core::protocol::Command::SpiNandReadId, &[]).await?;
+    let response = dev
+        .send_command(openflash_core::protocol::Command::SpiNandReadId, &[])
+        .await?;
 
     if response.len() >= 5 && response[1] == 0x00 {
         Ok(response[2..5].to_vec())
@@ -365,14 +371,16 @@ pub async fn read_spi_nor_jedec_id(
         // Return mock SPI NOR ID (Winbond W25Q128JV)
         return Ok(vec![0xEF, 0x40, 0x18]);
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
     };
 
     let dev = device.lock().await;
-    let response = dev.send_command(openflash_core::protocol::Command::SpiNorReadJedecId, &[]).await?;
+    let response = dev
+        .send_command(openflash_core::protocol::Command::SpiNorReadJedecId, &[])
+        .await?;
 
     if response.len() >= 5 && response[1] == 0x00 {
         Ok(response[2..5].to_vec())
@@ -390,7 +398,7 @@ pub async fn spi_nor_sector_erase(
     if mock::is_mock_connected() {
         return Ok(());
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
@@ -398,7 +406,9 @@ pub async fn spi_nor_sector_erase(
 
     let dev = device.lock().await;
     let args = address.to_le_bytes();
-    let response = dev.send_command(openflash_core::protocol::Command::SpiNorSectorErase, &args).await?;
+    let response = dev
+        .send_command(openflash_core::protocol::Command::SpiNorSectorErase, &args)
+        .await?;
 
     if response.len() >= 2 && response[1] == 0x00 {
         Ok(())
@@ -416,7 +426,7 @@ pub async fn spi_nor_block_erase(
     if mock::is_mock_connected() {
         return Ok(());
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
@@ -424,7 +434,12 @@ pub async fn spi_nor_block_erase(
 
     let dev = device.lock().await;
     let args = address.to_le_bytes();
-    let response = dev.send_command(openflash_core::protocol::Command::SpiNorBlockErase64K, &args).await?;
+    let response = dev
+        .send_command(
+            openflash_core::protocol::Command::SpiNorBlockErase64K,
+            &args,
+        )
+        .await?;
 
     if response.len() >= 2 && response[1] == 0x00 {
         Ok(())
@@ -441,14 +456,16 @@ pub async fn spi_nor_chip_erase(
     if mock::is_mock_connected() {
         return Ok(());
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
     };
 
     let dev = device.lock().await;
-    let response = dev.send_command(openflash_core::protocol::Command::SpiNorChipErase, &[]).await?;
+    let response = dev
+        .send_command(openflash_core::protocol::Command::SpiNorChipErase, &[])
+        .await?;
 
     if response.len() >= 2 && response[1] == 0x00 {
         Ok(())
@@ -465,7 +482,7 @@ pub async fn spi_nor_unlock_all(
     if mock::is_mock_connected() {
         return Ok(());
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
@@ -473,7 +490,12 @@ pub async fn spi_nor_unlock_all(
 
     let dev = device.lock().await;
     // Write 0x00 to status register 1 to clear all protection bits
-    let response = dev.send_command(openflash_core::protocol::Command::SpiNorWriteStatus1, &[0x00]).await?;
+    let response = dev
+        .send_command(
+            openflash_core::protocol::Command::SpiNorWriteStatus1,
+            &[0x00],
+        )
+        .await?;
 
     if response.len() >= 2 && response[1] == 0x00 {
         Ok(())
@@ -543,19 +565,21 @@ pub async fn read_ufs_device_info(
             boot_lun_enabled: Some(true),
         });
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
     };
 
     let dev = device.lock().await;
-    
+
     // Read device descriptor
-    let response = dev.send_command(
-        openflash_core::protocol::Command::UfsReadDescriptor, 
-        &[openflash_core::ufs::descriptors::DEVICE]
-    ).await?;
+    let response = dev
+        .send_command(
+            openflash_core::protocol::Command::UfsReadDescriptor,
+            &[openflash_core::ufs::descriptors::DEVICE],
+        )
+        .await?;
 
     if response.len() < 34 {
         return Err("Failed to read UFS device descriptor".to_string());
@@ -565,11 +589,14 @@ pub async fn read_ufs_device_info(
     if let Some(desc) = openflash_core::ufs::DeviceDescriptor::parse(&response[2..]) {
         let version = desc.get_ufs_version();
         let mfr_name = desc.get_manufacturer_name();
-        
+
         Ok(ChipInfo {
             manufacturer: mfr_name.to_string(),
             model: format!("UFS Device 0x{:04X}", desc.manufacturer_id),
-            chip_id: vec![(desc.manufacturer_id >> 8) as u8, desc.manufacturer_id as u8],
+            chip_id: vec![
+                (desc.manufacturer_id >> 8) as u8,
+                desc.manufacturer_id as u8,
+            ],
             size_mb: 0, // Will be calculated from LUNs
             page_size: 4096,
             block_size: 4096,
@@ -600,7 +627,7 @@ pub async fn ufs_select_lun(
     if mock::is_mock_connected() {
         return Ok(());
     }
-    
+
     let lun_id = match lun_type.as_str() {
         "UserData" => 0x00,
         "BootA" => 0x01,
@@ -608,14 +635,16 @@ pub async fn ufs_select_lun(
         "Rpmb" => 0xC4,
         _ => return Err(format!("Unknown LUN type: {}", lun_type)),
     };
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
     };
 
     let dev = device.lock().await;
-    let response = dev.send_command(openflash_core::protocol::Command::UfsSelectLun, &[lun_id]).await?;
+    let response = dev
+        .send_command(openflash_core::protocol::Command::UfsSelectLun, &[lun_id])
+        .await?;
 
     if response.len() >= 2 && response[1] == 0x00 {
         Ok(())
@@ -637,15 +666,13 @@ pub async fn dump_nand(
             let mut args = [0u8; 6];
             args[0..4].copy_from_slice(&page.to_le_bytes());
             args[4..6].copy_from_slice(&page_size.to_le_bytes());
-            let page_data = mock::process_mock_command(
-                openflash_core::protocol::Command::NandReadPage,
-                &args,
-            );
+            let page_data =
+                mock::process_mock_command(openflash_core::protocol::Command::NandReadPage, &args);
             data.extend(page_data);
         }
         return Ok(data);
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
@@ -668,20 +695,22 @@ pub fn analyze_dump(
     page_size: u32,
     pages_per_block: u32,
 ) -> Result<AnalysisResult, String> {
-    let analyzer = openflash_core::analysis::Analyzer::new(
-        page_size as usize,
-        pages_per_block as usize,
-    );
-    
+    let analyzer =
+        openflash_core::analysis::Analyzer::new(page_size as usize, pages_per_block as usize);
+
     let result = analyzer.analyze_dump(&data);
-    
+
     Ok(AnalysisResult {
         filesystem_type: result.filesystem_type,
-        signatures: result.signatures_found.into_iter().map(|s| SignatureInfo {
-            name: s.name,
-            offset: s.offset,
-            confidence: s.confidence,
-        }).collect(),
+        signatures: result
+            .signatures_found
+            .into_iter()
+            .map(|s| SignatureInfo {
+                name: s.name,
+                offset: s.offset,
+                confidence: s.confidence,
+            })
+            .collect(),
         bad_blocks: result.bad_blocks,
         empty_pages: result.empty_pages,
         data_pages: result.data_pages,
@@ -838,50 +867,68 @@ pub fn ai_analyze_dump(
     page_size: u32,
     pages_per_block: u32,
 ) -> Result<AiAnalysisResponse, String> {
-    let analyzer = openflash_core::ai::AiAnalyzer::new(
-        page_size as usize,
-        pages_per_block as usize,
-    );
-    
+    let analyzer =
+        openflash_core::ai::AiAnalyzer::new(page_size as usize, pages_per_block as usize);
+
     let result = analyzer.analyze(&data);
-    
+
     Ok(AiAnalysisResponse {
-        patterns: result.patterns.into_iter().map(|p| PatternInfo {
-            pattern_type: format!("{:?}", p.pattern_type),
-            start_offset: p.start_offset,
-            end_offset: p.end_offset,
-            confidence: format!("{:?}", p.confidence),
-            description: p.description,
-        }).collect(),
-        anomalies: result.anomalies.into_iter().map(|a| AnomalyInfo {
-            severity: format!("{:?}", a.severity),
-            location: a.location,
-            description: a.description,
-            recommendation: a.recommendation,
-        }).collect(),
-        recovery_suggestions: result.recovery_suggestions.into_iter().map(|s| RecoverySuggestionInfo {
-            priority: s.priority,
-            action: s.action,
-            description: s.description,
-            estimated_success: s.estimated_success,
-        }).collect(),
-        chip_recommendations: result.chip_recommendations.into_iter().map(|r| ChipRecommendationInfo {
-            category: r.category,
-            title: r.title,
-            description: r.description,
-            importance: r.importance,
-        }).collect(),
+        patterns: result
+            .patterns
+            .into_iter()
+            .map(|p| PatternInfo {
+                pattern_type: format!("{:?}", p.pattern_type),
+                start_offset: p.start_offset,
+                end_offset: p.end_offset,
+                confidence: format!("{:?}", p.confidence),
+                description: p.description,
+            })
+            .collect(),
+        anomalies: result
+            .anomalies
+            .into_iter()
+            .map(|a| AnomalyInfo {
+                severity: format!("{:?}", a.severity),
+                location: a.location,
+                description: a.description,
+                recommendation: a.recommendation,
+            })
+            .collect(),
+        recovery_suggestions: result
+            .recovery_suggestions
+            .into_iter()
+            .map(|s| RecoverySuggestionInfo {
+                priority: s.priority,
+                action: s.action,
+                description: s.description,
+                estimated_success: s.estimated_success,
+            })
+            .collect(),
+        chip_recommendations: result
+            .chip_recommendations
+            .into_iter()
+            .map(|r| ChipRecommendationInfo {
+                category: r.category,
+                title: r.title,
+                description: r.description,
+                importance: r.importance,
+            })
+            .collect(),
         data_quality_score: result.data_quality_score,
         encryption_probability: result.encryption_probability,
         compression_probability: result.compression_probability,
         summary: result.summary,
         // v1.4 additions
-        filesystems: result.filesystems.into_iter().map(|f| FilesystemInfo {
-            fs_type: f.fs_type.name().to_string(),
-            offset: f.offset,
-            size: f.size,
-            confidence: format!("{:?}", f.confidence),
-        }).collect(),
+        filesystems: result
+            .filesystems
+            .into_iter()
+            .map(|f| FilesystemInfo {
+                fs_type: f.fs_type.name().to_string(),
+                offset: f.offset,
+                size: f.size,
+                confidence: format!("{:?}", f.confidence),
+            })
+            .collect(),
         oob_analysis: result.oob_analysis.map(|o| OobAnalysisInfo {
             oob_size: o.oob_size,
             ecc_scheme: format!("{:?}", o.ecc_scheme),
@@ -890,14 +937,18 @@ pub fn ai_analyze_dump(
             bad_block_marker_offset: o.bad_block_marker_offset,
             confidence: format!("{:?}", o.confidence),
         }),
-        key_candidates: result.key_candidates.into_iter().map(|k| KeyCandidateInfo {
-            offset: k.offset,
-            key_type: k.key_type,
-            key_length: k.key_length,
-            entropy: k.entropy,
-            confidence: format!("{:?}", k.confidence),
-            context: k.context,
-        }).collect(),
+        key_candidates: result
+            .key_candidates
+            .into_iter()
+            .map(|k| KeyCandidateInfo {
+                offset: k.offset,
+                key_type: k.key_type,
+                key_length: k.key_length,
+                entropy: k.entropy,
+                confidence: format!("{:?}", k.confidence),
+                context: k.context,
+            })
+            .collect(),
         wear_analysis: result.wear_analysis.map(|w| WearAnalysisInfo {
             hottest_blocks: w.hottest_blocks,
             coldest_blocks: w.coldest_blocks,
@@ -909,33 +960,37 @@ pub fn ai_analyze_dump(
         }),
         memory_map: result.memory_map.map(|m| MemoryMapInfo {
             total_size: m.total_size,
-            regions: m.regions.into_iter().map(|r| MemoryMapRegionInfo {
-                start: r.start,
-                end: r.end,
-                region_type: r.region_type,
-                name: r.name,
-                color: r.color,
-            }).collect(),
+            regions: m
+                .regions
+                .into_iter()
+                .map(|r| MemoryMapRegionInfo {
+                    start: r.start,
+                    end: r.end,
+                    region_type: r.region_type,
+                    name: r.name,
+                    color: r.color,
+                })
+                .collect(),
         }),
     })
 }
 
 /// Quick AI pattern detection (lighter analysis)
 #[tauri::command]
-pub fn ai_detect_patterns(
-    data: Vec<u8>,
-    page_size: u32,
-) -> Result<Vec<PatternInfo>, String> {
+pub fn ai_detect_patterns(data: Vec<u8>, page_size: u32) -> Result<Vec<PatternInfo>, String> {
     let analyzer = openflash_core::ai::AiAnalyzer::new(page_size as usize, 64);
     let patterns = analyzer.detect_patterns(&data);
-    
-    Ok(patterns.into_iter().map(|p| PatternInfo {
-        pattern_type: format!("{:?}", p.pattern_type),
-        start_offset: p.start_offset,
-        end_offset: p.end_offset,
-        confidence: format!("{:?}", p.confidence),
-        description: p.description,
-    }).collect())
+
+    Ok(patterns
+        .into_iter()
+        .map(|p| PatternInfo {
+            pattern_type: format!("{:?}", p.pattern_type),
+            start_offset: p.start_offset,
+            end_offset: p.end_offset,
+            confidence: format!("{:?}", p.confidence),
+            description: p.description,
+        })
+        .collect())
 }
 
 /// Get AI-powered chip recommendations
@@ -945,20 +1000,21 @@ pub fn ai_get_recommendations(
     page_size: u32,
     pages_per_block: u32,
 ) -> Result<Vec<ChipRecommendationInfo>, String> {
-    let analyzer = openflash_core::ai::AiAnalyzer::new(
-        page_size as usize,
-        pages_per_block as usize,
-    );
-    
+    let analyzer =
+        openflash_core::ai::AiAnalyzer::new(page_size as usize, pages_per_block as usize);
+
     let patterns = analyzer.detect_patterns(&data);
     let recommendations = analyzer.generate_chip_recommendations(&data, &patterns);
-    
-    Ok(recommendations.into_iter().map(|r| ChipRecommendationInfo {
-        category: r.category,
-        title: r.title,
-        description: r.description,
-        importance: r.importance,
-    }).collect())
+
+    Ok(recommendations
+        .into_iter()
+        .map(|r| ChipRecommendationInfo {
+            category: r.category,
+            title: r.title,
+            description: r.description,
+            importance: r.importance,
+        })
+        .collect())
 }
 
 /// v1.4: Compare two dumps
@@ -969,46 +1025,47 @@ pub fn ai_compare_dumps(
     page_size: u32,
     pages_per_block: u32,
 ) -> Result<DumpDiffResponse, String> {
-    let analyzer = openflash_core::ai::AiAnalyzer::new(
-        page_size as usize,
-        pages_per_block as usize,
-    );
-    
+    let analyzer =
+        openflash_core::ai::AiAnalyzer::new(page_size as usize, pages_per_block as usize);
+
     let diff = analyzer.compare_dumps(&dump1, &dump2);
-    
+
     Ok(DumpDiffResponse {
         total_differences: diff.total_differences,
         changed_pages: diff.changed_pages,
         changed_blocks: diff.changed_blocks,
         similarity_percent: diff.similarity_percent,
-        modified_regions: diff.modified_regions.into_iter().map(|r| DiffRegionInfo {
-            offset: r.offset,
-            size: r.size,
-            change_type: format!("{:?}", r.change_type),
-            description: r.description,
-        }).collect(),
+        modified_regions: diff
+            .modified_regions
+            .into_iter()
+            .map(|r| DiffRegionInfo {
+                offset: r.offset,
+                size: r.size,
+                change_type: format!("{:?}", r.change_type),
+                description: r.description,
+            })
+            .collect(),
     })
 }
 
 /// v1.4: Deep scan for encryption keys
 #[tauri::command]
-pub fn ai_search_keys(
-    data: Vec<u8>,
-    page_size: u32,
-) -> Result<Vec<KeyCandidateInfo>, String> {
-    let analyzer = openflash_core::ai::AiAnalyzer::new(page_size as usize, 64)
-        .with_deep_scan(true);
-    
+pub fn ai_search_keys(data: Vec<u8>, page_size: u32) -> Result<Vec<KeyCandidateInfo>, String> {
+    let analyzer = openflash_core::ai::AiAnalyzer::new(page_size as usize, 64).with_deep_scan(true);
+
     let keys = analyzer.search_encryption_keys(&data);
-    
-    Ok(keys.into_iter().map(|k| KeyCandidateInfo {
-        offset: k.offset,
-        key_type: k.key_type,
-        key_length: k.key_length,
-        entropy: k.entropy,
-        confidence: format!("{:?}", k.confidence),
-        context: k.context,
-    }).collect())
+
+    Ok(keys
+        .into_iter()
+        .map(|k| KeyCandidateInfo {
+            offset: k.offset,
+            key_type: k.key_type,
+            key_length: k.key_length,
+            entropy: k.entropy,
+            confidence: format!("{:?}", k.confidence),
+            context: k.context,
+        })
+        .collect())
 }
 
 /// v1.4: Generate AI analysis report
@@ -1018,14 +1075,12 @@ pub fn ai_generate_report(
     page_size: u32,
     pages_per_block: u32,
 ) -> Result<String, String> {
-    let analyzer = openflash_core::ai::AiAnalyzer::new(
-        page_size as usize,
-        pages_per_block as usize,
-    );
-    
+    let analyzer =
+        openflash_core::ai::AiAnalyzer::new(page_size as usize, pages_per_block as usize);
+
     let result = analyzer.analyze(&data);
     let report = analyzer.generate_report(&result);
-    
+
     Ok(report)
 }
 
@@ -1051,18 +1106,16 @@ pub async fn dump_nand_with_progress(
 ) -> Result<Vec<u8>, String> {
     let chunk_size = 64u32; // Pages per progress update
     let mut data = Vec::with_capacity((num_pages as usize) * (page_size as usize));
-    
+
     if mock::is_mock_connected() {
         for page in start_page..(start_page + num_pages) {
             let mut args = [0u8; 6];
             args[0..4].copy_from_slice(&page.to_le_bytes());
             args[4..6].copy_from_slice(&page_size.to_le_bytes());
-            let page_data = mock::process_mock_command(
-                openflash_core::protocol::Command::NandReadPage,
-                &args,
-            );
+            let page_data =
+                mock::process_mock_command(openflash_core::protocol::Command::NandReadPage, &args);
             data.extend(page_data);
-            
+
             // Emit progress every chunk_size pages
             if (page - start_page) % chunk_size == 0 || page == start_page + num_pages - 1 {
                 let progress = DumpProgress {
@@ -1076,7 +1129,7 @@ pub async fn dump_nand_with_progress(
         }
         return Ok(data);
     }
-    
+
     let device = {
         let manager = device_manager.lock().map_err(|e| e.to_string())?;
         manager.get_active_device().ok_or("No device connected")?
@@ -1087,7 +1140,7 @@ pub async fn dump_nand_with_progress(
     for page in start_page..(start_page + num_pages) {
         let page_data = dev.read_page(page, page_size).await?;
         data.extend(page_data);
-        
+
         // Emit progress
         if (page - start_page) % chunk_size == 0 || page == start_page + num_pages - 1 {
             let progress = DumpProgress {
@@ -1124,10 +1177,7 @@ pub fn set_config(
 }
 
 #[tauri::command]
-pub fn add_recent_file(
-    path: String,
-    config: State<'_, Mutex<AppConfig>>,
-) -> Result<(), String> {
+pub fn add_recent_file(path: String, config: State<'_, Mutex<AppConfig>>) -> Result<(), String> {
     let mut cfg = config.lock().map_err(|e| e.to_string())?;
     cfg.add_recent_file(&path);
     cfg.save()

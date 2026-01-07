@@ -8,16 +8,16 @@ use serde::{Deserialize, Serialize};
 pub struct SpiNorChipInfo {
     pub manufacturer: String,
     pub model: String,
-    pub jedec_id: [u8; 3],          // Manufacturer + Memory Type + Capacity
-    pub size_bytes: u32,             // Total size in bytes
-    pub page_size: u32,              // Page program size (typically 256)
-    pub sector_size: u32,            // Sector erase size (typically 4KB)
-    pub block_size: u32,             // Block erase size (typically 64KB)
+    pub jedec_id: [u8; 3], // Manufacturer + Memory Type + Capacity
+    pub size_bytes: u32,   // Total size in bytes
+    pub page_size: u32,    // Page program size (typically 256)
+    pub sector_size: u32,  // Sector erase size (typically 4KB)
+    pub block_size: u32,   // Block erase size (typically 64KB)
     pub voltage: String,
     pub max_clock_mhz: u8,
-    pub has_qspi: bool,              // Quad SPI support
-    pub has_dual: bool,              // Dual SPI support
-    pub address_bytes: u8,           // 3 or 4 byte addressing
+    pub has_qspi: bool,    // Quad SPI support
+    pub has_dual: bool,    // Dual SPI support
+    pub address_bytes: u8, // 3 or 4 byte addressing
 }
 
 /// SPI NOR standard commands
@@ -25,7 +25,7 @@ pub mod commands {
     // Identification
     pub const READ_JEDEC_ID: u8 = 0x9F;
     pub const READ_SFDP: u8 = 0x5A;
-    
+
     // Read commands
     pub const READ: u8 = 0x03;
     pub const FAST_READ: u8 = 0x0B;
@@ -33,20 +33,20 @@ pub mod commands {
     pub const QUAD_READ: u8 = 0x6B;
     pub const DUAL_IO_READ: u8 = 0xBB;
     pub const QUAD_IO_READ: u8 = 0xEB;
-    
+
     // Write commands
     pub const WRITE_ENABLE: u8 = 0x06;
     pub const WRITE_DISABLE: u8 = 0x04;
     pub const PAGE_PROGRAM: u8 = 0x02;
     pub const QUAD_PAGE_PROGRAM: u8 = 0x32;
-    
+
     // Erase commands
-    pub const SECTOR_ERASE: u8 = 0x20;    // 4KB
+    pub const SECTOR_ERASE: u8 = 0x20; // 4KB
     pub const BLOCK_ERASE_32K: u8 = 0x52;
     pub const BLOCK_ERASE_64K: u8 = 0xD8;
     pub const CHIP_ERASE: u8 = 0xC7;
     pub const CHIP_ERASE_ALT: u8 = 0x60;
-    
+
     // Status commands
     pub const READ_STATUS_1: u8 = 0x05;
     pub const READ_STATUS_2: u8 = 0x35;
@@ -54,7 +54,7 @@ pub mod commands {
     pub const WRITE_STATUS_1: u8 = 0x01;
     pub const WRITE_STATUS_2: u8 = 0x31;
     pub const WRITE_STATUS_3: u8 = 0x11;
-    
+
     // Other
     pub const RESET_ENABLE: u8 = 0x66;
     pub const RESET: u8 = 0x99;
@@ -95,7 +95,6 @@ pub mod status3 {
     pub const DRV1: u8 = 0x40;
 }
 
-
 /// SPI NOR manufacturer IDs
 pub mod manufacturers {
     pub const WINBOND: u8 = 0xEF;
@@ -129,12 +128,12 @@ pub fn get_spi_nor_manufacturer_name(mfr_id: u8) -> &'static str {
 /// Get chip info from JEDEC ID
 pub fn get_spi_nor_chip_info(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
     let mfr = jedec_id[0];
-    
+
     // Try exact match first
     if let Some(info) = get_spi_nor_chip_info_exact(jedec_id) {
         return Some(info);
     }
-    
+
     // Fall back to generic detection based on capacity byte
     get_spi_nor_chip_info_generic(mfr, jedec_id)
 }
@@ -146,7 +145,7 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             manufacturer: "Winbond".into(),
             model: "W25Q80DV".into(),
             jedec_id: *jedec_id,
-            size_bytes: 1 * 1024 * 1024,  // 1MB
+            size_bytes: 1 * 1024 * 1024, // 1MB
             page_size: 256,
             sector_size: 4096,
             block_size: 65536,
@@ -160,7 +159,7 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             manufacturer: "Winbond".into(),
             model: "W25Q16JV".into(),
             jedec_id: *jedec_id,
-            size_bytes: 2 * 1024 * 1024,  // 2MB
+            size_bytes: 2 * 1024 * 1024, // 2MB
             page_size: 256,
             sector_size: 4096,
             block_size: 65536,
@@ -174,7 +173,7 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             manufacturer: "Winbond".into(),
             model: "W25Q32JV".into(),
             jedec_id: *jedec_id,
-            size_bytes: 4 * 1024 * 1024,  // 4MB
+            size_bytes: 4 * 1024 * 1024, // 4MB
             page_size: 256,
             sector_size: 4096,
             block_size: 65536,
@@ -188,7 +187,7 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             manufacturer: "Winbond".into(),
             model: "W25Q64JV".into(),
             jedec_id: *jedec_id,
-            size_bytes: 8 * 1024 * 1024,  // 8MB
+            size_bytes: 8 * 1024 * 1024, // 8MB
             page_size: 256,
             sector_size: 4096,
             block_size: 65536,
@@ -202,7 +201,7 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             manufacturer: "Winbond".into(),
             model: "W25Q128JV".into(),
             jedec_id: *jedec_id,
-            size_bytes: 16 * 1024 * 1024,  // 16MB
+            size_bytes: 16 * 1024 * 1024, // 16MB
             page_size: 256,
             sector_size: 4096,
             block_size: 65536,
@@ -216,7 +215,7 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             manufacturer: "Winbond".into(),
             model: "W25Q256JV".into(),
             jedec_id: *jedec_id,
-            size_bytes: 32 * 1024 * 1024,  // 32MB
+            size_bytes: 32 * 1024 * 1024, // 32MB
             page_size: 256,
             sector_size: 4096,
             block_size: 65536,
@@ -230,7 +229,7 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             manufacturer: "Winbond".into(),
             model: "W25Q512JV".into(),
             jedec_id: *jedec_id,
-            size_bytes: 64 * 1024 * 1024,  // 64MB
+            size_bytes: 64 * 1024 * 1024, // 64MB
             page_size: 256,
             sector_size: 4096,
             block_size: 65536,
@@ -598,34 +597,584 @@ fn get_spi_nor_chip_info_exact(jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
             address_bytes: 3,
         }),
 
+        // ============ GigaDevice GD25Q Series (v2.2) ============
+        [0xC8, 0x40, 0x14] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25Q80C".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 1 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x40, 0x15] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25Q16C".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 2 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x40, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25Q32C".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x40, 0x17] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25Q64C".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 8 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x40, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25Q128C".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x40, 0x19] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25Q256D".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 32 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+        [0xC8, 0x40, 0x20] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25Q512MC".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 64 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+        // GigaDevice 1.8V variants
+        [0xC8, 0x60, 0x15] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25LQ16C".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 2 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.8V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x60, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25LQ32D".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.8V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x60, 0x17] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25LQ64C".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 8 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.8V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x60, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25LQ128D".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.8V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xC8, 0x60, 0x19] => Some(SpiNorChipInfo {
+            manufacturer: "GigaDevice".into(),
+            model: "GD25LQ256D".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 32 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.8V".into(),
+            max_clock_mhz: 120,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+
+        // ============ EON EN25QH Series (v2.2) ============
+        [0x1C, 0x70, 0x14] => Some(SpiNorChipInfo {
+            manufacturer: "EON".into(),
+            model: "EN25QH80A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 1 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x1C, 0x70, 0x15] => Some(SpiNorChipInfo {
+            manufacturer: "EON".into(),
+            model: "EN25QH16A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 2 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x1C, 0x70, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "EON".into(),
+            model: "EN25QH32B".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x1C, 0x70, 0x17] => Some(SpiNorChipInfo {
+            manufacturer: "EON".into(),
+            model: "EN25QH64A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 8 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x1C, 0x70, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "EON".into(),
+            model: "EN25QH128A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x1C, 0x70, 0x19] => Some(SpiNorChipInfo {
+            manufacturer: "EON".into(),
+            model: "EN25QH256A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 32 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+
+        // ============ Micron/Numonyx N25Q Series (v2.2) ============
+        [0x20, 0xBA, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "N25Q032A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 108,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x20, 0xBA, 0x17] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "N25Q064A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 8 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 108,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x20, 0xBA, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "N25Q128A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 108,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x20, 0xBA, 0x19] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "N25Q256A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 32 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 108,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+        [0x20, 0xBA, 0x20] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "N25Q512A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 64 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 108,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+        [0x20, 0xBA, 0x21] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "MT25QL01G".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 128 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 133,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+        // Micron 1.8V variants
+        [0x20, 0xBB, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "N25Q128A11".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.8V".into(),
+            max_clock_mhz: 108,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x20, 0xBB, 0x19] => Some(SpiNorChipInfo {
+            manufacturer: "Micron".into(),
+            model: "N25Q256A11".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 32 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.8V".into(),
+            max_clock_mhz: 108,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 4,
+        }),
+
+        // ============ XMC/XTX XM25Q Series (v2.2) ============
+        [0x20, 0x40, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "XMC".into(),
+            model: "XM25QH32B".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x20, 0x40, 0x17] => Some(SpiNorChipInfo {
+            manufacturer: "XMC".into(),
+            model: "XM25QH64A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 8 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x20, 0x40, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "XMC".into(),
+            model: "XM25QH128A".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+
+        // ============ Puya P25Q Series (v2.2) ============
+        [0x85, 0x60, 0x14] => Some(SpiNorChipInfo {
+            manufacturer: "Puya".into(),
+            model: "P25Q80H".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 1 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x85, 0x60, 0x15] => Some(SpiNorChipInfo {
+            manufacturer: "Puya".into(),
+            model: "P25Q16H".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 2 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x85, 0x60, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "Puya".into(),
+            model: "P25Q32H".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+
+        // ============ Boya BY25Q Series (v2.2) ============
+        [0x68, 0x40, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "Boya".into(),
+            model: "BY25Q32BS".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x68, 0x40, 0x17] => Some(SpiNorChipInfo {
+            manufacturer: "Boya".into(),
+            model: "BY25Q64AS".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 8 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0x68, 0x40, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "Boya".into(),
+            model: "BY25Q128AS".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "3.3V".into(),
+            max_clock_mhz: 104,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+
+        // ============ Winbond W25Q 1.2V Series (v2.2) ============
+        [0xEF, 0x80, 0x16] => Some(SpiNorChipInfo {
+            manufacturer: "Winbond".into(),
+            model: "W25Q32ND".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 4 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.2V".into(),
+            max_clock_mhz: 133,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xEF, 0x80, 0x17] => Some(SpiNorChipInfo {
+            manufacturer: "Winbond".into(),
+            model: "W25Q64ND".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 8 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.2V".into(),
+            max_clock_mhz: 133,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+        [0xEF, 0x80, 0x18] => Some(SpiNorChipInfo {
+            manufacturer: "Winbond".into(),
+            model: "W25Q128ND".into(),
+            jedec_id: *jedec_id,
+            size_bytes: 16 * 1024 * 1024,
+            page_size: 256,
+            sector_size: 4096,
+            block_size: 65536,
+            voltage: "1.2V".into(),
+            max_clock_mhz: 133,
+            has_qspi: true,
+            has_dual: true,
+            address_bytes: 3,
+        }),
+
         _ => None,
     }
 }
-
 
 /// Generic SPI NOR chip detection based on capacity byte
 fn get_spi_nor_chip_info_generic(mfr: u8, jedec_id: &[u8; 3]) -> Option<SpiNorChipInfo> {
     let manufacturer = get_spi_nor_manufacturer_name(mfr).to_string();
     let capacity_byte = jedec_id[2];
-    
+
     // Capacity byte typically encodes size as 2^N bytes
     let (size_bytes, address_bytes) = match capacity_byte {
-        0x14 => (1 * 1024 * 1024, 3),    // 8Mbit = 1MB
-        0x15 => (2 * 1024 * 1024, 3),    // 16Mbit = 2MB
-        0x16 => (4 * 1024 * 1024, 3),    // 32Mbit = 4MB
-        0x17 => (8 * 1024 * 1024, 3),    // 64Mbit = 8MB
-        0x18 => (16 * 1024 * 1024, 3),   // 128Mbit = 16MB
-        0x19 => (32 * 1024 * 1024, 4),   // 256Mbit = 32MB
-        0x1A => (64 * 1024 * 1024, 4),   // 512Mbit = 64MB
-        0x1B => (128 * 1024 * 1024, 4),  // 1Gbit = 128MB
-        0x20 => (64 * 1024 * 1024, 4),   // Alternative 512Mbit
-        0x21 => (128 * 1024 * 1024, 4),  // Alternative 1Gbit
+        0x14 => (1 * 1024 * 1024, 3),   // 8Mbit = 1MB
+        0x15 => (2 * 1024 * 1024, 3),   // 16Mbit = 2MB
+        0x16 => (4 * 1024 * 1024, 3),   // 32Mbit = 4MB
+        0x17 => (8 * 1024 * 1024, 3),   // 64Mbit = 8MB
+        0x18 => (16 * 1024 * 1024, 3),  // 128Mbit = 16MB
+        0x19 => (32 * 1024 * 1024, 4),  // 256Mbit = 32MB
+        0x1A => (64 * 1024 * 1024, 4),  // 512Mbit = 64MB
+        0x1B => (128 * 1024 * 1024, 4), // 1Gbit = 128MB
+        0x20 => (64 * 1024 * 1024, 4),  // Alternative 512Mbit
+        0x21 => (128 * 1024 * 1024, 4), // Alternative 1Gbit
         _ => return None,
     };
 
     Some(SpiNorChipInfo {
         manufacturer,
-        model: format!("Generic SPI NOR 0x{:02X}{:02X}{:02X}", jedec_id[0], jedec_id[1], jedec_id[2]),
+        model: format!(
+            "Generic SPI NOR 0x{:02X}{:02X}{:02X}",
+            jedec_id[0], jedec_id[1], jedec_id[2]
+        ),
         jedec_id: *jedec_id,
         size_bytes,
         page_size: 256,
@@ -642,7 +1191,7 @@ fn get_spi_nor_chip_info_generic(mfr: u8, jedec_id: &[u8; 3]) -> Option<SpiNorCh
 /// SFDP (Serial Flash Discoverable Parameters) header
 #[derive(Debug, Clone)]
 pub struct SfdpHeader {
-    pub signature: [u8; 4],  // "SFDP"
+    pub signature: [u8; 4], // "SFDP"
     pub minor_rev: u8,
     pub major_rev: u8,
     pub num_param_headers: u8,
@@ -673,10 +1222,10 @@ pub enum QuadEnableMethod {
 /// Fast read support flags
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
 pub struct FastReadSupport {
-    pub fast_read_112: bool,  // 1-1-2 (cmd-addr-data)
-    pub fast_read_122: bool,  // 1-2-2
-    pub fast_read_114: bool,  // 1-1-4
-    pub fast_read_144: bool,  // 1-4-4
+    pub fast_read_112: bool, // 1-1-2 (cmd-addr-data)
+    pub fast_read_122: bool, // 1-2-2
+    pub fast_read_114: bool, // 1-1-4
+    pub fast_read_144: bool, // 1-4-4
 }
 
 /// Parsed SFDP information
@@ -702,12 +1251,12 @@ impl SfdpParser {
         if data.len() < 8 {
             return None;
         }
-        
+
         // Check signature "SFDP"
         if &data[0..4] != b"SFDP" {
             return None;
         }
-        
+
         Some(SfdpHeader {
             signature: [data[0], data[1], data[2], data[3]],
             minor_rev: data[4],
@@ -716,15 +1265,15 @@ impl SfdpParser {
             access_protocol: data[7],
         })
     }
-    
+
     /// Parse parameter header (8 bytes each, starting at offset 8)
     pub fn parse_param_header(data: &[u8]) -> Option<SfdpParamHeader> {
         if data.len() < 8 {
             return None;
         }
-        
+
         let table_pointer = u32::from_le_bytes([data[4], data[5], data[6], 0]);
-        
+
         Some(SfdpParamHeader {
             id_lsb: data[0],
             minor_rev: data[1],
@@ -734,17 +1283,18 @@ impl SfdpParser {
             id_msb: data[7],
         })
     }
-    
+
     /// Parse JEDEC Basic Flash Parameter Table (BFPT)
     pub fn parse_bfpt(data: &[u8]) -> Option<SfdpInfo> {
-        if data.len() < 36 {  // Minimum 9 DWORDs
+        if data.len() < 36 {
+            // Minimum 9 DWORDs
             return None;
         }
-        
+
         // DWORD 1: Block/Sector erase sizes
         let dword1 = u32::from_le_bytes([data[0], data[1], data[2], data[3]]);
-        let supports_4kb_erase = (dword1 & 0x03) != 0x01;  // Bits 1:0
-        
+        let supports_4kb_erase = (dword1 & 0x03) != 0x01; // Bits 1:0
+
         // DWORD 2: Density
         let dword2 = u32::from_le_bytes([data[4], data[5], data[6], data[7]]);
         let density_bits = if dword2 & 0x80000000 != 0 {
@@ -754,7 +1304,7 @@ impl SfdpParser {
             // Bit 31 clear: density is N+1 bits
             (dword2 as u64) + 1
         };
-        
+
         // DWORD 3: Fast read support
         let dword3 = u32::from_le_bytes([data[8], data[9], data[10], data[11]]);
         let fast_read_support = FastReadSupport {
@@ -763,18 +1313,22 @@ impl SfdpParser {
             fast_read_114: (dword3 & (1 << 22)) != 0,
             fast_read_144: (dword3 & (1 << 21)) != 0,
         };
-        
+
         // DWORD 8: Erase type 1 & 2
         let dword8 = u32::from_le_bytes([data[28], data[29], data[30], data[31]]);
         let erase1_size = 1u32 << (dword8 & 0xFF);
         let erase2_size = 1u32 << ((dword8 >> 16) & 0xFF);
-        
+
         let supports_32kb_erase = erase1_size == 32768 || erase2_size == 32768;
         let supports_64kb_erase = erase1_size == 65536 || erase2_size == 65536;
-        
+
         // Determine sector size (smallest erase unit)
-        let sector_size = if supports_4kb_erase { 4096 } else { erase1_size.min(erase2_size) };
-        
+        let sector_size = if supports_4kb_erase {
+            4096
+        } else {
+            erase1_size.min(erase2_size)
+        };
+
         // DWORD 15 (if available): Quad enable method
         let quad_enable_method = if data.len() >= 60 {
             let dword15 = u32::from_le_bytes([data[56], data[57], data[58], data[59]]);
@@ -789,13 +1343,17 @@ impl SfdpParser {
         } else {
             QuadEnableMethod::None
         };
-        
+
         // Address bytes
-        let address_bytes = if density_bits > 128 * 1024 * 1024 * 8 { 4 } else { 3 };
-        
+        let address_bytes = if density_bits > 128 * 1024 * 1024 * 8 {
+            4
+        } else {
+            3
+        };
+
         Some(SfdpInfo {
             density_bits,
-            page_size: 256,  // Standard page size
+            page_size: 256, // Standard page size
             sector_size,
             supports_4kb_erase,
             supports_32kb_erase,
@@ -805,26 +1363,26 @@ impl SfdpParser {
             fast_read_support,
         })
     }
-    
+
     /// Parse complete SFDP data
     pub fn parse(data: &[u8]) -> Option<SfdpInfo> {
         let header = Self::parse_header(data)?;
-        
+
         if header.num_param_headers == 0 {
             return None;
         }
-        
+
         // Parse first parameter header (JEDEC BFPT)
         let param_header = Self::parse_param_header(&data[8..])?;
-        
+
         // Read BFPT at specified offset
         let bfpt_offset = param_header.table_pointer as usize;
         let bfpt_len = (param_header.length_dwords as usize) * 4;
-        
+
         if data.len() < bfpt_offset + bfpt_len {
             return None;
         }
-        
+
         Self::parse_bfpt(&data[bfpt_offset..])
     }
 }
@@ -834,29 +1392,43 @@ impl SfdpInfo {
     /// Returns a 64-byte BFPT (16 DWORDs)
     pub fn to_bfpt_bytes(&self) -> Vec<u8> {
         let mut bfpt = vec![0u8; 64];
-        
+
         // DWORD 1: Block/Sector erase sizes
         let dword1: u32 = if self.supports_4kb_erase { 0x00 } else { 0x01 };
         bfpt[0..4].copy_from_slice(&dword1.to_le_bytes());
-        
+
         // DWORD 2: Density (use N+1 format for simplicity)
         let dword2: u32 = (self.density_bits - 1) as u32;
         bfpt[4..8].copy_from_slice(&dword2.to_le_bytes());
-        
+
         // DWORD 3: Fast read support
         let mut dword3: u32 = 0;
-        if self.fast_read_support.fast_read_112 { dword3 |= 1 << 16; }
-        if self.fast_read_support.fast_read_122 { dword3 |= 1 << 20; }
-        if self.fast_read_support.fast_read_114 { dword3 |= 1 << 22; }
-        if self.fast_read_support.fast_read_144 { dword3 |= 1 << 21; }
+        if self.fast_read_support.fast_read_112 {
+            dword3 |= 1 << 16;
+        }
+        if self.fast_read_support.fast_read_122 {
+            dword3 |= 1 << 20;
+        }
+        if self.fast_read_support.fast_read_114 {
+            dword3 |= 1 << 22;
+        }
+        if self.fast_read_support.fast_read_144 {
+            dword3 |= 1 << 21;
+        }
         bfpt[8..12].copy_from_slice(&dword3.to_le_bytes());
-        
+
         // DWORD 8: Erase type 1 & 2
         let erase1_exp = if self.supports_4kb_erase { 12u8 } else { 16u8 }; // 4KB or 64KB
-        let erase2_exp = if self.supports_32kb_erase { 15u8 } else if self.supports_64kb_erase { 16u8 } else { 12u8 };
+        let erase2_exp = if self.supports_32kb_erase {
+            15u8
+        } else if self.supports_64kb_erase {
+            16u8
+        } else {
+            12u8
+        };
         let dword8: u32 = (erase1_exp as u32) | ((erase2_exp as u32) << 16);
         bfpt[28..32].copy_from_slice(&dword8.to_le_bytes());
-        
+
         // DWORD 15: Quad enable method
         let qe_bits: u32 = match self.quad_enable_method {
             QuadEnableMethod::None => 0,
@@ -867,11 +1439,10 @@ impl SfdpInfo {
         };
         let dword15: u32 = qe_bits << 20;
         bfpt[56..60].copy_from_slice(&dword15.to_le_bytes());
-        
+
         bfpt
     }
 }
-
 
 /// Protection status decoded from status registers
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -895,8 +1466,8 @@ impl ProtectionStatus {
             bp0: (sr1 & status1::BP0) != 0,
             bp1: (sr1 & status1::BP1) != 0,
             bp2: (sr1 & status1::BP2) != 0,
-            bp3: false,  // BP3 location varies by chip
-            bp4: false,  // BP4 location varies by chip
+            bp3: false, // BP3 location varies by chip
+            bp4: false, // BP4 location varies by chip
             tb: (sr1 & status1::TB) != 0,
             sec: (sr1 & status1::SEC) != 0,
             cmp: (sr2 & status2::CMP) != 0,
@@ -904,51 +1475,70 @@ impl ProtectionStatus {
             srp1: (sr2 & status2::SRP1) != 0,
         }
     }
-    
+
     /// Encode protection bits back to status register 1 value
     /// Only encodes BP0-BP2, TB, SEC, SRP0 (bits that are in SR1)
     pub fn to_status_register1(&self) -> u8 {
         let mut sr1 = 0u8;
-        if self.bp0 { sr1 |= status1::BP0; }
-        if self.bp1 { sr1 |= status1::BP1; }
-        if self.bp2 { sr1 |= status1::BP2; }
-        if self.tb { sr1 |= status1::TB; }
-        if self.sec { sr1 |= status1::SEC; }
-        if self.srp0 { sr1 |= status1::SRP0; }
+        if self.bp0 {
+            sr1 |= status1::BP0;
+        }
+        if self.bp1 {
+            sr1 |= status1::BP1;
+        }
+        if self.bp2 {
+            sr1 |= status1::BP2;
+        }
+        if self.tb {
+            sr1 |= status1::TB;
+        }
+        if self.sec {
+            sr1 |= status1::SEC;
+        }
+        if self.srp0 {
+            sr1 |= status1::SRP0;
+        }
         sr1
     }
-    
+
     /// Encode protection bits back to status register 2 value
     /// Only encodes CMP, SRP1 (bits that are in SR2)
     pub fn to_status_register2(&self) -> u8 {
         let mut sr2 = 0u8;
-        if self.cmp { sr2 |= status2::CMP; }
-        if self.srp1 { sr2 |= status2::SRP1; }
+        if self.cmp {
+            sr2 |= status2::CMP;
+        }
+        if self.srp1 {
+            sr2 |= status2::SRP1;
+        }
         sr2
     }
-    
+
     /// Check if any protection is enabled
     pub fn is_protected(&self) -> bool {
         self.bp0 || self.bp1 || self.bp2 || self.bp3 || self.bp4
     }
-    
+
     /// Get human-readable protection description
     pub fn description(&self) -> String {
         if !self.is_protected() {
             return "Unprotected".to_string();
         }
-        
-        let bp_value = (self.bp0 as u8) 
-            | ((self.bp1 as u8) << 1) 
+
+        let bp_value = (self.bp0 as u8)
+            | ((self.bp1 as u8) << 1)
             | ((self.bp2 as u8) << 2)
             | ((self.bp3 as u8) << 3)
             | ((self.bp4 as u8) << 4);
-        
+
         let location = if self.tb { "Bottom" } else { "Top" };
         let unit = if self.sec { "Sectors" } else { "Blocks" };
         let complement = if self.cmp { " (Complemented)" } else { "" };
-        
-        format!("Protected: BP={}, {}, {}{}", bp_value, location, unit, complement)
+
+        format!(
+            "Protected: BP={}, {}, {}{}",
+            bp_value, location, unit, complement
+        )
     }
 }
 
@@ -964,10 +1554,10 @@ pub enum SpiNorError {
     /// Erase operation failed
     EraseFailed { address: u32 },
     /// Verification failed after write
-    VerifyFailed { 
-        address: u32, 
-        expected: u8, 
-        actual: u8 
+    VerifyFailed {
+        address: u32,
+        expected: u8,
+        actual: u8,
     },
     /// Chip is write-protected
     WriteProtected,
@@ -987,7 +1577,7 @@ mod tests {
     fn test_winbond_chip_recognition() {
         let jedec_id = [0xEF, 0x40, 0x18];
         let chip_info = get_spi_nor_chip_info(&jedec_id).unwrap();
-        
+
         assert_eq!(chip_info.manufacturer, "Winbond");
         assert_eq!(chip_info.model, "W25Q128JV");
         assert_eq!(chip_info.size_bytes, 16 * 1024 * 1024);
@@ -998,7 +1588,7 @@ mod tests {
     fn test_macronix_chip_recognition() {
         let jedec_id = [0xC2, 0x20, 0x18];
         let chip_info = get_spi_nor_chip_info(&jedec_id).unwrap();
-        
+
         assert_eq!(chip_info.manufacturer, "Macronix");
         assert_eq!(chip_info.model, "MX25L12835F");
         assert_eq!(chip_info.size_bytes, 16 * 1024 * 1024);
@@ -1008,7 +1598,7 @@ mod tests {
     fn test_issi_chip_recognition() {
         let jedec_id = [0x9D, 0x60, 0x18];
         let chip_info = get_spi_nor_chip_info(&jedec_id).unwrap();
-        
+
         assert_eq!(chip_info.manufacturer, "ISSI");
         assert_eq!(chip_info.model, "IS25LP128F");
         assert_eq!(chip_info.size_bytes, 16 * 1024 * 1024);
@@ -1019,7 +1609,7 @@ mod tests {
         // Unknown manufacturer but valid capacity byte
         let jedec_id = [0xAA, 0xBB, 0x17];
         let chip_info = get_spi_nor_chip_info(&jedec_id).unwrap();
-        
+
         assert_eq!(chip_info.size_bytes, 8 * 1024 * 1024);
         assert_eq!(chip_info.address_bytes, 3);
     }
@@ -1036,9 +1626,9 @@ mod tests {
     fn test_protection_status_decode() {
         let sr1 = status1::BP0 | status1::BP1 | status1::TB;
         let sr2 = status2::CMP;
-        
+
         let status = ProtectionStatus::from_status_registers(sr1, sr2);
-        
+
         assert!(status.bp0);
         assert!(status.bp1);
         assert!(!status.bp2);
@@ -1061,10 +1651,10 @@ mod tests {
             srp0: false,
             srp1: false,
         };
-        
+
         let sr1 = status.to_status_register1();
         let sr2 = status.to_status_register2();
-        
+
         assert_eq!(sr1, status1::BP0 | status1::BP1 | status1::TB);
         assert_eq!(sr2, status2::CMP);
     }
@@ -1073,7 +1663,7 @@ mod tests {
     fn test_sfdp_header_parse() {
         let data = b"SFDP\x06\x01\x00\xFF";
         let header = SfdpParser::parse_header(data).unwrap();
-        
+
         assert_eq!(&header.signature, b"SFDP");
         assert_eq!(header.minor_rev, 0x06);
         assert_eq!(header.major_rev, 0x01);
@@ -1092,7 +1682,7 @@ mod tests {
         let jedec_id = [0xEF, 0x40, 0x19];
         let chip_info = get_spi_nor_chip_info(&jedec_id).unwrap();
         assert_eq!(chip_info.address_bytes, 4);
-        
+
         // 128Mbit chip should use 3-byte addressing
         let jedec_id = [0xEF, 0x40, 0x18];
         let chip_info = get_spi_nor_chip_info(&jedec_id).unwrap();
@@ -1107,7 +1697,7 @@ mod proptests {
 
     proptest! {
         #![proptest_config(ProptestConfig::with_cases(100))]
-        
+
         /// Feature: nor-flash-ufs-support, Property 1: JEDEC ID Lookup Consistency
         /// For any valid JEDEC ID in the chip database, looking up the chip info
         /// and then checking the returned JEDEC ID should match the original query ID.
@@ -1134,7 +1724,7 @@ mod proptests {
                     "JEDEC ID mismatch: queried {:?}, got {:?}", jedec_id, info.jedec_id);
             }
         }
-        
+
         /// Property test: All known chips in database return consistent JEDEC IDs
         #[test]
         fn prop_known_chips_jedec_consistency(idx in 0usize..32) {
@@ -1161,16 +1751,16 @@ mod proptests {
                 [0x9D, 0x70, 0x15], [0x9D, 0x70, 0x16], [0x9D, 0x70, 0x17],
                 [0x9D, 0x70, 0x18],
             ];
-            
+
             let jedec_id = known_ids[idx];
             let info = get_spi_nor_chip_info(&jedec_id)
                 .expect(&format!("Known JEDEC ID {:?} should be in database", jedec_id));
-            
+
             // Property: returned JEDEC ID must match query ID
             prop_assert_eq!(info.jedec_id, jedec_id,
                 "JEDEC ID mismatch for known chip: queried {:?}, got {:?}", jedec_id, info.jedec_id);
         }
-        
+
         /// Feature: nor-flash-ufs-support, Property 2: SFDP Parsing Round-Trip
         /// For any valid SFDP data structure, serializing it to bytes and then parsing
         /// those bytes should produce an equivalent SfdpInfo structure.
@@ -1194,10 +1784,10 @@ mod proptests {
                 3 => QuadEnableMethod::StatusReg2Bit7,
                 _ => QuadEnableMethod::StatusReg1Bit1Volatile,
             };
-            
+
             let density_bits = 1u64 << density_exp;
             let address_bytes = if density_bits > 128 * 1024 * 1024 * 8 { 4 } else { 3 };
-            
+
             let original = SfdpInfo {
                 density_bits,
                 page_size: 256,
@@ -1214,14 +1804,14 @@ mod proptests {
                     fast_read_144,
                 },
             };
-            
+
             // Serialize to BFPT bytes
             let bfpt_bytes = original.to_bfpt_bytes();
-            
+
             // Parse back
             let parsed = SfdpParser::parse_bfpt(&bfpt_bytes)
                 .expect("Should parse valid BFPT bytes");
-            
+
             // Verify key fields match (some fields may have different representations)
             prop_assert_eq!(parsed.density_bits, original.density_bits,
                 "Density mismatch: original {}, parsed {}", original.density_bits, parsed.density_bits);
@@ -1238,7 +1828,7 @@ mod proptests {
             prop_assert_eq!(parsed.fast_read_support.fast_read_144, original.fast_read_support.fast_read_144,
                 "Fast read 1-4-4 mismatch");
         }
-        
+
         /// Feature: nor-flash-ufs-support, Property 4: Status Register Bit Decoding
         /// For any status register byte value, decoding protection bits (BP0-BP2, TB, SEC, CMP)
         /// and re-encoding them should produce the same byte value for those bit positions.
@@ -1250,25 +1840,25 @@ mod proptests {
         ) {
             // Decode status registers
             let status = ProtectionStatus::from_status_registers(sr1, sr2);
-            
+
             // Re-encode to status registers
             let encoded_sr1 = status.to_status_register1();
             let encoded_sr2 = status.to_status_register2();
-            
+
             // Mask for bits we care about in SR1: BP0, BP1, BP2, TB, SEC, SRP0
-            let sr1_mask = status1::BP0 | status1::BP1 | status1::BP2 | 
+            let sr1_mask = status1::BP0 | status1::BP1 | status1::BP2 |
                           status1::TB | status1::SEC | status1::SRP0;
-            
+
             // Mask for bits we care about in SR2: CMP, SRP1
             let sr2_mask = status2::CMP | status2::SRP1;
-            
+
             // Property: masked bits should match after round-trip
             prop_assert_eq!(encoded_sr1 & sr1_mask, sr1 & sr1_mask,
                 "SR1 bits mismatch: original 0x{:02X}, encoded 0x{:02X}", sr1, encoded_sr1);
             prop_assert_eq!(encoded_sr2 & sr2_mask, sr2 & sr2_mask,
                 "SR2 bits mismatch: original 0x{:02X}, encoded 0x{:02X}", sr2, encoded_sr2);
         }
-        
+
         /// Property test: Protection status correctly identifies protected state
         #[test]
         fn prop_protection_status_is_protected(
@@ -1280,13 +1870,13 @@ mod proptests {
             if bp0 { sr1 |= status1::BP0; }
             if bp1 { sr1 |= status1::BP1; }
             if bp2 { sr1 |= status1::BP2; }
-            
+
             let status = ProtectionStatus::from_status_registers(sr1, 0);
-            
+
             // Property: is_protected should be true iff any BP bit is set
             let expected_protected = bp0 || bp1 || bp2;
             prop_assert_eq!(status.is_protected(), expected_protected,
-                "is_protected mismatch: bp0={}, bp1={}, bp2={}, expected={}", 
+                "is_protected mismatch: bp0={}, bp1={}, bp2={}, expected={}",
                 bp0, bp1, bp2, expected_protected);
         }
     }

@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2027-Q1
+
+### Added
+- **Expanded Flash Memory Database**
+  - Significantly expanded chip database across all flash types
+  
+  - **Parallel NAND (50+ new chips)**
+    - Samsung: K9F1G08U0E, K9F2G08U0E, K9GBG08U0A/B, K9LCG08U0A
+    - Micron: MT29F32G08CBADAWP, MT29F64G08CBABAWP, MT29F128G08CFABAWP, MT29F256G08CJAABWP
+    - SK Hynix: H27U8G8T2BTR, H27UBG8T2ATR, H27UCG8T2ETR, H27QDG8VEBIR
+    - Kioxia: TC58NVG3S0FTA00, TC58NVG4D2FTA00, TC58NVG5D2HTA00, TC58TEG6DDKTA00, TC58TFG7DDLTA0D
+    - Macronix: MX30LF4G28AD, MX30UF1G28AD, MX30UF2G28AD
+    - Winbond: W29N02GVSIAA, W29N04GVSIAA, W29N08GVSIAA
+    - ESMT: F59L1G81LA, F59L2G81A, F59L4G81A
+    - Support for TLC chips up to 32GB
+  
+  - **SPI NAND (35+ new chips)**
+    - GigaDevice GD5F1GM9 high-speed series (166MHz, BBM support)
+    - Winbond: W25N512GV, W25N01KV, W25N02GV, W25N02JW
+    - XTX: XT26G04A, XT26G01C, XT26G02C (1.8V variants)
+    - Foresee: FS35ND01G, FS35ND02G, FS35ND04G
+    - Dosilicon: DS35Q1GA, DS35Q2GA
+    - Zetta: ZD35Q1GA, ZD35Q2GA
+    - Micron: MT29F8G01ADAFD (1GB)
+    - Macronix 1.8V: MX35UF1GE4AD, MX35UF2GE4AD, MX35UF4GE4AD
+    - Kioxia 1.8V: TC58CYG0S3HRAIJ, TC58CYG1S3HRAIJ, TC58CVG2S0HRAIJ
+  
+  - **SPI NOR (45+ new chips)**
+    - GigaDevice GD25Q series: GD25Q80C through GD25Q512MC
+    - GigaDevice 1.8V: GD25LQ16C through GD25LQ256D
+    - EON EN25QH series: EN25QH80A through EN25QH256A
+    - Micron N25Q series: N25Q032A through MT25QL01G (1Gbit)
+    - Micron 1.8V: N25Q128A11, N25Q256A11
+    - XMC: XM25QH32B, XM25QH64A, XM25QH128A
+    - Puya: P25Q80H, P25Q16H, P25Q32H
+    - Boya: BY25Q32BS, BY25Q64AS, BY25Q128AS
+    - Winbond 1.2V: W25Q32ND, W25Q64ND, W25Q128ND
+  
+  - **eMMC (25+ new chips)**
+    - Samsung eMMC 5.1: KLMCG2JETD-B041 (64GB), KLMDG4UCTA-B041 (128GB), KLMAG2GEND-B031 (16GB)
+    - Micron: MTFC16GACAANA through MTFC128GACAANA (16-128GB)
+    - SK Hynix: H26M41208HPR (8GB) through H26M78208CMR (64GB)
+    - SanDisk: SDINBDG4-64G, SDINBDG4-16G
+    - Kingston: EMMC08G, EMMC16G, EMMC32G
+    - Foresee: NCEMAM8G-08, NCEMBM8G-16, NCEMCM8G-32
+    - HS400 support for high-speed chips
+
+- **New Manufacturers Added**
+  - SPI NAND: Foresee/Longsys, Dosilicon, Zetta, Puya, Boya
+  - SPI NOR: EON, XMC, Puya, Boya
+
+### Changed
+- Protocol version updated to 0x22
+- Core library version updated to 2.2.0
+- Total supported chips: 60+ parallel NAND, 55+ SPI NAND, 75+ SPI NOR, 40+ eMMC
+
+### Documentation
+- Updated Supported-Chips wiki with all new chips
+- Updated ROADMAP with v2.2 completion
+
 ## [2.1.0] - 2027-Q1
 
 ### Added

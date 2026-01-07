@@ -10,9 +10,9 @@ pub enum FlashInterface {
     ParallelNand = 0x00,
     SpiNand = 0x01,
     Emmc = 0x02,
-    SpiNor = 0x03,          // NEW: SPI NOR Flash
-    Ufs = 0x04,             // NEW: Universal Flash Storage
-    ParallelNand16 = 0x05,  // NEW: 16-bit parallel NAND
+    SpiNor = 0x03,         // NEW: SPI NOR Flash
+    Ufs = 0x04,            // NEW: Universal Flash Storage
+    ParallelNand16 = 0x05, // NEW: 16-bit parallel NAND
 }
 
 /// USB Protocol Commands
@@ -23,8 +23,8 @@ pub enum Command {
     Ping = 0x01,
     BusConfig = 0x02,
     Reset = 0x08,
-    SetInterface = 0x09,      // Set flash interface type
-    
+    SetInterface = 0x09, // Set flash interface type
+
     // Parallel NAND commands (0x10-0x1F)
     NandCmd = 0x10,
     NandAddr = 0x11,
@@ -33,143 +33,143 @@ pub enum Command {
     NandReadId = 0x14,
     NandErase = 0x15,
     NandReadStatus = 0x16,
-    
+
     // SPI NAND commands (0x20-0x3F)
     SpiNandReadId = 0x20,
     SpiNandReset = 0x21,
     SpiNandGetFeature = 0x22,
     SpiNandSetFeature = 0x23,
-    SpiNandPageRead = 0x24,       // Load page to cache
-    SpiNandReadCache = 0x25,      // Read from cache
-    SpiNandReadCacheX4 = 0x26,    // Read from cache (Quad)
-    SpiNandProgramLoad = 0x27,    // Load data to cache
-    SpiNandProgramLoadX4 = 0x28,  // Load data to cache (Quad)
-    SpiNandProgramExec = 0x29,    // Program cache to array
+    SpiNandPageRead = 0x24,      // Load page to cache
+    SpiNandReadCache = 0x25,     // Read from cache
+    SpiNandReadCacheX4 = 0x26,   // Read from cache (Quad)
+    SpiNandProgramLoad = 0x27,   // Load data to cache
+    SpiNandProgramLoadX4 = 0x28, // Load data to cache (Quad)
+    SpiNandProgramExec = 0x29,   // Program cache to array
     SpiNandBlockErase = 0x2A,
     SpiNandWriteEnable = 0x2B,
     SpiNandWriteDisable = 0x2C,
-    
+
     // eMMC commands (0x40-0x5F)
-    EmmcInit = 0x40,              // Initialize eMMC card
-    EmmcReadCid = 0x41,           // Read CID register
-    EmmcReadCsd = 0x42,           // Read CSD register
-    EmmcReadExtCsd = 0x43,        // Read Extended CSD
-    EmmcReadBlock = 0x44,         // Read single block
-    EmmcReadMultiple = 0x45,      // Read multiple blocks
-    EmmcWriteBlock = 0x46,        // Write single block
-    EmmcWriteMultiple = 0x47,     // Write multiple blocks
-    EmmcErase = 0x48,             // Erase blocks
-    EmmcGetStatus = 0x49,         // Get card status
-    EmmcSetPartition = 0x4A,      // Select partition (user/boot/rpmb)
-    
+    EmmcInit = 0x40,          // Initialize eMMC card
+    EmmcReadCid = 0x41,       // Read CID register
+    EmmcReadCsd = 0x42,       // Read CSD register
+    EmmcReadExtCsd = 0x43,    // Read Extended CSD
+    EmmcReadBlock = 0x44,     // Read single block
+    EmmcReadMultiple = 0x45,  // Read multiple blocks
+    EmmcWriteBlock = 0x46,    // Write single block
+    EmmcWriteMultiple = 0x47, // Write multiple blocks
+    EmmcErase = 0x48,         // Erase blocks
+    EmmcGetStatus = 0x49,     // Get card status
+    EmmcSetPartition = 0x4A,  // Select partition (user/boot/rpmb)
+
     // SPI NOR commands (0x60-0x7F)
-    SpiNorReadJedecId = 0x60,     // Read JEDEC ID
-    SpiNorReadSfdp = 0x61,        // Read SFDP data
-    SpiNorRead = 0x62,            // Standard read
-    SpiNorFastRead = 0x63,        // Fast read with dummy cycle
-    SpiNorDualRead = 0x64,        // Dual SPI read
-    SpiNorQuadRead = 0x65,        // Quad SPI read
-    SpiNorPageProgram = 0x66,     // Page program (256 bytes)
-    SpiNorSectorErase = 0x67,     // Sector erase (4KB)
-    SpiNorBlockErase32K = 0x68,   // Block erase (32KB)
-    SpiNorBlockErase64K = 0x69,   // Block erase (64KB)
-    SpiNorChipErase = 0x6A,       // Chip erase
-    SpiNorReadStatus1 = 0x6B,     // Read status register 1
-    SpiNorReadStatus2 = 0x6C,     // Read status register 2
-    SpiNorReadStatus3 = 0x6D,     // Read status register 3
-    SpiNorWriteStatus1 = 0x6E,    // Write status register 1
-    SpiNorWriteStatus2 = 0x6F,    // Write status register 2
-    SpiNorWriteStatus3 = 0x70,    // Write status register 3
-    SpiNorWriteEnable = 0x71,     // Write enable
-    SpiNorWriteDisable = 0x72,    // Write disable
-    SpiNorReset = 0x73,           // Software reset
-    
+    SpiNorReadJedecId = 0x60,   // Read JEDEC ID
+    SpiNorReadSfdp = 0x61,      // Read SFDP data
+    SpiNorRead = 0x62,          // Standard read
+    SpiNorFastRead = 0x63,      // Fast read with dummy cycle
+    SpiNorDualRead = 0x64,      // Dual SPI read
+    SpiNorQuadRead = 0x65,      // Quad SPI read
+    SpiNorPageProgram = 0x66,   // Page program (256 bytes)
+    SpiNorSectorErase = 0x67,   // Sector erase (4KB)
+    SpiNorBlockErase32K = 0x68, // Block erase (32KB)
+    SpiNorBlockErase64K = 0x69, // Block erase (64KB)
+    SpiNorChipErase = 0x6A,     // Chip erase
+    SpiNorReadStatus1 = 0x6B,   // Read status register 1
+    SpiNorReadStatus2 = 0x6C,   // Read status register 2
+    SpiNorReadStatus3 = 0x6D,   // Read status register 3
+    SpiNorWriteStatus1 = 0x6E,  // Write status register 1
+    SpiNorWriteStatus2 = 0x6F,  // Write status register 2
+    SpiNorWriteStatus3 = 0x70,  // Write status register 3
+    SpiNorWriteEnable = 0x71,   // Write enable
+    SpiNorWriteDisable = 0x72,  // Write disable
+    SpiNorReset = 0x73,         // Software reset
+
     // UFS commands (0x80-0x9F)
-    UfsInit = 0x80,               // Initialize UFS device
-    UfsReadDescriptor = 0x81,     // Read UFS descriptor
-    UfsReadCapacity = 0x82,       // Read device capacity
-    UfsRead10 = 0x83,             // SCSI READ(10) command
-    UfsRead16 = 0x84,             // SCSI READ(16) command
-    UfsWrite10 = 0x85,            // SCSI WRITE(10) command
-    UfsWrite16 = 0x86,            // SCSI WRITE(16) command
-    UfsSelectLun = 0x87,          // Select logical unit
-    UfsGetStatus = 0x88,          // Get device status
-    
+    UfsInit = 0x80,           // Initialize UFS device
+    UfsReadDescriptor = 0x81, // Read UFS descriptor
+    UfsReadCapacity = 0x82,   // Read device capacity
+    UfsRead10 = 0x83,         // SCSI READ(10) command
+    UfsRead16 = 0x84,         // SCSI READ(16) command
+    UfsWrite10 = 0x85,        // SCSI WRITE(10) command
+    UfsWrite16 = 0x86,        // SCSI WRITE(16) command
+    UfsSelectLun = 0x87,      // Select logical unit
+    UfsGetStatus = 0x88,      // Get device status
+
     // Advanced Write Operations (0xA0-0xBF) - v1.7
-    FullChipProgram = 0xA0,       // Full chip programming with verify
-    ReadBadBlockTable = 0xA1,     // Read bad block table
-    WriteBadBlockTable = 0xA2,    // Write bad block table
-    ScanBadBlocks = 0xA3,         // Scan for bad blocks
-    MarkBadBlock = 0xA4,          // Mark block as bad
-    GetWearInfo = 0xA5,           // Get wear leveling info
-    ProgramWithVerify = 0xA6,     // Program page with verification
-    EraseWithVerify = 0xA7,       // Erase block with verification
-    IncrementalRead = 0xA8,       // Read only changed blocks
-    CloneStart = 0xA9,            // Start chip-to-chip clone
-    CloneStatus = 0xAA,           // Get clone operation status
-    CloneAbort = 0xAB,            // Abort clone operation
-    
+    FullChipProgram = 0xA0,    // Full chip programming with verify
+    ReadBadBlockTable = 0xA1,  // Read bad block table
+    WriteBadBlockTable = 0xA2, // Write bad block table
+    ScanBadBlocks = 0xA3,      // Scan for bad blocks
+    MarkBadBlock = 0xA4,       // Mark block as bad
+    GetWearInfo = 0xA5,        // Get wear leveling info
+    ProgramWithVerify = 0xA6,  // Program page with verification
+    EraseWithVerify = 0xA7,    // Erase block with verification
+    IncrementalRead = 0xA8,    // Read only changed blocks
+    CloneStart = 0xA9,         // Start chip-to-chip clone
+    CloneStatus = 0xAA,        // Get clone operation status
+    CloneAbort = 0xAB,         // Abort clone operation
+
     // Scripting & Automation Commands (0xB0-0xBF) - v1.8
-    BatchStart = 0xB0,            // Start batch operation
-    BatchStatus = 0xB1,           // Get batch operation status
-    BatchAbort = 0xB2,            // Abort batch operation
-    ScriptLoad = 0xB3,            // Load script to device
-    ScriptRun = 0xB4,             // Run loaded script
-    ScriptStatus = 0xB5,          // Get script execution status
-    PluginList = 0xB6,            // List loaded plugins
-    PluginLoad = 0xB7,            // Load plugin
-    PluginUnload = 0xB8,          // Unload plugin
-    RemoteConnect = 0xB9,         // Remote connection (server mode)
-    RemoteDisconnect = 0xBA,      // Disconnect remote
-    GetDeviceInfo = 0xBB,         // Get detailed device info
-    
+    BatchStart = 0xB0,       // Start batch operation
+    BatchStatus = 0xB1,      // Get batch operation status
+    BatchAbort = 0xB2,       // Abort batch operation
+    ScriptLoad = 0xB3,       // Load script to device
+    ScriptRun = 0xB4,        // Run loaded script
+    ScriptStatus = 0xB5,     // Get script execution status
+    PluginList = 0xB6,       // List loaded plugins
+    PluginLoad = 0xB7,       // Load plugin
+    PluginUnload = 0xB8,     // Unload plugin
+    RemoteConnect = 0xB9,    // Remote connection (server mode)
+    RemoteDisconnect = 0xBA, // Disconnect remote
+    GetDeviceInfo = 0xBB,    // Get detailed device info
+
     // Advanced AI Commands (0xC0-0xC9) - v1.9
-    MlIdentify = 0xC0,            // ML-based chip identification
-    UnpackFirmware = 0xC1,        // Start firmware unpacking
-    UnpackStatus = 0xC2,          // Get unpacking progress
-    ExtractRootfs = 0xC3,         // Extract root filesystem
-    VulnScan = 0xC4,              // Start vulnerability scan
-    VulnResults = 0xC5,           // Get vulnerability results
-    LoadSignatures = 0xC6,        // Load custom signatures
-    ScanSignatures = 0xC7,        // Scan with custom signatures
-    ExportSignatures = 0xC8,      // Export signature database
-    GetMlModel = 0xC9,            // Get ML model info
-    
+    MlIdentify = 0xC0,       // ML-based chip identification
+    UnpackFirmware = 0xC1,   // Start firmware unpacking
+    UnpackStatus = 0xC2,     // Get unpacking progress
+    ExtractRootfs = 0xC3,    // Extract root filesystem
+    VulnScan = 0xC4,         // Start vulnerability scan
+    VulnResults = 0xC5,      // Get vulnerability results
+    LoadSignatures = 0xC6,   // Load custom signatures
+    ScanSignatures = 0xC7,   // Scan with custom signatures
+    ExportSignatures = 0xC8, // Export signature database
+    GetMlModel = 0xC9,       // Get ML model info
+
     // Multi-device & Enterprise Commands (0xD0-0xDF) - v2.0
-    ServerStart = 0xD0,           // Start server mode
-    ServerStop = 0xD1,            // Stop server mode
-    ServerStatus = 0xD2,          // Get server status
-    DevicePoolList = 0xD3,        // List devices in pool
-    DevicePoolAdd = 0xD4,         // Add device to pool
-    DevicePoolRemove = 0xD5,      // Remove device from pool
-    JobSubmit = 0xD6,             // Submit job to queue
-    JobStatus = 0xD7,             // Get job status
-    JobCancel = 0xD8,             // Cancel job
-    JobList = 0xD9,               // List jobs
-    ParallelDumpStart = 0xDA,     // Start parallel dump
-    ParallelDumpStatus = 0xDB,    // Get parallel dump status
-    ProductionStart = 0xDC,       // Start production mode
-    ProductionStatus = 0xDD,      // Get production status
-    ProductionStats = 0xDE,       // Get production statistics
-    ApiKeyValidate = 0xDF,        // Validate API key
-    
+    ServerStart = 0xD0,        // Start server mode
+    ServerStop = 0xD1,         // Stop server mode
+    ServerStatus = 0xD2,       // Get server status
+    DevicePoolList = 0xD3,     // List devices in pool
+    DevicePoolAdd = 0xD4,      // Add device to pool
+    DevicePoolRemove = 0xD5,   // Remove device from pool
+    JobSubmit = 0xD6,          // Submit job to queue
+    JobStatus = 0xD7,          // Get job status
+    JobCancel = 0xD8,          // Cancel job
+    JobList = 0xD9,            // List jobs
+    ParallelDumpStart = 0xDA,  // Start parallel dump
+    ParallelDumpStatus = 0xDB, // Get parallel dump status
+    ProductionStart = 0xDC,    // Start production mode
+    ProductionStatus = 0xDD,   // Get production status
+    ProductionStats = 0xDE,    // Get production statistics
+    ApiKeyValidate = 0xDF,     // Validate API key
+
     // Hardware Expansion Commands (0xE0-0xEF) - v2.1
-    PcbDetect = 0xE0,             // Detect PCB and get info
-    PcbCapabilities = 0xE1,       // Get PCB capabilities
-    SetSocket = 0xE2,             // Set socket type
-    AdapterInfo = 0xE3,           // Get adapter info
-    SetPinout = 0xE4,             // Set adapter pinout
-    LogicArm = 0xE5,              // Logic analyzer arm
-    LogicCapture = 0xE6,          // Logic analyzer capture
-    LogicGetData = 0xE7,          // Logic analyzer get data
-    JtagScan = 0xE8,              // JTAG scan chain
-    JtagTransfer = 0xE9,          // JTAG transfer
-    SwdConnect = 0xEA,            // SWD connect
-    SwdTransfer = 0xEB,           // SWD read/write
-    OledUpdate = 0xEC,            // OLED display update
-    SetVoltage = 0xED,            // Set voltage level
-    BgaControl = 0xEE,            // BGA station control
-    HardwareStatus = 0xEF,        // Get hardware status
+    PcbDetect = 0xE0,       // Detect PCB and get info
+    PcbCapabilities = 0xE1, // Get PCB capabilities
+    SetSocket = 0xE2,       // Set socket type
+    AdapterInfo = 0xE3,     // Get adapter info
+    SetPinout = 0xE4,       // Set adapter pinout
+    LogicArm = 0xE5,        // Logic analyzer arm
+    LogicCapture = 0xE6,    // Logic analyzer capture
+    LogicGetData = 0xE7,    // Logic analyzer get data
+    JtagScan = 0xE8,        // JTAG scan chain
+    JtagTransfer = 0xE9,    // JTAG transfer
+    SwdConnect = 0xEA,      // SWD connect
+    SwdTransfer = 0xEB,     // SWD read/write
+    OledUpdate = 0xEC,      // OLED display update
+    SetVoltage = 0xED,      // Set voltage level
+    BgaControl = 0xEE,      // BGA station control
+    HardwareStatus = 0xEF,  // Get hardware status
 }
 
 impl Command {
@@ -180,7 +180,7 @@ impl Command {
             0x02 => Some(Command::BusConfig),
             0x08 => Some(Command::Reset),
             0x09 => Some(Command::SetInterface),
-            
+
             // Parallel NAND (legacy 0x03-0x07 mapped to new values)
             0x03 | 0x10 => Some(Command::NandCmd),
             0x04 | 0x11 => Some(Command::NandAddr),
@@ -189,7 +189,7 @@ impl Command {
             0x07 | 0x14 => Some(Command::NandReadId),
             0x15 => Some(Command::NandErase),
             0x16 => Some(Command::NandReadStatus),
-            
+
             // SPI NAND
             0x20 => Some(Command::SpiNandReadId),
             0x21 => Some(Command::SpiNandReset),
@@ -204,7 +204,7 @@ impl Command {
             0x2A => Some(Command::SpiNandBlockErase),
             0x2B => Some(Command::SpiNandWriteEnable),
             0x2C => Some(Command::SpiNandWriteDisable),
-            
+
             // eMMC
             0x40 => Some(Command::EmmcInit),
             0x41 => Some(Command::EmmcReadCid),
@@ -217,7 +217,7 @@ impl Command {
             0x48 => Some(Command::EmmcErase),
             0x49 => Some(Command::EmmcGetStatus),
             0x4A => Some(Command::EmmcSetPartition),
-            
+
             // SPI NOR
             0x60 => Some(Command::SpiNorReadJedecId),
             0x61 => Some(Command::SpiNorReadSfdp),
@@ -239,7 +239,7 @@ impl Command {
             0x71 => Some(Command::SpiNorWriteEnable),
             0x72 => Some(Command::SpiNorWriteDisable),
             0x73 => Some(Command::SpiNorReset),
-            
+
             // UFS
             0x80 => Some(Command::UfsInit),
             0x81 => Some(Command::UfsReadDescriptor),
@@ -250,7 +250,7 @@ impl Command {
             0x86 => Some(Command::UfsWrite16),
             0x87 => Some(Command::UfsSelectLun),
             0x88 => Some(Command::UfsGetStatus),
-            
+
             // Advanced Write Operations (v1.7)
             0xA0 => Some(Command::FullChipProgram),
             0xA1 => Some(Command::ReadBadBlockTable),
@@ -264,7 +264,7 @@ impl Command {
             0xA9 => Some(Command::CloneStart),
             0xAA => Some(Command::CloneStatus),
             0xAB => Some(Command::CloneAbort),
-            
+
             // Scripting & Automation (v1.8)
             0xB0 => Some(Command::BatchStart),
             0xB1 => Some(Command::BatchStatus),
@@ -278,7 +278,7 @@ impl Command {
             0xB9 => Some(Command::RemoteConnect),
             0xBA => Some(Command::RemoteDisconnect),
             0xBB => Some(Command::GetDeviceInfo),
-            
+
             // Advanced AI (v1.9)
             0xC0 => Some(Command::MlIdentify),
             0xC1 => Some(Command::UnpackFirmware),
@@ -290,7 +290,7 @@ impl Command {
             0xC7 => Some(Command::ScanSignatures),
             0xC8 => Some(Command::ExportSignatures),
             0xC9 => Some(Command::GetMlModel),
-            
+
             // Multi-device & Enterprise (v2.0)
             0xD0 => Some(Command::ServerStart),
             0xD1 => Some(Command::ServerStop),
@@ -308,7 +308,7 @@ impl Command {
             0xDD => Some(Command::ProductionStatus),
             0xDE => Some(Command::ProductionStats),
             0xDF => Some(Command::ApiKeyValidate),
-            
+
             // Hardware Expansion (v2.1)
             0xE0 => Some(Command::PcbDetect),
             0xE1 => Some(Command::PcbCapabilities),
@@ -326,181 +326,190 @@ impl Command {
             0xED => Some(Command::SetVoltage),
             0xEE => Some(Command::BgaControl),
             0xEF => Some(Command::HardwareStatus),
-            
+
             _ => None,
         }
     }
-    
+
     /// Check if command is for SPI NAND interface
     pub fn is_spi_nand(&self) -> bool {
-        matches!(self, 
-            Command::SpiNandReadId |
-            Command::SpiNandReset |
-            Command::SpiNandGetFeature |
-            Command::SpiNandSetFeature |
-            Command::SpiNandPageRead |
-            Command::SpiNandReadCache |
-            Command::SpiNandReadCacheX4 |
-            Command::SpiNandProgramLoad |
-            Command::SpiNandProgramLoadX4 |
-            Command::SpiNandProgramExec |
-            Command::SpiNandBlockErase |
-            Command::SpiNandWriteEnable |
-            Command::SpiNandWriteDisable
+        matches!(
+            self,
+            Command::SpiNandReadId
+                | Command::SpiNandReset
+                | Command::SpiNandGetFeature
+                | Command::SpiNandSetFeature
+                | Command::SpiNandPageRead
+                | Command::SpiNandReadCache
+                | Command::SpiNandReadCacheX4
+                | Command::SpiNandProgramLoad
+                | Command::SpiNandProgramLoadX4
+                | Command::SpiNandProgramExec
+                | Command::SpiNandBlockErase
+                | Command::SpiNandWriteEnable
+                | Command::SpiNandWriteDisable
         )
     }
-    
+
     /// Check if command is for eMMC interface
     pub fn is_emmc(&self) -> bool {
-        matches!(self,
-            Command::EmmcInit |
-            Command::EmmcReadCid |
-            Command::EmmcReadCsd |
-            Command::EmmcReadExtCsd |
-            Command::EmmcReadBlock |
-            Command::EmmcReadMultiple |
-            Command::EmmcWriteBlock |
-            Command::EmmcWriteMultiple |
-            Command::EmmcErase |
-            Command::EmmcGetStatus |
-            Command::EmmcSetPartition
+        matches!(
+            self,
+            Command::EmmcInit
+                | Command::EmmcReadCid
+                | Command::EmmcReadCsd
+                | Command::EmmcReadExtCsd
+                | Command::EmmcReadBlock
+                | Command::EmmcReadMultiple
+                | Command::EmmcWriteBlock
+                | Command::EmmcWriteMultiple
+                | Command::EmmcErase
+                | Command::EmmcGetStatus
+                | Command::EmmcSetPartition
         )
     }
-    
+
     /// Check if command is for SPI NOR interface
     pub fn is_spi_nor(&self) -> bool {
-        matches!(self,
-            Command::SpiNorReadJedecId |
-            Command::SpiNorReadSfdp |
-            Command::SpiNorRead |
-            Command::SpiNorFastRead |
-            Command::SpiNorDualRead |
-            Command::SpiNorQuadRead |
-            Command::SpiNorPageProgram |
-            Command::SpiNorSectorErase |
-            Command::SpiNorBlockErase32K |
-            Command::SpiNorBlockErase64K |
-            Command::SpiNorChipErase |
-            Command::SpiNorReadStatus1 |
-            Command::SpiNorReadStatus2 |
-            Command::SpiNorReadStatus3 |
-            Command::SpiNorWriteStatus1 |
-            Command::SpiNorWriteStatus2 |
-            Command::SpiNorWriteStatus3 |
-            Command::SpiNorWriteEnable |
-            Command::SpiNorWriteDisable |
-            Command::SpiNorReset
+        matches!(
+            self,
+            Command::SpiNorReadJedecId
+                | Command::SpiNorReadSfdp
+                | Command::SpiNorRead
+                | Command::SpiNorFastRead
+                | Command::SpiNorDualRead
+                | Command::SpiNorQuadRead
+                | Command::SpiNorPageProgram
+                | Command::SpiNorSectorErase
+                | Command::SpiNorBlockErase32K
+                | Command::SpiNorBlockErase64K
+                | Command::SpiNorChipErase
+                | Command::SpiNorReadStatus1
+                | Command::SpiNorReadStatus2
+                | Command::SpiNorReadStatus3
+                | Command::SpiNorWriteStatus1
+                | Command::SpiNorWriteStatus2
+                | Command::SpiNorWriteStatus3
+                | Command::SpiNorWriteEnable
+                | Command::SpiNorWriteDisable
+                | Command::SpiNorReset
         )
     }
-    
+
     /// Check if command is for UFS interface
     pub fn is_ufs(&self) -> bool {
-        matches!(self,
-            Command::UfsInit |
-            Command::UfsReadDescriptor |
-            Command::UfsReadCapacity |
-            Command::UfsRead10 |
-            Command::UfsRead16 |
-            Command::UfsWrite10 |
-            Command::UfsWrite16 |
-            Command::UfsSelectLun |
-            Command::UfsGetStatus
+        matches!(
+            self,
+            Command::UfsInit
+                | Command::UfsReadDescriptor
+                | Command::UfsReadCapacity
+                | Command::UfsRead10
+                | Command::UfsRead16
+                | Command::UfsWrite10
+                | Command::UfsWrite16
+                | Command::UfsSelectLun
+                | Command::UfsGetStatus
         )
     }
-    
+
     /// Check if command is for advanced write operations (v1.7)
     pub fn is_write_ops(&self) -> bool {
-        matches!(self,
-            Command::FullChipProgram |
-            Command::ReadBadBlockTable |
-            Command::WriteBadBlockTable |
-            Command::ScanBadBlocks |
-            Command::MarkBadBlock |
-            Command::GetWearInfo |
-            Command::ProgramWithVerify |
-            Command::EraseWithVerify |
-            Command::IncrementalRead |
-            Command::CloneStart |
-            Command::CloneStatus |
-            Command::CloneAbort
+        matches!(
+            self,
+            Command::FullChipProgram
+                | Command::ReadBadBlockTable
+                | Command::WriteBadBlockTable
+                | Command::ScanBadBlocks
+                | Command::MarkBadBlock
+                | Command::GetWearInfo
+                | Command::ProgramWithVerify
+                | Command::EraseWithVerify
+                | Command::IncrementalRead
+                | Command::CloneStart
+                | Command::CloneStatus
+                | Command::CloneAbort
         )
     }
-    
+
     /// Check if command is for scripting & automation (v1.8)
     pub fn is_scripting(&self) -> bool {
-        matches!(self,
-            Command::BatchStart |
-            Command::BatchStatus |
-            Command::BatchAbort |
-            Command::ScriptLoad |
-            Command::ScriptRun |
-            Command::ScriptStatus |
-            Command::PluginList |
-            Command::PluginLoad |
-            Command::PluginUnload |
-            Command::RemoteConnect |
-            Command::RemoteDisconnect |
-            Command::GetDeviceInfo
+        matches!(
+            self,
+            Command::BatchStart
+                | Command::BatchStatus
+                | Command::BatchAbort
+                | Command::ScriptLoad
+                | Command::ScriptRun
+                | Command::ScriptStatus
+                | Command::PluginList
+                | Command::PluginLoad
+                | Command::PluginUnload
+                | Command::RemoteConnect
+                | Command::RemoteDisconnect
+                | Command::GetDeviceInfo
         )
     }
-    
+
     /// Check if command is for advanced AI features (v1.9)
     pub fn is_ai_advanced(&self) -> bool {
-        matches!(self,
-            Command::MlIdentify |
-            Command::UnpackFirmware |
-            Command::UnpackStatus |
-            Command::ExtractRootfs |
-            Command::VulnScan |
-            Command::VulnResults |
-            Command::LoadSignatures |
-            Command::ScanSignatures |
-            Command::ExportSignatures |
-            Command::GetMlModel
+        matches!(
+            self,
+            Command::MlIdentify
+                | Command::UnpackFirmware
+                | Command::UnpackStatus
+                | Command::ExtractRootfs
+                | Command::VulnScan
+                | Command::VulnResults
+                | Command::LoadSignatures
+                | Command::ScanSignatures
+                | Command::ExportSignatures
+                | Command::GetMlModel
         )
     }
-    
+
     /// Check if command is for multi-device & enterprise features (v2.0)
     pub fn is_server(&self) -> bool {
-        matches!(self,
-            Command::ServerStart |
-            Command::ServerStop |
-            Command::ServerStatus |
-            Command::DevicePoolList |
-            Command::DevicePoolAdd |
-            Command::DevicePoolRemove |
-            Command::JobSubmit |
-            Command::JobStatus |
-            Command::JobCancel |
-            Command::JobList |
-            Command::ParallelDumpStart |
-            Command::ParallelDumpStatus |
-            Command::ProductionStart |
-            Command::ProductionStatus |
-            Command::ProductionStats |
-            Command::ApiKeyValidate
+        matches!(
+            self,
+            Command::ServerStart
+                | Command::ServerStop
+                | Command::ServerStatus
+                | Command::DevicePoolList
+                | Command::DevicePoolAdd
+                | Command::DevicePoolRemove
+                | Command::JobSubmit
+                | Command::JobStatus
+                | Command::JobCancel
+                | Command::JobList
+                | Command::ParallelDumpStart
+                | Command::ParallelDumpStatus
+                | Command::ProductionStart
+                | Command::ProductionStatus
+                | Command::ProductionStats
+                | Command::ApiKeyValidate
         )
     }
-    
+
     /// Check if command is for hardware expansion features (v2.1)
     pub fn is_hardware(&self) -> bool {
-        matches!(self,
-            Command::PcbDetect |
-            Command::PcbCapabilities |
-            Command::SetSocket |
-            Command::AdapterInfo |
-            Command::SetPinout |
-            Command::LogicArm |
-            Command::LogicCapture |
-            Command::LogicGetData |
-            Command::JtagScan |
-            Command::JtagTransfer |
-            Command::SwdConnect |
-            Command::SwdTransfer |
-            Command::OledUpdate |
-            Command::SetVoltage |
-            Command::BgaControl |
-            Command::HardwareStatus
+        matches!(
+            self,
+            Command::PcbDetect
+                | Command::PcbCapabilities
+                | Command::SetSocket
+                | Command::AdapterInfo
+                | Command::SetPinout
+                | Command::LogicArm
+                | Command::LogicCapture
+                | Command::LogicGetData
+                | Command::JtagScan
+                | Command::JtagTransfer
+                | Command::SwdConnect
+                | Command::SwdTransfer
+                | Command::OledUpdate
+                | Command::SetVoltage
+                | Command::BgaControl
+                | Command::HardwareStatus
         )
     }
 }
@@ -517,7 +526,7 @@ impl Packet {
         let mut packet_args = [0u8; 63];
         let copy_len = args.len().min(63);
         packet_args[..copy_len].copy_from_slice(&args[..copy_len]);
-        
+
         Self {
             cmd,
             args: packet_args,
@@ -631,7 +640,7 @@ mod tests {
         assert_eq!(Command::from_u8(0x20), Some(Command::SpiNandReadId));
         assert_eq!(Command::from_u8(0xFF), None);
     }
-    
+
     #[test]
     fn test_legacy_command_mapping() {
         // Old command values should still work
@@ -639,7 +648,7 @@ mod tests {
         assert_eq!(Command::from_u8(0x05), Some(Command::NandReadPage));
         assert_eq!(Command::from_u8(0x07), Some(Command::NandReadId));
     }
-    
+
     #[test]
     fn test_spi_nand_command_detection() {
         assert!(Command::SpiNandReadId.is_spi_nand());
@@ -647,7 +656,7 @@ mod tests {
         assert!(!Command::NandReadPage.is_spi_nand());
         assert!(!Command::Ping.is_spi_nand());
     }
-    
+
     #[test]
     fn test_emmc_command_detection() {
         assert!(Command::EmmcInit.is_emmc());
@@ -655,14 +664,14 @@ mod tests {
         assert!(!Command::SpiNandReadId.is_emmc());
         assert!(!Command::NandReadPage.is_emmc());
     }
-    
+
     #[test]
     fn test_emmc_command_from_u8() {
         assert_eq!(Command::from_u8(0x40), Some(Command::EmmcInit));
         assert_eq!(Command::from_u8(0x44), Some(Command::EmmcReadBlock));
         assert_eq!(Command::from_u8(0x48), Some(Command::EmmcErase));
     }
-    
+
     #[test]
     fn test_spi_nor_command_from_u8() {
         assert_eq!(Command::from_u8(0x60), Some(Command::SpiNorReadJedecId));
@@ -672,7 +681,7 @@ mod tests {
         assert_eq!(Command::from_u8(0x6A), Some(Command::SpiNorChipErase));
         assert_eq!(Command::from_u8(0x73), Some(Command::SpiNorReset));
     }
-    
+
     #[test]
     fn test_spi_nor_command_detection() {
         assert!(Command::SpiNorReadJedecId.is_spi_nor());
@@ -682,7 +691,7 @@ mod tests {
         assert!(!Command::EmmcInit.is_spi_nor());
         assert!(!Command::Ping.is_spi_nor());
     }
-    
+
     #[test]
     fn test_ufs_command_from_u8() {
         assert_eq!(Command::from_u8(0x80), Some(Command::UfsInit));
@@ -692,7 +701,7 @@ mod tests {
         assert_eq!(Command::from_u8(0x87), Some(Command::UfsSelectLun));
         assert_eq!(Command::from_u8(0x88), Some(Command::UfsGetStatus));
     }
-    
+
     #[test]
     fn test_ufs_command_detection() {
         assert!(Command::UfsInit.is_ufs());
@@ -702,7 +711,7 @@ mod tests {
         assert!(!Command::EmmcInit.is_ufs());
         assert!(!Command::Ping.is_ufs());
     }
-    
+
     #[test]
     fn test_flash_interface_values() {
         assert_eq!(FlashInterface::ParallelNand as u8, 0x00);
@@ -712,7 +721,7 @@ mod tests {
         assert_eq!(FlashInterface::Ufs as u8, 0x04);
         assert_eq!(FlashInterface::ParallelNand16 as u8, 0x05);
     }
-    
+
     #[test]
     fn test_write_ops_command_from_u8() {
         assert_eq!(Command::from_u8(0xA0), Some(Command::FullChipProgram));
@@ -722,7 +731,7 @@ mod tests {
         assert_eq!(Command::from_u8(0xA9), Some(Command::CloneStart));
         assert_eq!(Command::from_u8(0xAB), Some(Command::CloneAbort));
     }
-    
+
     #[test]
     fn test_write_ops_command_detection() {
         assert!(Command::FullChipProgram.is_write_ops());
@@ -733,7 +742,7 @@ mod tests {
         assert!(!Command::EmmcInit.is_write_ops());
         assert!(!Command::Ping.is_write_ops());
     }
-    
+
     #[test]
     fn test_scripting_command_from_u8() {
         assert_eq!(Command::from_u8(0xB0), Some(Command::BatchStart));
@@ -744,7 +753,7 @@ mod tests {
         assert_eq!(Command::from_u8(0xB9), Some(Command::RemoteConnect));
         assert_eq!(Command::from_u8(0xBB), Some(Command::GetDeviceInfo));
     }
-    
+
     #[test]
     fn test_scripting_command_detection() {
         assert!(Command::BatchStart.is_scripting());
@@ -756,7 +765,7 @@ mod tests {
         assert!(!Command::SpiNorRead.is_scripting());
         assert!(!Command::Ping.is_scripting());
     }
-    
+
     #[test]
     fn test_ai_advanced_command_from_u8() {
         assert_eq!(Command::from_u8(0xC0), Some(Command::MlIdentify));
@@ -770,7 +779,7 @@ mod tests {
         assert_eq!(Command::from_u8(0xC8), Some(Command::ExportSignatures));
         assert_eq!(Command::from_u8(0xC9), Some(Command::GetMlModel));
     }
-    
+
     #[test]
     fn test_ai_advanced_command_detection() {
         assert!(Command::MlIdentify.is_ai_advanced());
@@ -782,7 +791,7 @@ mod tests {
         assert!(!Command::SpiNorRead.is_ai_advanced());
         assert!(!Command::Ping.is_ai_advanced());
     }
-    
+
     #[test]
     fn test_server_command_from_u8() {
         assert_eq!(Command::from_u8(0xD0), Some(Command::ServerStart));
@@ -795,7 +804,7 @@ mod tests {
         assert_eq!(Command::from_u8(0xDC), Some(Command::ProductionStart));
         assert_eq!(Command::from_u8(0xDF), Some(Command::ApiKeyValidate));
     }
-    
+
     #[test]
     fn test_server_command_detection() {
         assert!(Command::ServerStart.is_server());
@@ -808,7 +817,7 @@ mod tests {
         assert!(!Command::BatchStart.is_server());
         assert!(!Command::Ping.is_server());
     }
-    
+
     #[test]
     fn test_hardware_command_from_u8() {
         assert_eq!(Command::from_u8(0xE0), Some(Command::PcbDetect));
@@ -821,7 +830,7 @@ mod tests {
         assert_eq!(Command::from_u8(0xEC), Some(Command::OledUpdate));
         assert_eq!(Command::from_u8(0xEF), Some(Command::HardwareStatus));
     }
-    
+
     #[test]
     fn test_hardware_command_detection() {
         assert!(Command::PcbDetect.is_hardware());

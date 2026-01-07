@@ -137,7 +137,10 @@ impl Analyzer {
             while offset + sig_def.magic.len() <= data.len() {
                 if let Some(sig) = self.check_signature_at(data, sig_def, offset) {
                     // Avoid duplicates
-                    if !found.iter().any(|s| s.offset == offset && s.name == sig_def.name) {
+                    if !found
+                        .iter()
+                        .any(|s| s.offset == offset && s.name == sig_def.name)
+                    {
                         found.push(sig);
                     }
                 }
@@ -150,7 +153,12 @@ impl Analyzer {
         found
     }
 
-    fn check_signature_at(&self, data: &[u8], sig_def: &SignatureDef, offset: usize) -> Option<FileSystemSignature> {
+    fn check_signature_at(
+        &self,
+        data: &[u8],
+        sig_def: &SignatureDef,
+        offset: usize,
+    ) -> Option<FileSystemSignature> {
         if offset + sig_def.magic.len() > data.len() {
             return None;
         }
@@ -193,7 +201,7 @@ impl Analyzer {
     fn detect_bad_blocks(&self, data: &[u8]) -> Vec<u32> {
         let mut bad = Vec::new();
         let block_bytes = self.page_size * self.block_size;
-        
+
         for (block_num, chunk) in data.chunks(block_bytes).enumerate() {
             // Check first page's spare area (typically byte 0 of spare)
             // Bad block marker is usually != 0xFF
@@ -201,7 +209,7 @@ impl Analyzer {
                 // Simplified check - real implementation would check OOB area
                 let first_byte = chunk[0];
                 let second_byte = if chunk.len() > 1 { chunk[1] } else { 0xFF };
-                
+
                 // Heuristic: if first two bytes are 0x00, might be bad block marker
                 if first_byte == 0x00 && second_byte == 0x00 {
                     bad.push(block_num as u32);
@@ -287,7 +295,7 @@ mod tests {
     #[test]
     fn test_entropy_calculation() {
         let analyzer = Analyzer::default();
-        
+
         // Uniform data has low entropy
         let uniform = vec![0xAAu8; 1000];
         let entropy = analyzer.calculate_entropy(&uniform);

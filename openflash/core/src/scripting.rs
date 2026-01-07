@@ -41,11 +41,19 @@ impl std::fmt::Display for ScriptError {
             Self::ConnectionFailed(s) => write!(f, "Connection failed: {}", s),
             Self::NotConnected => write!(f, "Device not connected"),
             Self::InvalidOperation(s) => write!(f, "Invalid operation: {}", s),
-            Self::ReadFailed { address, reason } => write!(f, "Read failed at 0x{:X}: {}", address, reason),
-            Self::WriteFailed { address, reason } => write!(f, "Write failed at 0x{:X}: {}", address, reason),
+            Self::ReadFailed { address, reason } => {
+                write!(f, "Read failed at 0x{:X}: {}", address, reason)
+            }
+            Self::WriteFailed { address, reason } => {
+                write!(f, "Write failed at 0x{:X}: {}", address, reason)
+            }
             Self::AnalysisFailed(s) => write!(f, "Analysis failed: {}", s),
-            Self::PluginError { plugin, message } => write!(f, "Plugin '{}' error: {}", plugin, message),
-            Self::BatchError { job_id, message } => write!(f, "Batch job {} error: {}", job_id, message),
+            Self::PluginError { plugin, message } => {
+                write!(f, "Plugin '{}' error: {}", plugin, message)
+            }
+            Self::BatchError { job_id, message } => {
+                write!(f, "Batch job {} error: {}", job_id, message)
+            }
             Self::ScriptExecutionError(s) => write!(f, "Script execution error: {}", s),
             Self::ExportFailed(s) => write!(f, "Export failed: {}", s),
             Self::InvalidConfig(s) => write!(f, "Invalid config: {}", s),
@@ -398,7 +406,6 @@ impl Default for ReportOptions {
     }
 }
 
-
 // ============================================================================
 // Batch Processing API
 // ============================================================================
@@ -567,7 +574,12 @@ impl BatchProcessor {
     }
 
     /// Add an analysis job
-    pub fn add_analysis_job(&mut self, name: &str, depends_on: usize, options: AnalysisOptions) -> usize {
+    pub fn add_analysis_job(
+        &mut self,
+        name: &str,
+        depends_on: usize,
+        options: AnalysisOptions,
+    ) -> usize {
         let job = BatchJob {
             id: self.jobs.len(),
             name: name.to_string(),
@@ -582,7 +594,13 @@ impl BatchProcessor {
     }
 
     /// Add a report export job
-    pub fn add_report_job(&mut self, name: &str, output_file: &str, depends_on: usize, options: ReportOptions) -> usize {
+    pub fn add_report_job(
+        &mut self,
+        name: &str,
+        output_file: &str,
+        depends_on: usize,
+        options: ReportOptions,
+    ) -> usize {
         let job = BatchJob {
             id: self.jobs.len(),
             name: name.to_string(),
@@ -604,12 +622,18 @@ impl BatchProcessor {
 
     /// Get completed job count
     pub fn completed_count(&self) -> usize {
-        self.results.iter().filter(|r| matches!(r.status, BatchJobStatus::Completed)).count()
+        self.results
+            .iter()
+            .filter(|r| matches!(r.status, BatchJobStatus::Completed))
+            .count()
     }
 
     /// Get failed job count
     pub fn failed_count(&self) -> usize {
-        self.results.iter().filter(|r| matches!(r.status, BatchJobStatus::Failed(_))).count()
+        self.results
+            .iter()
+            .filter(|r| matches!(r.status, BatchJobStatus::Failed(_)))
+            .count()
     }
 
     /// Check if all jobs completed successfully
@@ -789,7 +813,6 @@ impl Default for PluginManager {
         Self::new()
     }
 }
-
 
 // ============================================================================
 // CLI Support Types
@@ -1041,7 +1064,10 @@ impl OpenFlash {
 
     /// Check if connected
     pub fn is_connected(&self) -> bool {
-        self.device.as_ref().map(|d| d.is_connected()).unwrap_or(false)
+        self.device
+            .as_ref()
+            .map(|d| d.is_connected())
+            .unwrap_or(false)
     }
 
     /// Get device info
@@ -1054,7 +1080,7 @@ impl OpenFlash {
         if !self.is_connected() {
             return Err(ScriptError::NotConnected);
         }
-        
+
         // Mock implementation
         Ok(ChipDetectionResult {
             manufacturer: "Samsung".to_string(),
@@ -1083,11 +1109,15 @@ impl OpenFlash {
         // Mock implementation
         let chip = self.detect_chip()?;
         let length = options.length.unwrap_or(chip.capacity);
-        
+
         let result = DumpResult {
             data: vec![0xFF; length as usize], // Mock data
             oob_data: if options.include_oob {
-                Some(vec![0xFF; (length / chip.page_size as u64 * chip.oob_size as u64) as usize])
+                Some(vec![
+                    0xFF;
+                    (length / chip.page_size as u64 * chip.oob_size as u64)
+                        as usize
+                ])
             } else {
                 None
             },
@@ -1101,7 +1131,7 @@ impl OpenFlash {
                 speed_bps: length / 5,
             },
         };
-        
+
         self.last_dump = Some(result);
         Ok(self.last_dump.as_ref().unwrap())
     }
@@ -1153,11 +1183,11 @@ mod tests {
     fn test_openflash_connect() {
         let mut of = OpenFlash::new();
         assert!(!of.is_connected());
-        
+
         let result = of.connect();
         assert!(result.is_ok());
         assert!(of.is_connected());
-        
+
         of.disconnect();
         assert!(!of.is_connected());
     }
@@ -1172,21 +1202,21 @@ mod tests {
             interfaces: vec!["parallel_nand".to_string()],
         };
         let mut handle = DeviceHandle::new(info);
-        
+
         assert!(handle.set_interface("spi_nand").is_ok());
         assert_eq!(handle.current_interface, "spi_nand");
-        
+
         assert!(handle.set_interface("invalid").is_err());
     }
 
     #[test]
     fn test_batch_processor() {
         let mut batch = BatchProcessor::new();
-        
+
         let id1 = batch.add_read_job("Read chip", "dump.bin", ReadOptions::default());
         let id2 = batch.add_analysis_job("Analyze", id1, AnalysisOptions::default());
         let _id3 = batch.add_report_job("Report", "report.md", id2, ReportOptions::default());
-        
+
         assert_eq!(batch.job_count(), 3);
         assert_eq!(batch.jobs[1].depends_on, vec![id1]);
         assert_eq!(batch.jobs[2].depends_on, vec![id2]);
@@ -1195,7 +1225,7 @@ mod tests {
     #[test]
     fn test_plugin_manager() {
         let mut pm = PluginManager::new();
-        
+
         let plugin = PluginMetadata {
             name: "test-plugin".to_string(),
             version: "1.0.0".to_string(),
@@ -1204,16 +1234,16 @@ mod tests {
             hooks: vec![PluginHook::PostRead, PluginHook::Analysis],
             min_openflash_version: "1.8.0".to_string(),
         };
-        
+
         pm.register(plugin);
         assert_eq!(pm.list_plugins().len(), 1);
-        
+
         assert!(pm.enable("test-plugin").is_ok());
         assert!(pm.is_enabled("test-plugin"));
-        
+
         let hooks = pm.get_plugins_for_hook(&PluginHook::Analysis);
         assert_eq!(hooks.len(), 1);
-        
+
         pm.disable("test-plugin");
         assert!(!pm.is_enabled("test-plugin"));
     }
@@ -1267,13 +1297,15 @@ mod tests {
             expected_chip: Some("K9F1G08U0E".to_string()),
             operations: vec![
                 CiOperation::VerifyConnection,
-                CiOperation::ReadDump { output: "dump.bin".to_string() },
+                CiOperation::ReadDump {
+                    output: "dump.bin".to_string(),
+                },
             ],
             artifacts: vec![],
             timeout_secs: 300,
             retries: 3,
         };
-        
+
         assert_eq!(config.operations.len(), 2);
         assert_eq!(config.timeout_secs, 300);
     }
