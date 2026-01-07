@@ -8,6 +8,8 @@
 //! openflash write -i firmware.bin   # Write firmware
 //! openflash analyze dump.bin        # AI analysis
 //! openflash batch jobs.toml         # Run batch jobs
+//! openflash server start            # Start server mode (v2.0)
+//! openflash job submit read         # Submit job to server (v2.0)
 //! ```
 
 use clap::{Parser, Subcommand};
@@ -21,7 +23,7 @@ mod commands;
 #[derive(Parser)]
 #[command(name = "openflash")]
 #[command(author = "OpenFlash Team")]
-#[command(version = "1.9.0")]
+#[command(version = "2.0.0")]
 #[command(about = "Command-line interface for flash programming and analysis")]
 #[command(long_about = None)]
 struct Cli {
@@ -283,6 +285,51 @@ enum Commands {
         #[command(subcommand)]
         action: SignaturesAction,
     },
+    
+    // ========== v2.0 - Multi-device & Enterprise ==========
+    
+    /// Server mode operations
+    Server {
+        #[command(subcommand)]
+        action: ServerAction,
+    },
+    
+    /// Device pool management
+    Device {
+        #[command(subcommand)]
+        action: DeviceAction,
+    },
+    
+    /// Job queue management
+    Job {
+        #[command(subcommand)]
+        action: JobAction,
+    },
+    
+    /// Parallel dump across multiple devices
+    ParallelDump {
+        /// Output directory
+        #[arg(short, long)]
+        output: PathBuf,
+        
+        /// Number of devices to use
+        #[arg(short, long, default_value = "4")]
+        devices: usize,
+        
+        /// Chunk size per device
+        #[arg(long, default_value = "64M")]
+        chunk_size: String,
+        
+        /// Merge output files
+        #[arg(long, default_value = "true")]
+        merge: bool,
+    },
+    
+    /// Production line mode
+    Production {
+        #[command(subcommand)]
+        action: ProductionAction,
+    },
 }
 
 #[derive(Subcommand)]
@@ -320,6 +367,128 @@ enum SignaturesAction {
     },
     /// List loaded signatures
     List,
+}
+
+// ========== v2.0 - Multi-device & Enterprise Subcommands ==========
+
+#[derive(Subcommand)]
+enum ServerAction {
+    /// Start OpenFlash server
+    Start {
+        /// Listen host
+        #[arg(long, default_value = "0.0.0.0")]
+        host: String,
+        
+        /// Listen port
+        #[arg(long, default_value = "8080")]
+        port: u16,
+        
+        /// Configuration file
+        #[arg(short, long)]
+        config: Option<PathBuf>,
+    },
+    /// Stop OpenFlash server
+    Stop,
+    /// Get server status
+    Status {
+        /// Server URL
+        #[arg(long)]
+        url: Option<String>,
+    },
+}
+
+#[derive(Subcommand)]
+enum DeviceAction {
+    /// List devices in pool
+    List {
+        /// Server URL
+        #[arg(long)]
+        url: Option<String>,
+    },
+    /// Add device to pool
+    Add {
+        /// Device name
+        #[arg(short, long)]
+        name: String,
+        
+        /// Device URI (serial://, tcp://, ws://)
+        #[arg(short, long)]
+        uri: String,
+        
+        /// Device platform (RP2040, STM32F4, ESP32)
+        #[arg(long, default_value = "RP2040")]
+        platform: String,
+        
+        /// Device tags
+        #[arg(long)]
+        tags: Vec<String>,
+    },
+    /// Remove device from pool
+    Remove {
+        /// Device ID
+        device_id: String,
+    },
+}
+
+#[derive(Subcommand)]
+enum JobAction {
+    /// Submit a job to the queue
+    Submit {
+        /// Job type (read, write, erase, analyze)
+        job_type: String,
+        
+        /// Job parameters
+        #[arg(trailing_var_arg = true)]
+        params: Vec<String>,
+        
+        /// Specific device ID
+        #[arg(short, long)]
+        device: Option<String>,
+        
+        /// Job priority (low, normal, high, critical)
+        #[arg(long)]
+        priority: Option<String>,
+    },
+    /// Get job status
+    Status {
+        /// Job ID
+        job_id: u64,
+    },
+    /// Cancel a job
+    Cancel {
+        /// Job ID
+        job_id: u64,
+    },
+    /// List jobs
+    List {
+        /// Filter by status
+        #[arg(long)]
+        status: Option<String>,
+        
+        /// Maximum number of jobs to show
+        #[arg(long, default_value = "20")]
+        limit: usize,
+    },
+}
+
+#[derive(Subcommand)]
+enum ProductionAction {
+    /// Start production mode
+    Start {
+        /// Configuration file
+        #[arg(short, long)]
+        config: PathBuf,
+        
+        /// Production line ID
+        #[arg(long)]
+        line: Option<String>,
+    },
+    /// Get production status
+    Status {
+        /// Production line ID
+        #[arg(long)]
+        line: Option<String>,
+    },
 }
 
 
@@ -394,6 +563,38 @@ fn main() {
                 SignaturesAction::List => commands::signatures_list(&cli),
             }
         }
+        // v2.0 - Multi-device & Enterprise commands
+        Commands::Server { action } => {
+            match action {
+                ServerAction::Start { host, port, config } => commands::server_start(&cli, host, *port, config.clone()),
+                ServerAction::Stop => commands::server_stop(&cli),
+                ServerAction::Status { url } => commands::server_status(&cli, url.as_deref()),
+            }
+        }
+        Commands::Device { action } => {
+            match action {
+                DeviceAction::List { url } => commands::device_list(&cli, url.as_deref()),
+                DeviceAction::Add { name, uri, platform, tags } => commands::device_add(&cli, name, uri, platform, tags.clone()),
+                DeviceAction::Remove { device_id } => commands::device_remove(&cli, device_id),
+            }
+        }
+        Commands::Job { action } => {
+            match action {
+                JobAction::Submit { job_type, params, device, priority } => commands::job_submit(&cli, job_type, params.clone(), device.as_deref(), priority.as_deref()),
+                JobAction::Status { job_id } => commands::job_status(&cli, *job_id),
+                JobAction::Cancel { job_id } => commands::job_cancel(&cli, *job_id),
+                JobAction::List { status, limit } => commands::job_list(&cli, status.as_deref(), *limit),
+            }
+        }
+        Commands::ParallelDump { output, devices, chunk_size, merge } => {
+            commands::parallel_dump(&cli, output.clone(), *devices, chunk_size, *merge)
+        }
+        Commands::Production { action } => {
+            match action {
+                ProductionAction::Start { config, line } => commands::production_start(&cli, config.clone(), line.as_deref()),
+                ProductionAction::Status { line } => commands::production_status(&cli, line.as_deref()),
+            }
+        }
     };
 
     if let Err(e) = result {
@@ -413,7 +614,7 @@ fn print_banner() {
  | |__| | |_) |  __/ | | | |   | | (_| \__ \ | | |
   \____/| .__/ \___|_| |_\_|   |_|\__,_|___/_| |_|
         | |                                       
-        |_|   v1.9.0 - Advanced AI Features     
+        |_|   v2.0.0 - Multi-device & Enterprise
 "#.cyan());
 }
 

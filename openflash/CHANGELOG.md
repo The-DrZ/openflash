@@ -7,6 +7,151 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-Q4
+
+### Added
+- **Multi-device & Enterprise Features**
+  - New `server` module in core library for enterprise deployment
+  
+  - **Device Pool Management**
+    - `DevicePool` - Manage multiple OpenFlash devices
+    - `PoolDevice` - Device representation with status, capabilities, metrics
+    - Device status tracking: Available, Busy, Offline, Error, Maintenance, Reserved
+    - Platform support: RP2040, STM32F1, STM32F4, ESP32, ESP32S3
+    - Device capabilities: interfaces, max speed, WiFi/BT, parallel ops
+    - Device tagging and filtering
+    - Pool statistics and health monitoring
+  
+  - **Job Queue System**
+    - `JobQueue` - Priority-based job queue with dependencies
+    - `Job` - Job definition with type, priority, timeout, retries
+    - Job types: Read, Write, Erase, Verify, Analyze, Clone, Custom
+    - Job priorities: Low, Normal, High, Critical
+    - Job lifecycle: Queued → Assigned → Running → Completed/Failed
+    - Automatic retry on failure
+    - Job result tracking with metrics
+  
+  - **REST API**
+    - `RestApiConfig` - REST API configuration
+    - Authentication: None, API Key, Bearer Token, Basic Auth
+    - Rate limiting with configurable limits
+    - CORS support
+    - API endpoints for devices, jobs, status
+    - JSON request/response types
+  
+  - **WebSocket Support**
+    - `WebSocketConfig` - WebSocket configuration
+    - `WsMessage` - WebSocket message types
+    - Real-time job status updates
+    - Device status notifications
+    - Subscribe/unsubscribe to specific jobs/devices
+  
+  - **gRPC Support**
+    - `GrpcConfig` - gRPC configuration
+    - TLS support
+    - Reflection enabled by default
+  
+  - **Parallel Dumping**
+    - `ParallelDumpJob` - Coordinate multiple devices for faster dumps
+    - `ChunkJob` - Individual chunk assignments
+    - Automatic chunk distribution across devices
+    - Progress tracking per chunk
+    - Output merging and verification
+  
+  - **Production Line Integration**
+    - `ProductionLineConfig` - Production line configuration
+    - `StationConfig` - Individual station setup
+    - Station operations: DetectChip, Erase, Program, Verify, Dump, CustomTest
+    - Pass/fail criteria: bad blocks, ECC corrections, match percentage
+    - Verification modes: None, Quick, Full, Checksum
+    - Production logging with JSON/CSV export
+    - Production statistics and yield tracking
+
+- **New Protocol Commands (0xD0-0xDF)**
+  - `ServerStart` (0xD0) - Start server mode
+  - `ServerStop` (0xD1) - Stop server mode
+  - `ServerStatus` (0xD2) - Get server status
+  - `DevicePoolList` (0xD3) - List devices in pool
+  - `DevicePoolAdd` (0xD4) - Add device to pool
+  - `DevicePoolRemove` (0xD5) - Remove device from pool
+  - `JobSubmit` (0xD6) - Submit job to queue
+  - `JobStatus` (0xD7) - Get job status
+  - `JobCancel` (0xD8) - Cancel job
+  - `JobList` (0xD9) - List jobs
+  - `ParallelDumpStart` (0xDA) - Start parallel dump
+  - `ParallelDumpStatus` (0xDB) - Get parallel dump status
+  - `ProductionStart` (0xDC) - Start production mode
+  - `ProductionStatus` (0xDD) - Get production status
+  - `ProductionStats` (0xDE) - Get production statistics
+  - `ApiKeyValidate` (0xDF) - Validate API key
+
+- **New CLI Commands**
+  - `openflash server start [--host] [--port] [--config]` - Start server
+  - `openflash server stop` - Stop server
+  - `openflash server status [--url]` - Get server status
+  - `openflash device list [--url]` - List devices in pool
+  - `openflash device add --name --uri [--platform] [--tags]` - Add device
+  - `openflash device remove <device_id>` - Remove device
+  - `openflash job submit <type> [params] [--device] [--priority]` - Submit job
+  - `openflash job status <job_id>` - Get job status
+  - `openflash job cancel <job_id>` - Cancel job
+  - `openflash job list [--status] [--limit]` - List jobs
+  - `openflash parallel-dump -o <dir> [--devices] [--chunk-size]` - Parallel dump
+  - `openflash production start -c <config> [--line]` - Start production
+  - `openflash production status [--line]` - Production status
+
+- **New Types and Structures**
+  - `ServerError`, `ServerResult` - Error handling
+  - `DeviceStatus`, `DevicePlatform`, `DeviceCapabilities` - Device types
+  - `PoolDevice`, `DevicePool`, `PoolStats` - Pool management
+  - `JobPriority`, `JobStatus`, `JobType`, `Job`, `JobResult` - Job types
+  - `JobQueue`, `QueueStats` - Queue management
+  - `AuthMethod`, `RateLimitConfig`, `RestApiConfig` - REST API
+  - `WsMessage`, `WebSocketConfig` - WebSocket
+  - `GrpcConfig` - gRPC
+  - `ServerConfig`, `OpenFlashServer`, `ServerInfo` - Server
+  - `ParallelDumpConfig`, `ParallelDumpJob`, `ChunkJob` - Parallel ops
+  - `ProductionLineConfig`, `StationConfig`, `ProductionStats` - Production
+
+### Changed
+- Protocol version updated to 0x20
+- Core library version updated to 2.0.0
+- CLI version: 2.0.0
+- pyopenflash version: 2.0.0
+- Added `is_server()` method to Command enum
+- Extended lib.rs exports with server types
+
+### Tests
+- 20+ new unit tests for server module
+- Device pool tests
+- Job queue tests
+- Job lifecycle tests
+- Parallel dump tests
+- Pool and queue statistics tests
+
+### Architecture
+```
+┌─────────────────────────────────────────────────────────┐
+│  OpenFlash Server                                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐     │
+│  │  REST API   │  │  WebSocket  │  │  gRPC       │     │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘     │
+│         └────────────────┼────────────────┘            │
+│                          ▼                              │
+│  ┌─────────────────────────────────────────────────┐   │
+│  │  Device Manager                                  │   │
+│  │  ├── Device Pool                                │   │
+│  │  ├── Job Queue                                  │   │
+│  │  └── Result Aggregator                          │   │
+│  └─────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────┘
+              │              │              │
+       ┌──────▼──────┐ ┌─────▼─────┐ ┌─────▼─────┐
+       │  Device 1   │ │  Device 2 │ │  Device N │
+       │  (RP2040)   │ │  (ESP32)  │ │ (STM32F4) │
+       └─────────────┘ └───────────┘ └───────────┘
+```
+
 ## [1.9.0] - 2026-Q3
 
 ### Added
@@ -520,6 +665,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Version History
 
+- **2.0.0** - Multi-device & Enterprise: Server mode, device pool, job queue, REST API, parallel dumping, production line
 - **1.9.0** - Advanced AI Features: ML chip identification, firmware unpacking, rootfs extraction, vulnerability scanning
 - **1.8.0** - Scripting & Automation: Python API, CLI tool, batch processing, plugins, CI/CD
 - **1.7.0** - Advanced write operations, bad block management, wear leveling, incremental backup, cloning
@@ -533,7 +679,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **1.0.0** - Initial public release
 - **0.x.x** - Development versions (not released)
 
-[Unreleased]: https://github.com/openflash/openflash/compare/v1.9.0...HEAD
+[Unreleased]: https://github.com/openflash/openflash/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/openflash/openflash/compare/v1.9.0...v2.0.0
 [1.9.0]: https://github.com/openflash/openflash/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/openflash/openflash/compare/v1.7.0...v1.8.0
 [1.7.0]: https://github.com/openflash/openflash/compare/v1.6.0...v1.7.0

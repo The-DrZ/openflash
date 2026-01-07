@@ -10,6 +10,7 @@ pub mod ai;
 pub mod write_ops;
 pub mod scripting;
 pub mod ai_advanced;
+pub mod server;
 
 pub use onfi::*;
 pub use protocol::*;
@@ -74,5 +75,27 @@ pub use ai_advanced::{
     // Custom Signatures
     SignatureDatabase, CustomSignature, SignatureMatch, SignatureCategory, PatternType,
     SignatureDatabaseInfo,
+};
+pub use server::{
+    ServerError, ServerResult,
+    // Device Pool
+    DeviceStatus, DevicePlatform, DeviceCapabilities, PoolDevice, DevicePool, PoolStats,
+    // Job Queue
+    JobPriority, JobStatus, JobType, Job, JobResult, JobQueue, QueueStats,
+    // REST API
+    AuthMethod, RateLimitConfig, RestApiConfig,
+    SubmitJobRequest, SubmitJobResponse, JobStatusResponse, DeviceListResponse,
+    DeviceInfo as ServerDeviceInfo,
+    // WebSocket
+    WsMessage, WebSocketConfig,
+    // gRPC
+    GrpcConfig,
+    // Server
+    ServerConfig, OpenFlashServer, ServerInfo,
+    // Parallel Dumping
+    ParallelDumpConfig, ParallelDumpJob, ChunkJob, ChunkStatus, ParallelJobStatus,
+    // Production Line
+    ProductionLineConfig, StationConfig, StationOperation, PassCriteria,
+    VerificationMode, ProductionLogging, ProductionUnitResult, ProductionStats,
 };
 

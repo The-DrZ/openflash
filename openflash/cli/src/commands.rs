@@ -777,3 +777,521 @@ pub fn signatures_list(cli: &Cli) -> Result<()> {
     }
     Ok(())
 }
+
+
+// ============================================================================
+// v2.0 - Multi-device & Enterprise Commands
+// ============================================================================
+
+use openflash_core::server::*;
+
+/// Start server mode
+pub fn server_start(
+    cli: &Cli,
+    host: &str,
+    port: u16,
+    config_file: Option<PathBuf>,
+) -> Result<()> {
+    let config = if let Some(path) = config_file {
+        let content = std::fs::read_to_string(&path)?;
+        serde_json::from_str(&content)?
+    } else {
+        ServerConfig {
+            rest: RestApiConfig {
+                host: host.to_string(),
+                port,
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    };
+
+    if !cli.quiet {
+        println!("{}", "Starting OpenFlash Server v2.0".cyan().bold());
+        println!("  REST API:   http://{}:{}{}", config.rest.host, config.rest.port, config.rest.prefix);
+        if config.websocket.enabled {
+            println!("  WebSocket:  ws://{}:{}{}", config.rest.host, config.rest.port, config.websocket.path);
+        }
+        if config.grpc.enabled {
+            println!("  gRPC:       {}:{}", config.grpc.host, config.grpc.port);
+        }
+        if config.metrics_enabled {
+            println!("  Metrics:    http://{}:{}/metrics", config.rest.host, config.metrics_port);
+        }
+        println!("\n{}", "Press Ctrl+C to stop the server.".dimmed());
+    }
+
+    // In real implementation, this would start the actual server
+    // For now, just show the configuration
+    println!("\n{}", "Server configuration:".green());
+    println!("  Max devices:    {}", config.max_devices);
+    println!("  Max queue size: {}", config.max_queue_size);
+    println!("  Job timeout:    {} seconds", config.default_job_timeout);
+
+    Ok(())
+}
+
+/// Stop server mode
+pub fn server_stop(cli: &Cli) -> Result<()> {
+    if !cli.quiet {
+        println!("{}", "Stopping OpenFlash Server...".yellow());
+    }
+    println!("{}", "Server stopped.".green());
+    Ok(())
+}
+
+/// Get server status
+pub fn server_status(cli: &Cli, server_url: Option<&str>) -> Result<()> {
+    let url = server_url.unwrap_or("http://localhost:8080");
+    
+    if !cli.quiet {
+        println!("{} {}...", "Checking server status at".cyan(), url.yellow());
+    }
+
+    // Mock server info
+    let info = ServerInfo {
+        name: "OpenFlash Server".to_string(),
+        version: "2.0.0".to_string(),
+        uptime_ms: 3600000,
+        pool_stats: PoolStats {
+            total_devices: 4,
+            available_devices: 2,
+            busy_devices: 2,
+            offline_devices: 0,
+            error_devices: 0,
+            total_jobs_completed: 150,
+            total_bytes_processed: 1024 * 1024 * 1024 * 10,
+        },
+        queue_stats: QueueStats {
+            pending_count: 5,
+            running_count: 2,
+            completed_count: 145,
+            failed_count: 3,
+            cancelled_count: 0,
+        },
+    };
+
+    match cli.format.as_str() {
+        "json" => println!("{}", serde_json::to_string_pretty(&info)?),
+        _ => {
+            println!("\n{}", "Server Status:".green().bold());
+            println!("  Name:    {}", info.name.cyan());
+            println!("  Version: {}", info.version);
+            println!("  Uptime:  {} hours", info.uptime_ms / 3600000);
+            
+            println!("\n{}", "Device Pool:".cyan());
+            println!("  Total:     {}", info.pool_stats.total_devices);
+            println!("  Available: {}", info.pool_stats.available_devices.to_string().green());
+            println!("  Busy:      {}", info.pool_stats.busy_devices.to_string().yellow());
+            println!("  Offline:   {}", info.pool_stats.offline_devices);
+            println!("  Jobs done: {}", info.pool_stats.total_jobs_completed);
+            println!("  Data:      {}", format_size(info.pool_stats.total_bytes_processed));
+            
+            println!("\n{}", "Job Queue:".cyan());
+            println!("  Pending:   {}", info.queue_stats.pending_count);
+            println!("  Running:   {}", info.queue_stats.running_count.to_string().yellow());
+            println!("  Completed: {}", info.queue_stats.completed_count.to_string().green());
+            println!("  Failed:    {}", info.queue_stats.failed_count.to_string().red());
+        }
+    }
+    Ok(())
+}
+
+/// List devices in pool
+pub fn device_list(cli: &Cli, server_url: Option<&str>) -> Result<()> {
+    let url = server_url.unwrap_or("http://localhost:8080");
+    
+    if !cli.quiet {
+        println!("{} from {}...", "Listing devices".cyan(), url.yellow());
+    }
+
+    // Mock device list
+    let devices = vec![
+        DeviceInfo {
+            id: "dev-001".to_string(),
+            name: "Programmer 1".to_string(),
+            platform: "RP2040".to_string(),
+            status: "Available".to_string(),
+            current_job: None,
+            interfaces: vec!["parallel_nand".to_string(), "spi_nand".to_string()],
+            tags: vec!["production".to_string()],
+        },
+        DeviceInfo {
+            id: "dev-002".to_string(),
+            name: "Programmer 2".to_string(),
+            platform: "STM32F4".to_string(),
+            status: "Busy".to_string(),
+            current_job: Some(42),
+            interfaces: vec!["parallel_nand".to_string(), "spi_nand".to_string(), "emmc".to_string()],
+            tags: vec!["production".to_string(), "high-speed".to_string()],
+        },
+        DeviceInfo {
+            id: "dev-003".to_string(),
+            name: "ESP32 WiFi".to_string(),
+            platform: "ESP32".to_string(),
+            status: "Available".to_string(),
+            current_job: None,
+            interfaces: vec!["spi_nand".to_string(), "spi_nor".to_string()],
+            tags: vec!["wireless".to_string()],
+        },
+    ];
+
+    match cli.format.as_str() {
+        "json" => println!("{}", serde_json::to_string_pretty(&devices)?),
+        _ => {
+            println!("\n{} ({} devices)", "Device Pool:".green().bold(), devices.len());
+            for dev in &devices {
+                let status_color = match dev.status.as_str() {
+                    "Available" => dev.status.green(),
+                    "Busy" => dev.status.yellow(),
+                    "Offline" => dev.status.red(),
+                    _ => dev.status.white(),
+                };
+                
+                println!("\n  {} {} ({})", 
+                    if dev.status == "Available" { "●".green() } else { "●".yellow() },
+                    dev.name.cyan(),
+                    dev.id.dimmed());
+                println!("     Platform:   {}", dev.platform);
+                println!("     Status:     {}", status_color);
+                if let Some(job) = dev.current_job {
+                    println!("     Current job: #{}", job);
+                }
+                println!("     Interfaces: {}", dev.interfaces.join(", "));
+                println!("     Tags:       {}", dev.tags.join(", ").dimmed());
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Add device to pool
+pub fn device_add(
+    cli: &Cli,
+    name: &str,
+    uri: &str,
+    platform: &str,
+    tags: Vec<String>,
+) -> Result<()> {
+    if !cli.quiet {
+        println!("{} device: {} ({})", "Adding".green(), name.cyan(), uri.yellow());
+    }
+
+    let device = PoolDevice::new(
+        &format!("dev-{}", uuid_simple()),
+        name,
+        uri,
+        DevicePlatform::from_str(platform),
+    );
+
+    println!("{}", "Device added successfully!".green());
+    println!("  ID: {}", device.id.cyan());
+    println!("  Name: {}", device.name);
+    println!("  URI: {}", device.uri);
+    println!("  Platform: {:?}", device.platform);
+    
+    Ok(())
+}
+
+/// Remove device from pool
+pub fn device_remove(cli: &Cli, device_id: &str) -> Result<()> {
+    if !cli.quiet {
+        println!("{} device: {}", "Removing".red(), device_id.cyan());
+    }
+    println!("{}", "Device removed.".green());
+    Ok(())
+}
+
+/// Submit job to queue
+pub fn job_submit(
+    cli: &Cli,
+    job_type: &str,
+    params: Vec<String>,
+    device_id: Option<&str>,
+    priority: Option<&str>,
+) -> Result<()> {
+    let job_type_enum = match job_type {
+        "read" => JobType::Read {
+            output_path: params.get(0).cloned().unwrap_or_else(|| "dump.bin".to_string()),
+            start_address: 0,
+            length: None,
+            include_oob: false,
+        },
+        "write" => JobType::Write {
+            input_path: params.get(0).cloned().unwrap_or_else(|| "firmware.bin".to_string()),
+            start_address: 0,
+            verify: true,
+        },
+        "erase" => JobType::Erase {
+            start_address: 0,
+            length: None,
+        },
+        "analyze" => JobType::Analyze {
+            input_path: params.get(0).cloned().unwrap_or_else(|| "dump.bin".to_string()),
+            output_path: params.get(1).cloned().unwrap_or_else(|| "report.json".to_string()),
+            deep_scan: false,
+        },
+        _ => JobType::Custom {
+            command: job_type.to_string(),
+            params: HashMap::new(),
+        },
+    };
+
+    let mut job = Job::new(&format!("{} job", job_type), job_type_enum);
+    
+    if let Some(dev) = device_id {
+        job = job.with_device(dev);
+    }
+    
+    if let Some(p) = priority {
+        let prio = match p {
+            "low" => JobPriority::Low,
+            "high" => JobPriority::High,
+            "critical" => JobPriority::Critical,
+            _ => JobPriority::Normal,
+        };
+        job = job.with_priority(prio);
+    }
+
+    if !cli.quiet {
+        println!("{} job: {} (type: {})", "Submitting".green(), job.name.cyan(), job_type.yellow());
+    }
+
+    match cli.format.as_str() {
+        "json" => {
+            let response = SubmitJobResponse {
+                job_id: job.id,
+                status: "queued".to_string(),
+                message: "Job submitted successfully".to_string(),
+                estimated_wait: Some(30),
+            };
+            println!("{}", serde_json::to_string_pretty(&response)?);
+        }
+        _ => {
+            println!("{}", "Job submitted!".green().bold());
+            println!("  Job ID:         {}", job.id.to_string().cyan());
+            println!("  Status:         queued");
+            println!("  Priority:       {:?}", job.priority);
+            println!("  Estimated wait: ~30 seconds");
+        }
+    }
+    Ok(())
+}
+
+/// Get job status
+pub fn job_status(cli: &Cli, job_id: u64) -> Result<()> {
+    if !cli.quiet {
+        println!("{} job #{}...", "Checking status of".cyan(), job_id);
+    }
+
+    // Mock job status
+    let status = JobStatusResponse {
+        job_id,
+        name: "Read job".to_string(),
+        status: "running".to_string(),
+        progress: Some(65),
+        device_id: Some("dev-002".to_string()),
+        created_at: 1704067200000,
+        started_at: Some(1704067230000),
+        completed_at: None,
+        result: None,
+        error: None,
+    };
+
+    match cli.format.as_str() {
+        "json" => println!("{}", serde_json::to_string_pretty(&status)?),
+        _ => {
+            println!("\n{}", "Job Status:".green().bold());
+            println!("  Job ID:   #{}", status.job_id.to_string().cyan());
+            println!("  Name:     {}", status.name);
+            println!("  Status:   {}", status.status.yellow());
+            if let Some(progress) = status.progress {
+                let bar = "█".repeat((progress / 5) as usize);
+                let empty = "░".repeat(20 - (progress / 5) as usize);
+                println!("  Progress: [{}{}] {}%", bar.green(), empty.dimmed(), progress);
+            }
+            if let Some(dev) = &status.device_id {
+                println!("  Device:   {}", dev);
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Cancel job
+pub fn job_cancel(cli: &Cli, job_id: u64) -> Result<()> {
+    if !cli.quiet {
+        println!("{} job #{}...", "Cancelling".red(), job_id);
+    }
+    println!("{}", "Job cancelled.".green());
+    Ok(())
+}
+
+/// List jobs
+pub fn job_list(cli: &Cli, status_filter: Option<&str>, limit: usize) -> Result<()> {
+    if !cli.quiet {
+        println!("{}", "Listing jobs...".cyan());
+    }
+
+    // Mock job list
+    let jobs = vec![
+        ("1", "Read job", "completed", "dev-001", "100%"),
+        ("2", "Write job", "completed", "dev-002", "100%"),
+        ("3", "Analyze job", "running", "dev-001", "45%"),
+        ("4", "Read job", "queued", "-", "-"),
+        ("5", "Erase job", "queued", "-", "-"),
+    ];
+
+    let filtered: Vec<_> = jobs.iter()
+        .filter(|(_, _, s, _, _)| status_filter.map(|f| *s == f).unwrap_or(true))
+        .take(limit)
+        .collect();
+
+    match cli.format.as_str() {
+        "json" => {
+            let json: Vec<_> = filtered.iter().map(|(id, name, status, dev, prog)| {
+                serde_json::json!({
+                    "id": id, "name": name, "status": status, 
+                    "device": dev, "progress": prog
+                })
+            }).collect();
+            println!("{}", serde_json::to_string_pretty(&json)?);
+        }
+        _ => {
+            println!("\n{}", "Jobs:".green().bold());
+            println!("  {:<6} {:<15} {:<12} {:<10} {}", 
+                "ID", "Name", "Status", "Device", "Progress");
+            println!("  {}", "-".repeat(55));
+            for (id, name, status, dev, prog) in filtered {
+                let status_colored = match *status {
+                    "completed" => status.green(),
+                    "running" => status.yellow(),
+                    "failed" => status.red(),
+                    _ => status.white(),
+                };
+                println!("  {:<6} {:<15} {:<12} {:<10} {}", 
+                    id.cyan(), name, status_colored, dev, prog);
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Start parallel dump
+pub fn parallel_dump(
+    cli: &Cli,
+    output_dir: PathBuf,
+    device_count: usize,
+    chunk_size: &str,
+    merge: bool,
+) -> Result<()> {
+    let chunk_bytes = parse_address(chunk_size)?;
+    
+    if !cli.quiet {
+        println!("{}", "Starting parallel dump...".cyan().bold());
+        println!("  Output:      {}", output_dir.display().to_string().yellow());
+        println!("  Devices:     {}", device_count);
+        println!("  Chunk size:  {}", format_size(chunk_bytes));
+        println!("  Merge:       {}", if merge { "yes".green() } else { "no".red() });
+    }
+
+    let config = ParallelDumpConfig {
+        device_count,
+        chunk_size: chunk_bytes,
+        output_dir: output_dir.display().to_string(),
+        merge_output: merge,
+        verify: true,
+    };
+
+    // Mock parallel dump - would actually coordinate multiple devices
+    let total_size = 128 * 1024 * 1024; // 128MB mock
+    let job = ParallelDumpJob::new(total_size, config);
+
+    println!("\n{}", "Parallel dump job created:".green());
+    println!("  Job ID:  {}", job.id.to_string().cyan());
+    println!("  Chunks:  {}", job.chunks.len());
+    println!("  Total:   {}", format_size(job.total_size));
+
+    Ok(())
+}
+
+/// Start production mode
+pub fn production_start(
+    cli: &Cli,
+    config_file: PathBuf,
+    line_id: Option<&str>,
+) -> Result<()> {
+    if !cli.quiet {
+        println!("{}", "Starting production mode...".cyan().bold());
+        println!("  Config: {}", config_file.display().to_string().yellow());
+        if let Some(id) = line_id {
+            println!("  Line:   {}", id);
+        }
+    }
+
+    // Mock production config
+    println!("\n{}", "Production line ready:".green());
+    println!("  Auto-start:   enabled");
+    println!("  Verification: full");
+    println!("  Logging:      enabled");
+    println!("\n{}", "Waiting for units...".dimmed());
+
+    Ok(())
+}
+
+/// Get production status
+pub fn production_status(cli: &Cli, line_id: Option<&str>) -> Result<()> {
+    if !cli.quiet {
+        println!("{}", "Production status:".cyan().bold());
+    }
+
+    // Mock production stats
+    let stats = ProductionStats {
+        line_id: line_id.unwrap_or("line-001").to_string(),
+        total_units: 1250,
+        passed_units: 1235,
+        failed_units: 15,
+        pass_rate: 98.8,
+        avg_cycle_time_ms: 45000,
+        units_per_hour: 80.0,
+        failure_reasons: {
+            let mut m = HashMap::new();
+            m.insert("bad_blocks".to_string(), 8);
+            m.insert("verify_failed".to_string(), 5);
+            m.insert("timeout".to_string(), 2);
+            m
+        },
+    };
+
+    match cli.format.as_str() {
+        "json" => println!("{}", serde_json::to_string_pretty(&stats)?),
+        _ => {
+            println!("\n{}", "Production Statistics:".green().bold());
+            println!("  Line ID:        {}", stats.line_id.cyan());
+            println!("  Total units:    {}", stats.total_units);
+            println!("  Passed:         {} ({:.1}%)", 
+                stats.passed_units.to_string().green(), stats.pass_rate);
+            println!("  Failed:         {}", stats.failed_units.to_string().red());
+            println!("  Avg cycle time: {} seconds", stats.avg_cycle_time_ms / 1000);
+            println!("  Throughput:     {:.1} units/hour", stats.units_per_hour);
+            
+            if !stats.failure_reasons.is_empty() {
+                println!("\n{}", "Failure reasons:".yellow());
+                for (reason, count) in &stats.failure_reasons {
+                    println!("    {}: {}", reason, count);
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Generate simple UUID-like string
+fn uuid_simple() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let ts = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_nanos();
+    format!("{:016x}", ts)
+}

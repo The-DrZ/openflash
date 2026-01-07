@@ -134,6 +134,24 @@ pub enum Command {
     ScanSignatures = 0xC7,        // Scan with custom signatures
     ExportSignatures = 0xC8,      // Export signature database
     GetMlModel = 0xC9,            // Get ML model info
+    
+    // Multi-device & Enterprise Commands (0xD0-0xDF) - v2.0
+    ServerStart = 0xD0,           // Start server mode
+    ServerStop = 0xD1,            // Stop server mode
+    ServerStatus = 0xD2,          // Get server status
+    DevicePoolList = 0xD3,        // List devices in pool
+    DevicePoolAdd = 0xD4,         // Add device to pool
+    DevicePoolRemove = 0xD5,      // Remove device from pool
+    JobSubmit = 0xD6,             // Submit job to queue
+    JobStatus = 0xD7,             // Get job status
+    JobCancel = 0xD8,             // Cancel job
+    JobList = 0xD9,               // List jobs
+    ParallelDumpStart = 0xDA,     // Start parallel dump
+    ParallelDumpStatus = 0xDB,    // Get parallel dump status
+    ProductionStart = 0xDC,       // Start production mode
+    ProductionStatus = 0xDD,      // Get production status
+    ProductionStats = 0xDE,       // Get production statistics
+    ApiKeyValidate = 0xDF,        // Validate API key
 }
 
 impl Command {
@@ -254,6 +272,24 @@ impl Command {
             0xC7 => Some(Command::ScanSignatures),
             0xC8 => Some(Command::ExportSignatures),
             0xC9 => Some(Command::GetMlModel),
+            
+            // Multi-device & Enterprise (v2.0)
+            0xD0 => Some(Command::ServerStart),
+            0xD1 => Some(Command::ServerStop),
+            0xD2 => Some(Command::ServerStatus),
+            0xD3 => Some(Command::DevicePoolList),
+            0xD4 => Some(Command::DevicePoolAdd),
+            0xD5 => Some(Command::DevicePoolRemove),
+            0xD6 => Some(Command::JobSubmit),
+            0xD7 => Some(Command::JobStatus),
+            0xD8 => Some(Command::JobCancel),
+            0xD9 => Some(Command::JobList),
+            0xDA => Some(Command::ParallelDumpStart),
+            0xDB => Some(Command::ParallelDumpStatus),
+            0xDC => Some(Command::ProductionStart),
+            0xDD => Some(Command::ProductionStatus),
+            0xDE => Some(Command::ProductionStats),
+            0xDF => Some(Command::ApiKeyValidate),
             
             _ => None,
         }
@@ -385,6 +421,28 @@ impl Command {
             Command::ScanSignatures |
             Command::ExportSignatures |
             Command::GetMlModel
+        )
+    }
+    
+    /// Check if command is for multi-device & enterprise features (v2.0)
+    pub fn is_server(&self) -> bool {
+        matches!(self,
+            Command::ServerStart |
+            Command::ServerStop |
+            Command::ServerStatus |
+            Command::DevicePoolList |
+            Command::DevicePoolAdd |
+            Command::DevicePoolRemove |
+            Command::JobSubmit |
+            Command::JobStatus |
+            Command::JobCancel |
+            Command::JobList |
+            Command::ParallelDumpStart |
+            Command::ParallelDumpStatus |
+            Command::ProductionStart |
+            Command::ProductionStatus |
+            Command::ProductionStats |
+            Command::ApiKeyValidate
         )
     }
 }
@@ -665,5 +723,31 @@ mod tests {
         assert!(!Command::BatchStart.is_ai_advanced());
         assert!(!Command::SpiNorRead.is_ai_advanced());
         assert!(!Command::Ping.is_ai_advanced());
+    }
+    
+    #[test]
+    fn test_server_command_from_u8() {
+        assert_eq!(Command::from_u8(0xD0), Some(Command::ServerStart));
+        assert_eq!(Command::from_u8(0xD1), Some(Command::ServerStop));
+        assert_eq!(Command::from_u8(0xD2), Some(Command::ServerStatus));
+        assert_eq!(Command::from_u8(0xD3), Some(Command::DevicePoolList));
+        assert_eq!(Command::from_u8(0xD6), Some(Command::JobSubmit));
+        assert_eq!(Command::from_u8(0xD7), Some(Command::JobStatus));
+        assert_eq!(Command::from_u8(0xDA), Some(Command::ParallelDumpStart));
+        assert_eq!(Command::from_u8(0xDC), Some(Command::ProductionStart));
+        assert_eq!(Command::from_u8(0xDF), Some(Command::ApiKeyValidate));
+    }
+    
+    #[test]
+    fn test_server_command_detection() {
+        assert!(Command::ServerStart.is_server());
+        assert!(Command::ServerStop.is_server());
+        assert!(Command::DevicePoolList.is_server());
+        assert!(Command::JobSubmit.is_server());
+        assert!(Command::ParallelDumpStart.is_server());
+        assert!(Command::ProductionStart.is_server());
+        assert!(!Command::MlIdentify.is_server());
+        assert!(!Command::BatchStart.is_server());
+        assert!(!Command::Ping.is_server());
     }
 }
