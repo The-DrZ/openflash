@@ -170,6 +170,24 @@ pub enum Command {
     SetVoltage = 0xED,      // Set voltage level
     BgaControl = 0xEE,      // BGA station control
     HardwareStatus = 0xEF,  // Get hardware status
+
+    // Cloud & Pro Commands (0xF0-0xFF) - v3.0
+    CloudAuth = 0xF0,           // Authenticate with cloud
+    CloudLogout = 0xF1,         // Logout from cloud
+    CloudGetProfile = 0xF2,     // Get user profile
+    CloudSyncStart = 0xF3,      // Start sync
+    CloudSyncStatus = 0xF4,     // Get sync status
+    CloudUpload = 0xF5,         // Upload item
+    CloudDownload = 0xF6,       // Download item
+    CloudListShared = 0xF7,     // List shared items
+    CloudShare = 0xF8,          // Share item
+    CloudSubmitChip = 0xF9,     // Submit chip contribution
+    CloudGetChipUpdates = 0xFA, // Get chip database updates
+    CloudCheckAiUpdates = 0xFB, // Check AI model updates
+    CloudDownloadAiModel = 0xFC, // Download AI model
+    CloudCreateTicket = 0xFD,   // Create support ticket
+    CloudGetTickets = 0xFE,     // Get support tickets
+    CloudStatus = 0xFF,         // Cloud status
 }
 
 impl Command {
@@ -326,6 +344,24 @@ impl Command {
             0xED => Some(Command::SetVoltage),
             0xEE => Some(Command::BgaControl),
             0xEF => Some(Command::HardwareStatus),
+
+            // Cloud & Pro (v3.0)
+            0xF0 => Some(Command::CloudAuth),
+            0xF1 => Some(Command::CloudLogout),
+            0xF2 => Some(Command::CloudGetProfile),
+            0xF3 => Some(Command::CloudSyncStart),
+            0xF4 => Some(Command::CloudSyncStatus),
+            0xF5 => Some(Command::CloudUpload),
+            0xF6 => Some(Command::CloudDownload),
+            0xF7 => Some(Command::CloudListShared),
+            0xF8 => Some(Command::CloudShare),
+            0xF9 => Some(Command::CloudSubmitChip),
+            0xFA => Some(Command::CloudGetChipUpdates),
+            0xFB => Some(Command::CloudCheckAiUpdates),
+            0xFC => Some(Command::CloudDownloadAiModel),
+            0xFD => Some(Command::CloudCreateTicket),
+            0xFE => Some(Command::CloudGetTickets),
+            0xFF => Some(Command::CloudStatus),
 
             _ => None,
         }
@@ -510,6 +546,29 @@ impl Command {
                 | Command::SetVoltage
                 | Command::BgaControl
                 | Command::HardwareStatus
+        )
+    }
+
+    /// Check if command is for cloud & pro features (v3.0)
+    pub fn is_cloud(&self) -> bool {
+        matches!(
+            self,
+            Command::CloudAuth
+                | Command::CloudLogout
+                | Command::CloudGetProfile
+                | Command::CloudSyncStart
+                | Command::CloudSyncStatus
+                | Command::CloudUpload
+                | Command::CloudDownload
+                | Command::CloudListShared
+                | Command::CloudShare
+                | Command::CloudSubmitChip
+                | Command::CloudGetChipUpdates
+                | Command::CloudCheckAiUpdates
+                | Command::CloudDownloadAiModel
+                | Command::CloudCreateTicket
+                | Command::CloudGetTickets
+                | Command::CloudStatus
         )
     }
 }

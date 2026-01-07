@@ -5,7 +5,7 @@
     ██║   ██║██╔═══╝ ██╔══╝  ██║╚██╗██║██╔══╝  ██║     ██╔══██║╚════██║██╔══██║
     ╚██████╔╝██║     ███████╗██║ ╚████║██║     ███████╗██║  ██║███████║██║  ██║
      ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═══╝╚═╝     ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
-                                                                        v2.3.5
+                                                                        v3.0.0
 ```
 
 <div align="center">
@@ -62,11 +62,11 @@ Commercial NAND programmers cost **$200-2000**. They run on Windows XP. They loo
 
 ## 📥 Download
 
-**v2.3.5** — Teensy & Banana Pi Support (11 platforms!)
+**v3.0.0** — OpenFlash Pro (Cloud, Teams, Crowdsourcing!)
 
 | | | |
 |:---:|:---:|:---:|
-| [**Windows**](https://github.com/openflash/openflash/releases/download/v2.3.5/OpenFlash-2.3.5-x64.msi)<br>`OpenFlash-2.3.5-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v2.3.5/OpenFlash-2.3.5.dmg)<br>`OpenFlash-2.3.5.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v2.3.5/OpenFlash-2.3.5.AppImage)<br>`OpenFlash-2.3.5.AppImage` |
+| [**Windows**](https://github.com/openflash/openflash/releases/download/v3.0.0/OpenFlash-3.0.0-x64.msi)<br>`OpenFlash-3.0.0-x64.msi` | [**macOS**](https://github.com/openflash/openflash/releases/download/v3.0.0/OpenFlash-3.0.0.dmg)<br>`OpenFlash-3.0.0.dmg` | [**Linux**](https://github.com/openflash/openflash/releases/download/v3.0.0/OpenFlash-3.0.0.AppImage)<br>`OpenFlash-3.0.0.AppImage` |
 
 <details>
 <summary><b>Build from source</b></summary>
@@ -632,7 +632,7 @@ v2.3  ✅  Platform Expansion
           ├── GUI platform info & capabilities display
           └── 9 total platforms supported!
 
-v2.3.5 ✅  Teensy & Banana Pi ← YOU ARE HERE
+v2.3.5 ✅  Teensy & Banana Pi
           ├── Teensy 4.0/4.1 (NXP i.MX RT1062) — USB HS 480Mbps!
           │   ├── 10-20x faster transfers than USB Full Speed
           │   ├── 600 MHz Cortex-M7 for soft ECC on-the-fly
@@ -647,28 +647,36 @@ v2.3.5 ✅  Teensy & Banana Pi ← YOU ARE HERE
           ├── Protocol version 0x25
           └── 11 total platforms supported!
 
+v3.0  ✅  OpenFlash Pro ← YOU ARE HERE
+          ├── Cloud sync & backup
+          │   ├── Auto-sync on save
+          │   ├── Conflict resolution
+          │   └── Bandwidth limiting
+          ├── Team collaboration
+          │   ├── Organizations & teams
+          │   ├── Role-based access (Owner/Admin/Member/Viewer)
+          │   └── Shared projects
+          ├── Chip database crowdsourcing
+          │   ├── Community contributions
+          │   ├── Verification workflow
+          │   └── Reputation system
+          ├── AI model updates OTA
+          │   ├── 5 model types
+          │   ├── Auto-update with notifications
+          │   └── Version management
+          ├── Enterprise support
+          │   ├── Priority tickets
+          │   └── Dedicated support
+          ├── Subscription tiers (Free/Pro/Enterprise)
+          └── Protocol version 0x30
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-v2.4  🔜  Advanced AI Features
-          ├── ML-based chip identification
-          ├── Firmware unpacking (binwalk integration)
-          ├── Automatic rootfs extraction
-          ├── Vulnerability scanning
-          └── Custom signature database
-
-v2.5  📋  Hardware Expansion
-          ├── Official OpenFlash PCB
-          ├── TSOP-48 ZIF adapter board
-          ├── BGA rework station integration
-          ├── Logic analyzer mode
-          └── JTAG/SWD passthrough
-
-v3.0  🌟  OpenFlash Pro
-          ├── Cloud sync & backup
-          ├── Team collaboration
-          ├── Chip database crowdsourcing
-          ├── AI model updates OTA
-          └── Enterprise support
+v3.1  🔜  Mobile & Embedded
+          ├── iOS app
+          ├── Android app
+          ├── Embedded Linux support
+          └── WebAssembly core
 ```
 
 ---
@@ -697,7 +705,7 @@ MIT. Do whatever. Don't sue us.
 
 <div align="center">
 
-**OpenFlash v2.3.5**
+**OpenFlash v3.0.0**
 
 *Your data wants to be free.*
 

@@ -7,6 +7,122 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2027-Q1
+
+### Added
+- **OpenFlash Pro — Cloud & Collaboration Features** ☁️
+
+  - **Cloud Sync & Backup**
+    - `SyncConfig` — Auto-sync configuration with interval, on-save sync
+    - `SyncItem` — Syncable items (dumps, reports, projects, chip definitions, signatures, scripts)
+    - `SyncStatus` — Sync status tracking (NotSynced, Syncing, Synced, Error, Conflict)
+    - `ConflictResolution` — Conflict resolution strategies (AskUser, KeepLocal, KeepRemote, KeepBoth, KeepNewest)
+    - Automatic sync on save with configurable max file size
+    - Bandwidth limiting for sync operations
+    - SHA-256 checksum verification
+
+  - **Team Collaboration**
+    - `Organization` — Team/organization management
+    - `TeamMember` — Team members with roles
+    - `TeamRole` — Role hierarchy (Owner, Admin, Member, Viewer)
+    - `SharedProject` — Shared project management
+    - `ProjectMember` — Project-level access control
+    - `ProjectAccess` — Access levels (Read, Write, Admin)
+    - Organization-wide storage quotas
+
+  - **Chip Database Crowdsourcing**
+    - `ChipContribution` — Community chip contributions
+    - `ChipType` — Contribution types (ParallelNand, SpiNand, SpiNor, Emmc, Ufs)
+    - `ContributionStatus` — Review workflow (Pending, UnderReview, Approved, Rejected, NeedsInfo)
+    - `VerificationData` — Chip verification data (ID, ONFI params, JEDEC ID, timing info)
+    - `TimingInfo` — Timing measurements (t_RC, t_WC, t_R, t_PROG, t_BERS)
+    - `CommunityChipDatabase` — Community database statistics
+    - `ContributorStats` — Contributor reputation and statistics
+    - Upvote/downvote system for contributions
+
+  - **AI Model Updates OTA**
+    - `AiModelType` — Model types (ChipIdentification, PatternRecognition, FilesystemDetection, AnomalyDetection, EncryptionDetection)
+    - `AiModelInfo` — Model metadata (version, size, checksum, accuracy, training samples)
+    - `AiModelUpdate` — Update information with download URL
+    - `AiUpdateConfig` — Auto-update configuration
+    - Automatic update checking with configurable interval
+    - WiFi-only update option
+    - Previous version retention
+
+  - **Enterprise Support**
+    - `SupportTicket` — Support ticket management
+    - `TicketMessage` — Ticket conversation threads
+    - `TicketPriority` — Priority levels (Low, Normal, High, Critical)
+    - `TicketStatus` — Ticket lifecycle (Open, InProgress, WaitingOnCustomer, Resolved, Closed)
+    - File attachments support
+    - Priority support for Enterprise tier
+
+  - **Subscription System**
+    - `SubscriptionTier` — Tier levels (Free, Pro, Enterprise)
+    - `UserProfile` — User profile with storage quotas and reputation
+    - `AuthToken` — OAuth token management
+    - `AuthProvider` — Auth providers (Email, GitHub, Google, ApiKey)
+    - Feature gating based on subscription tier
+
+  - **Cloud Client**
+    - `OpenFlashCloud` — Main cloud client
+    - `CloudConfig` — API configuration (URLs, timeout, retries)
+    - `CloudState` — Client state management
+    - `CloudError` — Comprehensive error handling
+
+- **New Protocol Commands (0xF0-0xFF)**
+  - `CloudAuth` (0xF0) — Authenticate with cloud
+  - `CloudLogout` (0xF1) — Logout from cloud
+  - `CloudGetProfile` (0xF2) — Get user profile
+  - `CloudSyncStart` (0xF3) — Start sync
+  - `CloudSyncStatus` (0xF4) — Get sync status
+  - `CloudUpload` (0xF5) — Upload item
+  - `CloudDownload` (0xF6) — Download item
+  - `CloudListShared` (0xF7) — List shared items
+  - `CloudShare` (0xF8) — Share item
+  - `CloudSubmitChip` (0xF9) — Submit chip contribution
+  - `CloudGetChipUpdates` (0xFA) — Get chip database updates
+  - `CloudCheckAiUpdates` (0xFB) — Check AI model updates
+  - `CloudDownloadAiModel` (0xFC) — Download AI model
+  - `CloudCreateTicket` (0xFD) — Create support ticket
+  - `CloudGetTickets` (0xFE) — Get support tickets
+  - `CloudStatus` (0xFF) — Cloud status
+
+- **New CLI Commands**
+  - `openflash cloud login` — Login to OpenFlash Cloud
+  - `openflash cloud logout` — Logout
+  - `openflash cloud status` — Show cloud status
+  - `openflash cloud sync` — Sync files
+  - `openflash cloud upload <file>` — Upload file
+  - `openflash cloud download <id>` — Download file
+  - `openflash cloud share <id> --user <email>` — Share with user
+  - `openflash cloud team list` — List team members
+  - `openflash cloud team invite <email>` — Invite member
+  - `openflash cloud chips submit <file>` — Submit chip contribution
+  - `openflash cloud chips list` — List contributions
+  - `openflash cloud ai check` — Check AI model updates
+  - `openflash cloud ai update` — Update AI models
+  - `openflash cloud support create` — Create support ticket
+  - `openflash cloud support list` — List tickets
+
+### Changed
+- Protocol version updated to 0x30
+- Core library version updated to 3.0.0
+- CLI version: 3.0.0
+- pyopenflash version: 3.0.0
+- Added `is_cloud()` method to Command enum
+- Extended lib.rs exports with cloud types
+
+### Tests
+- 10+ new unit tests for cloud module
+- Subscription tier tests
+- Cloud client tests
+- Feature availability tests
+- Sync item queue tests
+- Cloud command parsing tests
+- Contribution status tests
+- AI model info tests
+
 ## [2.3.5] - 2027-Q1
 
 ### Added

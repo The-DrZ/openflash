@@ -1,6 +1,7 @@
 pub mod ai;
 pub mod ai_advanced;
 pub mod analysis;
+pub mod cloud;
 pub mod ecc;
 pub mod emmc;
 pub mod hardware;
@@ -171,4 +172,13 @@ pub use write_ops::{
     ChipCloner, ChipProgrammer, CloneMode, CloneOptions, ClonePhase, CloneProgress,
     ProgramOperation, ProgramOptions, ProgramProgress, WearLevelingManager, WearStatistics,
     WriteError, WriteResult,
+};
+// Cloud & Pro features (v3.0)
+pub use cloud::{
+    AiModelInfo, AiModelType, AiModelUpdate, AiUpdateConfig, AuthProvider, AuthToken,
+    ChipContribution, ChipType, CloudCommand, CloudConfig, CloudError, CloudResult, CloudState,
+    CommunityChipDatabase, ConflictResolution, ContributionStatus, ContributorStats,
+    OpenFlashCloud, Organization, ProjectAccess, ProjectMember, SharedProject, SubscriptionTier,
+    SupportTicket, SyncConfig, SyncItem, SyncItemType, SyncStatus, TeamMember, TeamRole,
+    TicketMessage, TicketPriority, TicketStatus, TimingInfo, UserProfile, VerificationData,
 };
