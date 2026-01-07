@@ -355,6 +355,35 @@ button.icon-btn {
   display: none;
 }
 
+/* Device info layout */
+.device-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.device-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.network-badge {
+  font-size: 12px;
+}
+
+.device-serial {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.device-protocol {
+  font-size: 0.65rem;
+  color: var(--accent-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
 /* ==================== INFO GRID ==================== */
 .info-grid {
   display: grid;

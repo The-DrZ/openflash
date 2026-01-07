@@ -5,7 +5,8 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, State};
 
 use crate::config::AppConfig;
-use crate::device::{ChipInfo, DeviceInfo, DeviceManager, FlashInterface, UfsLunInfo};
+use crate::device::{ChipInfo, DeviceInfo, DeviceManager, FlashInterface, UfsLunInfo, 
+                    DevicePlatform, DeviceCapabilities, ConnectionType};
 use crate::mock;
 
 #[tauri::command]
@@ -1181,4 +1182,199 @@ pub fn add_recent_file(path: String, config: State<'_, Mutex<AppConfig>>) -> Res
     let mut cfg = config.lock().map_err(|e| e.to_string())?;
     cfg.add_recent_file(&path);
     cfg.save()
+}
+
+// ============================================================================
+// Platform commands (v2.3)
+// ============================================================================
+
+/// Platform info response
+#[derive(Serialize, Deserialize)]
+pub struct PlatformInfo {
+    pub platform: String,
+    pub platform_id: u8,
+    pub icon: String,
+    pub name: String,
+    pub is_sbc: bool,
+    pub capabilities: DeviceCapabilitiesInfo,
+    pub protocol_version: u8,
+    pub firmware_version: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct DeviceCapabilitiesInfo {
+    pub parallel_nand: bool,
+    pub spi_nand: bool,
+    pub spi_nor: bool,
+    pub emmc: bool,
+    pub nvddr: bool,
+    pub hardware_ecc: bool,
+    pub wifi: bool,
+    pub bluetooth: bool,
+    pub high_speed_usb: bool,
+}
+
+/// Get detailed device info including platform and capabilities
+#[tauri::command]
+pub async fn get_device_info(
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<PlatformInfo, String> {
+    if mock::is_mock_connected() {
+        let response = mock::get_mock_device_info_response();
+        let platform = DevicePlatform::from_id(response[1]);
+        let caps = mock::get_mock_capabilities(platform);
+        
+        return Ok(PlatformInfo {
+            platform: format!("{:?}", platform),
+            platform_id: response[1],
+            icon: platform.icon().to_string(),
+            name: platform.name().to_string(),
+            is_sbc: platform.is_sbc(),
+            capabilities: DeviceCapabilitiesInfo {
+                parallel_nand: caps.parallel_nand,
+                spi_nand: caps.spi_nand,
+                spi_nor: caps.spi_nor,
+                emmc: caps.emmc,
+                nvddr: caps.nvddr,
+                hardware_ecc: caps.hardware_ecc,
+                wifi: caps.wifi,
+                bluetooth: caps.bluetooth,
+                high_speed_usb: caps.high_speed_usb,
+            },
+            protocol_version: response[2],
+            firmware_version: Some("2.3.0".to_string()),
+        });
+    }
+
+    let device = {
+        let manager = device_manager.lock().map_err(|e| e.to_string())?;
+        manager.get_active_device().ok_or("No device connected")?
+    };
+
+    let dev = device.lock().await;
+    
+    // Send GetDeviceInfo command (0xBB from scripting module, or 0x01 for basic info)
+    let response = dev
+        .send_command(openflash_core::protocol::Command::Ping, &[])
+        .await?;
+
+    // For now, return basic info - real implementation would parse device response
+    let platform = DevicePlatform::Unknown;
+    
+    Ok(PlatformInfo {
+        platform: format!("{:?}", platform),
+        platform_id: 0,
+        icon: platform.icon().to_string(),
+        name: platform.name().to_string(),
+        is_sbc: platform.is_sbc(),
+        capabilities: DeviceCapabilitiesInfo {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: false,
+            hardware_ecc: false,
+            wifi: false,
+            bluetooth: false,
+            high_speed_usb: false,
+        },
+        protocol_version: if response.len() >= 2 { response[1] } else { 0 },
+        firmware_version: None,
+    })
+}
+
+/// Get platform info for the current connection
+#[tauri::command]
+pub fn get_platform_info(
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<Option<PlatformInfo>, String> {
+    let manager = device_manager.lock().map_err(|e| e.to_string())?;
+    
+    if let Some(platform) = manager.get_platform() {
+        let caps = manager.get_capabilities().cloned().unwrap_or_default();
+        
+        Ok(Some(PlatformInfo {
+            platform: format!("{:?}", platform),
+            platform_id: match platform {
+                DevicePlatform::Rp2040 => 0x01,
+                DevicePlatform::Stm32f1 => 0x02,
+                DevicePlatform::Stm32f4 => 0x03,
+                DevicePlatform::Esp32 => 0x04,
+                DevicePlatform::Rp2350 => 0x05,
+                DevicePlatform::RaspberryPi => 0x10,
+                DevicePlatform::OrangePi => 0x11,
+                DevicePlatform::ArduinoGiga => 0x20,
+                DevicePlatform::Unknown => 0x00,
+            },
+            icon: platform.icon().to_string(),
+            name: platform.name().to_string(),
+            is_sbc: platform.is_sbc(),
+            capabilities: DeviceCapabilitiesInfo {
+                parallel_nand: caps.parallel_nand,
+                spi_nand: caps.spi_nand,
+                spi_nor: caps.spi_nor,
+                emmc: caps.emmc,
+                nvddr: caps.nvddr,
+                hardware_ecc: caps.hardware_ecc,
+                wifi: caps.wifi,
+                bluetooth: caps.bluetooth,
+                high_speed_usb: caps.high_speed_usb,
+            },
+            protocol_version: 0x23,
+            firmware_version: None,
+        }))
+    } else {
+        Ok(None)
+    }
+}
+
+/// Add a network device (SBC) to the device list
+#[tauri::command]
+pub fn add_network_device(
+    host: String,
+    port: u16,
+    name: Option<String>,
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<(), String> {
+    let mut manager = device_manager.lock().map_err(|e| e.to_string())?;
+    manager.add_network_device(host, port, name);
+    Ok(())
+}
+
+/// Connect to a network device (TCP)
+#[tauri::command]
+pub async fn connect_network_device(
+    host: String,
+    port: u16,
+    device_manager: State<'_, Mutex<DeviceManager>>,
+) -> Result<(), String> {
+    // For mock devices
+    if host == "localhost" && port == 9999 && mock::is_mock_enabled() {
+        return mock::mock_connect(&format!("mock:tcp:{}:{}", host, port));
+    }
+    
+    let mut manager = device_manager.lock().map_err(|e| e.to_string())?;
+    
+    // Use tokio runtime for async connection
+    // Note: This is a simplified version - real implementation would use proper async
+    Err("Network connection not yet implemented for real devices".to_string())
+}
+
+/// Set mock platform for testing
+#[tauri::command]
+pub fn set_mock_platform(platform: String) -> Result<(), String> {
+    let platform = match platform.to_lowercase().as_str() {
+        "rp2040" | "pico" => DevicePlatform::Rp2040,
+        "rp2350" | "pico2" => DevicePlatform::Rp2350,
+        "stm32f1" | "bluepill" => DevicePlatform::Stm32f1,
+        "stm32f4" | "blackpill" => DevicePlatform::Stm32f4,
+        "esp32" => DevicePlatform::Esp32,
+        "raspberrypi" | "rpi" => DevicePlatform::RaspberryPi,
+        "orangepi" | "opi" => DevicePlatform::OrangePi,
+        "arduinogiga" | "giga" => DevicePlatform::ArduinoGiga,
+        _ => return Err(format!("Unknown platform: {}", platform)),
+    };
+    
+    mock::set_mock_platform(platform);
+    Ok(())
 }

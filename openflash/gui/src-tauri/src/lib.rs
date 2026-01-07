@@ -57,6 +57,12 @@ pub fn run() {
             command::ai_analyze_dump,
             command::ai_detect_patterns,
             command::ai_get_recommendations,
+            // Platform commands (v2.3)
+            command::get_device_info,
+            command::get_platform_info,
+            command::add_network_device,
+            command::connect_network_device,
+            command::set_mock_platform,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -1,15 +1,32 @@
 //! Mock device for testing without real hardware
 
-use crate::device::{ChipInfo, DeviceInfo, FlashInterface};
+use crate::device::{ChipInfo, DeviceInfo, DeviceCapabilities, DevicePlatform, FlashInterface, ConnectionType};
 use openflash_core::protocol::Command;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 
 static MOCK_ENABLED: AtomicBool = AtomicBool::new(false);
 static MOCK_CONNECTED: AtomicBool = AtomicBool::new(false);
+static MOCK_PLATFORM: AtomicU8 = AtomicU8::new(0x05); // Default to RP2350
 
 /// Enable mock device mode
 pub fn enable_mock() {
     MOCK_ENABLED.store(true, Ordering::SeqCst);
+}
+
+/// Set mock platform
+pub fn set_mock_platform(platform: DevicePlatform) {
+    let id = match platform {
+        DevicePlatform::Rp2040 => 0x01,
+        DevicePlatform::Stm32f1 => 0x02,
+        DevicePlatform::Stm32f4 => 0x03,
+        DevicePlatform::Esp32 => 0x04,
+        DevicePlatform::Rp2350 => 0x05,
+        DevicePlatform::RaspberryPi => 0x10,
+        DevicePlatform::OrangePi => 0x11,
+        DevicePlatform::ArduinoGiga => 0x20,
+        DevicePlatform::Unknown => 0x00,
+    };
+    MOCK_PLATFORM.store(id, Ordering::SeqCst);
 }
 
 /// Check if mock mode is enabled
@@ -23,12 +40,99 @@ pub fn get_mock_devices() -> Vec<DeviceInfo> {
         return vec![];
     }
 
-    vec![DeviceInfo {
-        id: "mock:0000:0001".to_string(),
-        name: "OpenFlash Mock Device".to_string(),
-        serial: Some("MOCK-001".to_string()),
-        connected: MOCK_CONNECTED.load(Ordering::SeqCst),
-    }]
+    let platform_id = MOCK_PLATFORM.load(Ordering::SeqCst);
+    let platform = DevicePlatform::from_id(platform_id);
+    
+    vec![
+        DeviceInfo {
+            id: "mock:rp2350:0001".to_string(),
+            name: format!("{} {} (Mock)", platform.icon(), platform.name()),
+            serial: Some("MOCK-RP2350-001".to_string()),
+            connected: MOCK_CONNECTED.load(Ordering::SeqCst),
+            platform: Some(platform),
+            capabilities: Some(get_mock_capabilities(platform)),
+            connection_type: Some(ConnectionType::Usb),
+            protocol_version: Some(0x23),
+            firmware_version: Some("2.3.0".to_string()),
+        },
+        // Also add a mock SBC device
+        DeviceInfo {
+            id: "mock:tcp:localhost:9999".to_string(),
+            name: "🥧 Raspberry Pi (Mock Network)".to_string(),
+            serial: Some("MOCK-RPI-001".to_string()),
+            connected: false,
+            platform: Some(DevicePlatform::RaspberryPi),
+            capabilities: Some(get_mock_capabilities(DevicePlatform::RaspberryPi)),
+            connection_type: Some(ConnectionType::Tcp { 
+                host: "localhost".to_string(), 
+                port: 9999 
+            }),
+            protocol_version: Some(0x23),
+            firmware_version: Some("2.3.0".to_string()),
+        },
+    ]
+}
+
+/// Get mock capabilities for a platform
+pub fn get_mock_capabilities(platform: DevicePlatform) -> DeviceCapabilities {
+    match platform {
+        DevicePlatform::Rp2040 => DeviceCapabilities {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: false,
+            hardware_ecc: false,
+            wifi: false,
+            bluetooth: false,
+            high_speed_usb: false,
+        },
+        DevicePlatform::Rp2350 => DeviceCapabilities {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: true,  // RP2350 supports NV-DDR
+            hardware_ecc: false,
+            wifi: false,
+            bluetooth: false,
+            high_speed_usb: false,
+        },
+        DevicePlatform::ArduinoGiga => DeviceCapabilities {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: false,
+            hardware_ecc: true,  // STM32H747 FMC has hardware ECC
+            wifi: true,
+            bluetooth: true,
+            high_speed_usb: true,  // USB OTG HS
+        },
+        DevicePlatform::Esp32 => DeviceCapabilities {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: false,
+            hardware_ecc: false,
+            wifi: true,
+            bluetooth: true,
+            high_speed_usb: false,
+        },
+        DevicePlatform::RaspberryPi | DevicePlatform::OrangePi => DeviceCapabilities {
+            parallel_nand: true,
+            spi_nand: true,
+            spi_nor: true,
+            emmc: true,
+            nvddr: false,
+            hardware_ecc: false,
+            wifi: true,  // Most SBCs have WiFi
+            bluetooth: true,
+            high_speed_usb: false,
+        },
+        _ => DeviceCapabilities::default(),
+    }
 }
 
 /// Connect to mock device
@@ -73,6 +177,29 @@ pub fn get_mock_chip_info() -> ChipInfo {
         serial_number: None,
         boot_lun_enabled: None,
     }
+}
+
+/// Get mock device info response
+pub fn get_mock_device_info_response() -> Vec<u8> {
+    let platform_id = MOCK_PLATFORM.load(Ordering::SeqCst);
+    let platform = DevicePlatform::from_id(platform_id);
+    let caps = get_mock_capabilities(platform);
+    
+    // Build capabilities bitmap
+    let mut bitmap: u32 = 0;
+    if caps.parallel_nand { bitmap |= 0x01; }
+    if caps.spi_nand { bitmap |= 0x02; }
+    if caps.spi_nor { bitmap |= 0x04; }
+    if caps.emmc { bitmap |= 0x08; }
+    if caps.nvddr { bitmap |= 0x10; }
+    if caps.hardware_ecc { bitmap |= 0x20; }
+    if caps.wifi { bitmap |= 0x40; }
+    if caps.bluetooth { bitmap |= 0x80; }
+    if caps.high_speed_usb { bitmap |= 0x100; }
+    
+    let mut response = vec![0x01, platform_id, 0x23]; // cmd, platform, protocol version
+    response.extend_from_slice(&bitmap.to_le_bytes());
+    response
 }
 
 /// Process mock command

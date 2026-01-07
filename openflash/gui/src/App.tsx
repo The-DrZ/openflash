@@ -7,19 +7,45 @@ import { BitmapView } from "./components/BitmapView";
 import { AiAnalysis } from "./components/AiAnalysis";
 import { SpiNorOperations } from "./components/SpiNorOperations";
 import { UfsLunSelector } from "./components/UfsLunSelector";
+import { PlatformInfo } from "./components/PlatformInfo";
+import { NetworkDeviceDialog } from "./components/NetworkDeviceDialog";
 import "./styles.css";
 import "./components/HexViewer.css";
 import "./components/BitmapView.css";
 import "./components/AiAnalysis.css";
 import "./components/SpiNorOperations.css";
 import "./components/UfsLunSelector.css";
+import "./components/PlatformInfo.css";
+import "./components/NetworkDeviceDialog.css";
 
 interface DeviceInfo {
   id: string;
   name: string;
   serial: string | null;
   connected: boolean;
+  platform?: string;
+  capabilities?: DeviceCapabilities;
+  connection_type?: ConnectionType;
+  protocol_version?: number;
+  firmware_version?: string;
 }
+
+interface DeviceCapabilities {
+  parallel_nand: boolean;
+  spi_nand: boolean;
+  spi_nor: boolean;
+  emmc: boolean;
+  nvddr: boolean;
+  hardware_ecc: boolean;
+  wifi: boolean;
+  bluetooth: boolean;
+  high_speed_usb: boolean;
+}
+
+type ConnectionType = 
+  | "Usb"
+  | { Tcp: { host: string; port: number } }
+  | { UnixSocket: { path: string } };
 
 type FlashInterface = "ParallelNand" | "SpiNand" | "SpiNor" | "Ufs" | "Emmc";
 
@@ -90,6 +116,7 @@ function App() {
   const [hexHighlights, setHexHighlights] = useState<{ start: number; end: number; color: string; label?: string }[]>([]);
   const [flashInterface, setFlashInterface] = useState<FlashInterface>("ParallelNand");
   const [selectedUfsLun, setSelectedUfsLun] = useState<UfsLunType | null>(null);
+  const [showNetworkDialog, setShowNetworkDialog] = useState(false);
 
   useEffect(() => {
     scanDevices();
@@ -369,6 +396,9 @@ function App() {
               <button onClick={scanDevices} disabled={isWorking}>
                 🔄 Scan
               </button>
+              <button onClick={() => setShowNetworkDialog(true)} className="secondary" title="Add network device (SBC)">
+                🌐 Network
+              </button>
               {!mockEnabled && (
                 <button onClick={enableMock} className="secondary">
                   🧪 Mock
@@ -378,8 +408,18 @@ function App() {
             <ul className="device-list">
               {devices.map((dev) => (
                 <li key={dev.id} className={dev.connected ? "connected" : ""}>
-                  <span>{dev.name}</span>
-                  {dev.serial && <small>{dev.serial}</small>}
+                  <div className="device-info">
+                    <span className="device-name">
+                      {dev.name}
+                      {dev.connection_type && typeof dev.connection_type === "object" && "Tcp" in dev.connection_type && (
+                        <span className="network-badge" title="Network device">🌐</span>
+                      )}
+                    </span>
+                    {dev.serial && <small className="device-serial">{dev.serial}</small>}
+                    {dev.protocol_version && (
+                      <small className="device-protocol">v{dev.protocol_version.toString(16).toUpperCase()}</small>
+                    )}
+                  </div>
                   {dev.connected ? (
                     <button onClick={disconnectDevice} disabled={isWorking} className="secondary">
                       Disconnect
@@ -394,11 +434,19 @@ function App() {
               {devices.length === 0 && (
                 <li className="empty">
                   No devices found<br />
-                  <small>Click Mock to test without hardware</small>
+                  <small>Click Mock to test, or Network for SBC</small>
                 </li>
               )}
             </ul>
           </section>
+
+          {/* Platform Info - shown when connected */}
+          {selectedDevice && (
+            <PlatformInfo 
+              connected={!!selectedDevice} 
+              onStatusChange={setStatus}
+            />
+          )}
 
           <section className="panel chip-info">
             <h2>Chip Info</h2>
@@ -690,6 +738,14 @@ function App() {
           </div>
         </div>
       </main>
+
+      {/* Network Device Dialog */}
+      <NetworkDeviceDialog
+        isOpen={showNetworkDialog}
+        onClose={() => setShowNetworkDialog(false)}
+        onDeviceAdded={scanDevices}
+        onStatusChange={setStatus}
+      />
     </div>
   );
 }
