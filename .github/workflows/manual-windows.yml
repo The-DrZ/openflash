@@ -8,34 +8,28 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout 仓库到默认目录（不要重复嵌套）
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false
+          submodules: false  # 禁用 wiki 子模块
 
-      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ Setup Rust
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # 4️⃣ Install frontend dependencies
       - name: Install dependencies
-        working-directory: gui   # ⚠️ 仓库根目录下的 gui
+        working-directory: gui   # 相对于 checkout 根目录
         run: npm install
 
-      # 5️⃣ Build Tauri app
       - name: Build Tauri app
         working-directory: gui
         run: npm run tauri build
 
-      # 6️⃣ Upload artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
