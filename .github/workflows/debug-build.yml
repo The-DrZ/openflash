@@ -26,7 +26,7 @@ jobs:
       # 4️⃣ 列出 gui 目录内容（如果存在）
       - name: List gui directory
         run: dir gui
-        continue-on-error: true  # 如果不存在，不让 workflow 直接失败
+        continue-on-error: true   # ✅ 正确位置：和 step 同级
 
       # 5️⃣ Setup Node.js
       - name: Setup Node.js
