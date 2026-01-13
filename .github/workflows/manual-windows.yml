@@ -8,26 +8,32 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 1️⃣ Checkout 仓库（完整历史，不拉 submodule）
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false
+          submodules: false   # ⚠️ 关键：禁用所有 submodule
 
+      # 2️⃣ 安装 Node.js（前端依赖）
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: 20
 
+      # 3️⃣ 安装 Rust（Rust + Tauri）
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      # 4️⃣ 安装项目依赖
       - name: Install dependencies
         run: npm install
 
+      # 5️⃣ 构建 Tauri 应用（生成 Windows exe）
       - name: Build Tauri app
         run: npm run tauri build
 
+      # 6️⃣ 上传 artifact（构建产物）
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
