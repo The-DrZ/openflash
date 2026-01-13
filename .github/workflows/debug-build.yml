@@ -15,7 +15,7 @@ jobs:
           submodules: false
 
       - name: Show current directory
-        run: echo Current directory: $PWD
+        run: "echo Current directory: $PWD"
 
       - name: List root directory
         run: dir
