@@ -8,36 +8,37 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout 仓库（完整历史，不拉 submodule）
+      # 1️⃣ Checkout 仓库到 openflash 目录
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          path: openflash
           fetch-depth: 0
-          submodules: false   # ⚠️ 关键：禁用所有 submodule
+          submodules: false
 
-      # 2️⃣ 安装 Node.js
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ 安装 Rust
+      # 3️⃣ Setup Rust
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # 4️⃣ 安装前端依赖（package.json 在 gui/ 目录）
+      # 4️⃣ Install frontend dependencies
       - name: Install dependencies
-        working-directory: gui
+        working-directory: openflash/gui
         run: npm install
 
-      # 5️⃣ 构建 Tauri 应用
+      # 5️⃣ Build Tauri app
       - name: Build Tauri app
-        working-directory: gui
+        working-directory: openflash/gui
         run: npm run tauri build
 
-      # 6️⃣ 上传 Windows exe artifact
+      # 6️⃣ Upload artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: openflash-windows
-          path: gui/src-tauri/target/release/
+          path: openflash/gui/src-tauri/target/release/
