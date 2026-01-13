@@ -8,11 +8,10 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout 仓库到 openflash 目录
+      # 1️⃣ Checkout 仓库到默认目录（不要重复嵌套）
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          path: openflash
           fetch-depth: 0
           submodules: false
 
@@ -28,12 +27,12 @@ jobs:
 
       # 4️⃣ Install frontend dependencies
       - name: Install dependencies
-        working-directory: openflash/gui
+        working-directory: gui   # ⚠️ 仓库根目录下的 gui
         run: npm install
 
       # 5️⃣ Build Tauri app
       - name: Build Tauri app
-        working-directory: openflash/gui
+        working-directory: gui
         run: npm run tauri build
 
       # 6️⃣ Upload artifact
@@ -41,4 +40,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openflash-windows
-          path: openflash/gui/src-tauri/target/release/
+          path: gui/src-tauri/target/release/
