@@ -8,43 +8,35 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1️⃣ Checkout 仓库
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          submodules: false  # 不拉 wiki 子模块
+          submodules: false
 
-      # 2️⃣ 显示 checkout 根目录路径
       - name: Show current directory
-        run: echo "Current directory: $PWD"
+        run: echo Current directory: $PWD
 
-      # 3️⃣ 列出根目录内容
       - name: List root directory
         run: dir
 
-      # 4️⃣ 列出 gui 目录内容（如果存在）
       - name: List gui directory
         run: dir gui
-        continue-on-error: true   # ✅ 正确位置：和 step 同级
+        continue-on-error: true
 
-      # 5️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 6️⃣ Setup Rust
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # 7️⃣ 安装依赖（仅在 gui 存在时）
       - name: Install dependencies
         working-directory: gui
         run: npm install
         continue-on-error: true
 
-      # 8️⃣ 构建 Tauri app（仅在 gui 存在时）
       - name: Build Tauri app
         working-directory: gui
         run: npm run tauri build
