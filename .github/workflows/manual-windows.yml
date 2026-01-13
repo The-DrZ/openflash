@@ -15,27 +15,29 @@ jobs:
           fetch-depth: 0
           submodules: false   # ⚠️ 关键：禁用所有 submodule
 
-      # 2️⃣ 安装 Node.js（前端依赖）
+      # 2️⃣ 安装 Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ 安装 Rust（Rust + Tauri）
+      # 3️⃣ 安装 Rust
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      # 4️⃣ 安装项目依赖
+      # 4️⃣ 安装前端依赖（package.json 在 gui/ 目录）
       - name: Install dependencies
+        working-directory: gui
         run: npm install
 
-      # 5️⃣ 构建 Tauri 应用（生成 Windows exe）
+      # 5️⃣ 构建 Tauri 应用
       - name: Build Tauri app
+        working-directory: gui
         run: npm run tauri build
 
-      # 6️⃣ 上传 artifact（构建产物）
+      # 6️⃣ 上传 Windows exe artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: openflash-windows
-          path: src-tauri/target/release/
+          path: gui/src-tauri/target/release/
